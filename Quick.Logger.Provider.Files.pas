@@ -49,6 +49,7 @@ type
     fLimitLogSize : Int64;
     fDailyRotate : Boolean;
     fCompressRotatedFiles : Boolean;
+    fRotatedFilesPath : string;
     fFileCreationDate : TDateTime;
     fShowEventTypes : Boolean;
     fShowHeaderInfo : Boolean;
@@ -63,6 +64,7 @@ type
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
+    property RotatedFilesPath : string read fRotatedFilesPath write fRotatedFilesPath;
     property CompressRotatedFiles : Boolean read fCompressRotatedFiles write fCompressRotatedFiles;
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property ShowHeaderInfo : Boolean read fShowHeaderInfo write fShowHeaderInfo;
@@ -88,6 +90,7 @@ begin
   fCompressRotatedFiles := False;
   fShowEventTypes := True;
   fShowHeaderInfo := True;
+  fRotatedFilesPath := '';
   LogLevel := LOG_ALL;
 end;
 
@@ -182,7 +185,15 @@ var
 begin
   if zipped then zipExt := '.zip'
     else zipExt := '';
-  LogName := TPath.GetFileNameWithoutExtension(fFileName);
+  if fRotatedFilesPath = '' then
+  begin
+    LogName := TPath.GetFileNameWithoutExtension(fFileName);
+  end
+  else
+  begin
+    ForceDirectories(fRotatedFilesPath);
+    LogName := IncludeTrailingBackslash(fRotatedFilesPath) + TPath.GetFileNameWithoutExtension(fFilename);
+  end;
   LogExt := TPath.GetExtension(fFileName);
   Result := Format('%s.%d%s%s',[LogName,cNumBackup,LogExt,zipExt]);
 end;
