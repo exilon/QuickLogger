@@ -52,7 +52,7 @@ Providers manage the output for your logs. Output can be file, console, email, e
 
 There are some predefined providers, but you can make your own provider if needed:
 
-- **Quick.Logger.Provider.Console:** Sends logging to a file, managing log rotation and compression.
+- **Quick.Logger.Provider.Files:** Sends logging to a file, managing log rotation and compression.
 	
     Properties:
     
@@ -66,6 +66,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **DailyRotate:** Rotates log file every day.
     - **MaxFileSizeInMB:** If value is greater than 0, rotates log file by size. It's independent of dailyrotate option. 
     - **MaxRotateFiles:** Max number of files to keep when rotate a log.
+	- **RotatedFilesPath:** Path where rotated files will be moved/zipped. If leave blank, rotated files will be remain in same folder log exists.
     - **CompressRotatedFiles:** Defines if rotated files will be compressed.
     - **Enabled**: Enables/disables receive logging.
    
