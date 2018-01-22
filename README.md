@@ -62,6 +62,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **SendLimits:** Defines max number of logs entries sent by day, hour, minute or second to avoid be spammed. Can be configured to limit only certain event types.
     - **ShowEventType:** Shows eventype (WARN, ERROR, INFO,..)
     - **ShowHeaderInfo:** Every execution or new log file logs a header with system information like Username, CPU, path, debug mode, etc.
+	- **UnderlineHeaderEventType:** Writes an underline below every etHeader eventtype.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
     - **DailyRotate:** Rotates log file every day.
     - **MaxFileSizeInMB:** If value is greater than 0, rotates log file by size. It's independent of dailyrotate option. 
@@ -79,6 +80,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of logs entries sent by day, hour, minute or second to avoid be spammed. Can be configured to limit only certain event types.
     - **ShowEventType:** Shows eventype (WARN, ERROR, INFO,..).
+	- **UnderlineHeaderEventType:** Writes an underline below every etHeader eventtype.
     - **ShowTimeStamp:** Shows datetime for every log entry.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
     - **Enabled:** Enables/disables receive logging.

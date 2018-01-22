@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.18
   Created     : 12/10/2017
-  Modified    : 20/01/2018
+  Modified    : 22/01/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -54,6 +54,7 @@ type
     fShowEventTypes : Boolean;
     fShowHeaderInfo : Boolean;
     fIsRotating : Boolean;
+    fUnderlineHeaderEventType: Boolean;
     procedure WriteToStream(const cMsg : string);
     procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
@@ -68,6 +69,7 @@ type
     property CompressRotatedFiles : Boolean read fCompressRotatedFiles write fCompressRotatedFiles;
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property ShowHeaderInfo : Boolean read fShowHeaderInfo write fShowHeaderInfo;
+    property UnderlineHeaderEventType : Boolean read fUnderlineHeaderEventType write fUnderlineHeaderEventType;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -90,6 +92,7 @@ begin
   fCompressRotatedFiles := False;
   fShowEventTypes := True;
   fShowHeaderInfo := True;
+  fUnderlineHeaderEventType := False;
   fRotatedFilesPath := '';
   LogLevel := LOG_ALL;
 end;
@@ -168,7 +171,7 @@ begin
   if cLogItem.EventType = etHeader then
   begin
     WriteToStream(cLogItem.Msg);
-    WriteToStream(FillStr('-',cLogItem.Msg.Length));
+    if fUnderlineHeaderEventType then WriteToStream(FillStr('-',cLogItem.Msg.Length));
   end
   else
   begin

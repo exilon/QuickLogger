@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.19
   Created     : 12/10/2017
-  Modified    : 23/11/2017
+  Modified    : 22/01/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -65,6 +65,7 @@ type
     fShowEventColors : Boolean;
     fShowTimeStamp : Boolean;
     fEventTypeColors : TEventTypeColors;
+    fUnderlineHeaderEventType : Boolean;
     function GetEventTypeColor(cEventType : TEventType) : TConsoleColor;
     procedure SetEventTypeColor(cEventType: TEventType; cValue : TConsoleColor);
   public
@@ -72,6 +73,7 @@ type
     destructor Destroy; override;
     property ShowEventColors : Boolean read fShowEventColors write fShowEventColors;
     property ShowTimeStamp : Boolean read fShowTimeStamp write fShowTimeStamp;
+    property UnderlineHeaderEventType : Boolean read fUnderlineHeaderEventType write fUnderlineHeaderEventType;
     property EventTypeColor[cEventType : TEventType] : TConsoleColor read GetEventTypeColor write SetEventTypeColor;
     procedure Init; override;
     procedure Restart; override;
@@ -89,6 +91,7 @@ begin
   LogLevel := LOG_ALL;
   fShowEventColors := True;
   fShowTimeStamp := False;
+  fUnderlineHeaderEventType := False;
   fEventTypeColors := DEF_EVENTTYPECOLORS;
 end;
 
@@ -148,10 +151,13 @@ begin
     if cLogItem.EventType = etHeader then
     begin
       Writeln(cLogItem.Msg);
-      if cLogItem.EventType = etHeader then Writeln(FillStr('-',cLogItem.Msg.Length));
+      if fUnderlineHeaderEventType then Writeln(FillStr('-',cLogItem.Msg.Length));
+    end
+    else
+    begin
+      if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]))
+        else Writeln(cLogItem.Msg);
     end;
-    if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]))
-      else Writeln(cLogItem.Msg);
 
     ResetColors;
   end
