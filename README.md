@@ -22,11 +22,11 @@ begin
  	begin
     	FileName := '.\Logger.log';
         DailyRotate := True;
-        MaxSizeInMB := 20;
+        MaxFileSizeInMB := 20;
         LogLevel := LOG_ALL;
     	Enabled := True;
   	end;
-    with GlobalConsoleProvider do
+    with GlobalLogConsoleProvider do
     begin
     	LogLevel := LOG_DEBUG;
         ShowEventColors := True;
@@ -48,7 +48,10 @@ There are a range of eventtypes you can define in your logs: etHeader, etInfo, e
 Every logger provider can be configured to listen for one or more of these event types and limit the number of received eventtypes received for a range of eventtypes per Day, hour, minute or second for avoid performance problems or be spammed.
 
 ### Providers:
-Providers manage the output for your logs. Output can be file, console, email, etc. If a provider fails many times to send a log, will be disabled automatically (full disk, remote server down, etc).
+Providers manage the output for your logs. Output can be file, console, email, etc. If a provider fails many times to send a log, will be disabled automatically (full disk, remote server down, etc). Limits can be specified per provider.
+Providers have a property to change Time format settings property to your needs.
+Every provider has a queue log to receive log items, but can be disabled to allow direct write/send.
+There are some events to control providers work (OnRestart, OnCriticalError, OnSendLimits, etc).
 
 There are some predefined providers, but you can make your own provider if needed:
 
