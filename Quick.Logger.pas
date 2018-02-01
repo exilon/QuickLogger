@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.20
   Created     : 12/10/2017
-  Modified    : 21/01/2018
+  Modified    : 30/01/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -98,7 +98,7 @@ type
     procedure EnQueueItem(cLogItem : TLogItem);
     procedure WriteLog(cLogItem : TLogItem);
     function IsQueueable : Boolean;
-    procedure CheckErrors;
+    procedure IncAndCheckErrors;
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
@@ -138,6 +138,13 @@ type
     function IsLimitReached(cEventType : TEventType): Boolean;
   end;
 
+  TQueueErrorEvent = procedure(const msg : string) of object;
+  TFailToLogEvent = procedure of object;
+  TRestartEvent = procedure of object;
+  TCriticalErrorEvent = procedure of object;
+  TSendLimitsEvent = procedure of object;
+  TStatusChangedEvent = procedure(status : TLogProviderStatus) of object;
+
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
   private
     fThreadLog : TThreadLog;
@@ -153,6 +160,12 @@ type
     fStatus : TLogProviderStatus;
     fEventTypeNames : TEventTypeNames;
     fSendLimits : TLogSendLimit;
+    fOnFailToLog: TFailToLogEvent;
+    fOnRestart: TRestartEvent;
+    fOnCriticalError : TCriticalErrorEvent;
+    fOnStatusChanged : TStatusChangedEvent;
+    fOnQueueError: TQueueErrorEvent;
+    fOnSendLimits: TSendLimitsEvent;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -175,12 +188,18 @@ type
     property Fails : Integer read fFails write fFails;
     property MaxFailsToRestart : Integer read fMaxFailsToRestart write fMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
+    property OnFailToLog : TFailToLogEvent read fOnFailToLog write fOnFailToLog;
+    property OnRestart : TRestartEvent read fOnRestart write fOnRestart;
+    property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
+    property OnCriticalError : TCriticalErrorEvent read fOnCriticalError write fOnCriticalError;
+    property OnStatusChanged : TStatusChangedEvent read fOnStatusChanged write fOnStatusChanged;
+    property OnSendLimits : TSendLimitsEvent read fOnSendLimits write fOnSendLimits;
     property QueueCount : Integer read GetQueuedLogItems;
     property UsesQueue : Boolean read fUsesQueue write fUsesQueue;
     property Enabled : Boolean read fEnabled write SetEnabled;
     property EventTypeName[cEventType : TEventType] : string read GetEventTypeName write SetEventTypeName;
     property SendLimits : TLogSendLimit read fSendLimits write fSendLimits;
-    procedure CheckErrors;
+    procedure IncAndCheckErrors;
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
   end;
@@ -204,6 +223,7 @@ type
     fThreadProviderLog : TThreadProviderLog;
     fLogQueue : TLogQueue;
     fProviders : TLogProviderList;
+    fOnQueueError: TQueueErrorEvent;
     function GetQueuedLogItems : Integer;
     procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType);
     procedure HandleException(E : Exception);
@@ -212,6 +232,7 @@ type
     destructor Destroy; override;
     property Providers : TLogProviderList read fProviders write fProviders;
     property QueueCount : Integer read GetQueuedLogItems;
+    property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
     procedure Add(const cMsg : string; cValues : array of TVarRec; cEventType : TEventType); overload;
   end;
@@ -280,9 +301,11 @@ begin
   fStatus := psStopped;
 end;
 
-procedure TLogProviderBase.CheckErrors;
+procedure TLogProviderBase.IncAndCheckErrors;
 begin
   Inc(fFails);
+  if Assigned(fOnFailToLog) then fOnFailToLog;
+
   if fFails > fMaxFailsToStop then
   begin
     //flush queue and stop provider from receiving new items
@@ -290,6 +313,7 @@ begin
     Writeln(Format('drain: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Drain;
+    if Assigned(fOnCriticalError) then fOnCriticalError;
   end
   else if fFails > fMaxFailsToRestart then
   begin
@@ -298,6 +322,8 @@ begin
     Writeln(Format('restart: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Restart;
+    if Assigned(fOnRestart) then fOnRestart;
+
   end;
 end;
 
@@ -330,6 +356,7 @@ end;
 function TLogProviderBase.IsSendLimitReached(cEventType : TEventType): Boolean;
 begin
   Result := fSendLimits.IsLimitReached(cEventType);
+  if Result and Assigned(fOnSendLimits) then fOnSendLimits;
 end;
 
 procedure TLogProviderBase.Stop;
@@ -357,7 +384,8 @@ begin
   if fLogQueue.PushItem(cLogItem) = TWaitResult.wrTimeout then
   begin
     FreeAndNil(cLogItem);
-    raise ELogger.Create(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
+    if Assigned(fOnQueueError) then fOnQueueError(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
+    //raise ELogger.Create(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
   end;
 end;
 
@@ -389,6 +417,7 @@ end;
 procedure TLogProviderBase.SetStatus(cStatus: TLogProviderStatus);
 begin
   fStatus := cStatus;
+  if Assigned(fOnStatusChanged) then fOnStatusChanged(cStatus);
 end;
 
 procedure TLogProviderBase.SetTimePrecission(Value: Boolean);
@@ -440,7 +469,7 @@ begin
             Writeln(Format('fail: %s (%d)',[TLogProviderBase(fProvider).ClassName,TLogProviderBase(fProvider).Fails + 1]));
             {$ENDIF}
             //check if there are many errors and needs to restart or stop provider
-            if not Terminated then fProvider.CheckErrors;
+            if not Terminated then fProvider.IncAndCheckErrors;
           end;
         finally
           logitem.Free;
@@ -511,7 +540,7 @@ begin
                     Writeln(Format('fail: %s (%d)',[TLogProviderBase(provider).ClassName,TLogProviderBase(provider).Fails + 1]));
                     {$ENDIF}
                     //try to restart provider
-                    if not Terminated then TLogProviderBase(provider).CheckErrors;
+                    if not Terminated then TLogProviderBase(provider).IncAndCheckErrors;
                   end;
                 end;
               end;
@@ -620,7 +649,8 @@ begin
   if fLogQueue.PushItem(logitem) = TWaitResult.wrTimeout then
   begin
     FreeAndNil(logitem);
-    raise ELogger.Create('Logger insertion timeout!');
+    if Assigned(fOnQueueError) then fOnQueueError('Logger insertion timeout!');
+    //raise ELogger.Create('Logger insertion timeout!');
   end;
 end;
 
