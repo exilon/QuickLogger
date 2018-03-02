@@ -73,6 +73,7 @@ begin
     TimePrecission := True;
     MaxRotateFiles := 3;
     MaxFileSizeInMB := 5;
+    RotatedFilesPath := '.\RotatedLogs';
     CompressRotatedFiles := True;
     Enabled := True;
   end;
