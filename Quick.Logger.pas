@@ -613,6 +613,8 @@ begin
   fThreadProviderLog.Terminate;
   fThreadProviderLog.WaitFor;
   fThreadProviderLog.Free;
+  //if Assigned(fProviders) then fProviders.Free;
+
   //Sleep(1500);
   inherited;
 end;

@@ -71,8 +71,8 @@ end;
 
 destructor TLogEmailProvider.Destroy;
 begin
+  fMail := nil;
   if Assigned(fSMTP) then fSMTP.Free;
-
   inherited;
 end;
 
