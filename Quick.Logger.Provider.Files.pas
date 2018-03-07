@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.18
+  Version     : 1.19
   Created     : 12/10/2017
-  Modified    : 22/01/2018
+  Modified    : 07/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -55,9 +55,11 @@ type
     fShowHeaderInfo : Boolean;
     fIsRotating : Boolean;
     fUnderlineHeaderEventType: Boolean;
+    fAutoFlush : Boolean;
     procedure WriteToStream(const cMsg : string);
     procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
+    function CheckNeedRotate : Boolean;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -70,6 +72,7 @@ type
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property ShowHeaderInfo : Boolean read fShowHeaderInfo write fShowHeaderInfo;
     property UnderlineHeaderEventType : Boolean read fUnderlineHeaderEventType write fUnderlineHeaderEventType;
+    property AutoFlush : Boolean read fAutoFlush write fAutoFlush;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -94,6 +97,7 @@ begin
   fShowHeaderInfo := True;
   fUnderlineHeaderEventType := False;
   fRotatedFilesPath := '';
+  fAutoFlush := False;
   LogLevel := LOG_ALL;
 end;
 
@@ -110,6 +114,7 @@ var
 begin
   if fMaxFileSizeInMB > 0 then fLimitLogSize := fMaxFileSizeInMB * 1024 * 1024
     else fLimitLogSize := 0;
+
   if TFile.Exists(fFileName) then
   begin
     fFileCreationDate := TFile.GetCreationTime(fFileName);
@@ -125,8 +130,16 @@ begin
   try
     fs.Seek(0,TSeekOrigin.soEnd);
     fLogWriter := TStreamWriter.Create(fs,TEncoding.Default,32);
-    fLogWriter.AutoFlush := True;
+    fLogWriter.AutoFlush := fAutoFlush;
     fLogWriter.OwnStream;
+    //check if need to rotate
+    if CheckNeedRotate then
+    begin
+      RotateLog;
+      //resolve windows filesystem tunneling creation date?
+      TFile.SetCreationTime(fFileName,fFileCreationDate);
+      Exit;
+    end;
     //writes header info
     if fShowHeaderInfo then
     begin
@@ -156,11 +169,11 @@ procedure TLogFileProvider.WriteToStream(const cMsg : string);
 begin
   try
     //check if need to rotate
-    if ((fLimitLogSize > 0) and (fLogWriter.BaseStream.Size > fLimitLogSize))
-       or ((fDailyRotate) and (not IsSameDay(fFileCreationDate,Now()))) then RotateLog;
+    if CheckNeedRotate then RotateLog;
     //writes to stream file
     fLogWriter.WriteLine(cMsg);
-    fLogWriter.Flush;
+    //needs to flush if autoflush??
+    if not fAutoFlush then fLogWriter.Flush;
   except
     raise ELogger.Create('Error writting to file log!');
   end;
@@ -214,29 +227,32 @@ var
   i : Integer;
 begin
   if fIsRotating then Exit;
-  //frees stream file
-  if Assigned(fLogWriter) then fLogWriter.Free;
   fIsRotating := True;
   try
-    //delete older log backup and zip
-    RotateFile := GetLogFileBackup(fMaxRotateFiles,True);
-    if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
-    RotateFile := GetLogFileBackup(fMaxRotateFiles,False);
-    if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
-    //rotates older log backups or zips
-    for i := fMaxRotateFiles - 1 downto 1 do
-    begin
-      RotateFile := GetLogFileBackup(i,True);
-      if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,True));
-      RotateFile := GetLogFileBackup(i,False);
-      if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,False));
+    //frees stream file
+    if Assigned(fLogWriter) then fLogWriter.Free;
+    try
+      //delete older log backup and zip
+      RotateFile := GetLogFileBackup(fMaxRotateFiles,True);
+      if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
+      RotateFile := GetLogFileBackup(fMaxRotateFiles,False);
+      if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
+      //rotates older log backups or zips
+      for i := fMaxRotateFiles - 1 downto 1 do
+      begin
+        RotateFile := GetLogFileBackup(i,True);
+        if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,True));
+        RotateFile := GetLogFileBackup(i,False);
+        if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,False));
+      end;
+      //rename current log
+      RotateFile := GetLogFileBackup(1,False);
+      TFile.Move(fFileName,RotateFile);
+    finally
+      //initialize stream file again
+      Init;
     end;
-    //rename current log
-    RotateFile := GetLogFileBackup(1,False);
-    TFile.Move(fFileName,RotateFile);
   finally
-    //initialize stream file again
-    Init;
     fIsRotating := False;
   end;
   //compress log file
@@ -247,6 +263,14 @@ begin
                                     CompressLogFile(RotateFile);
                                   end).Start;
   end;
+end;
+
+function TLogFileProvider.CheckNeedRotate: Boolean;
+begin
+  if ((fLimitLogSize > 0) and (fLogWriter.BaseStream.Size > fLimitLogSize))
+    or ((fDailyRotate) and (not IsSameDay(fFileCreationDate,Now()))) then
+    Result := True
+  else Result := False;
 end;
 
 procedure TLogFileProvider.CompressLogFile(const cFileName : string);
