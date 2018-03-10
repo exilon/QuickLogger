@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.19
   Created     : 12/10/2017
-  Modified    : 22/01/2018
+  Modified    : 07/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -44,7 +44,7 @@ type
 
 const
 
-  //Reference for TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etCustom1, etCustom2);
+  //Reference for TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
   DEF_EVENTTYPECOLORS : TEventTypeColors = [ccLightGray {etHeader},
                                             ccWhite {etInfo},
                                             ccLightGreen {etSuccess},
@@ -54,6 +54,7 @@ const
                                             ccRed {etException},
                                             ccLightCyan {etDebug},
                                             ccLightMagenta {etTrace},
+                                            ccGreen {etDone},
                                             ccCyan {etCustom1},
                                             ccCyan {etCustom2}
                                             ];

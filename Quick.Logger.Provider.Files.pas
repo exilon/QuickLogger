@@ -107,6 +107,21 @@ begin
   inherited;
 end;
 
+procedure CreateNewLogFile(const aFilename : string);
+var
+  fs : TFileStream;
+  tempfile : string;
+begin
+  //resolve windows filesystem tunneling creation date?
+  fs := TFile.Create(aFilename,fmCreate);
+  try
+    //do nothing...created to set new creationdate
+  finally
+    fs.Free;
+  end;
+  TFile.SetCreationTime(aFilename,Now());
+end;
+
 procedure TLogFileProvider.Init;
 var
   FileMode : Word;
@@ -124,6 +139,8 @@ begin
   begin
     FileMode := fmCreate or fmShareDenyWrite;
     fFileCreationDate := Now();
+    //resolve windows filesystem tunneling creation date
+    CreateNewLogFile(fFileName);
   end;
   //create stream file
   fs := TFileStream.Create(fFileName, FileMode);
@@ -136,8 +153,6 @@ begin
     if CheckNeedRotate then
     begin
       RotateLog;
-      //resolve windows filesystem tunneling creation date?
-      TFile.SetCreationTime(fFileName,fFileCreationDate);
       Exit;
     end;
     //writes header info

@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 12/10/2017
-  Modified    : 30/01/2018
+  Modified    : 09/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -48,7 +48,7 @@ uses
 
 type
 
-  TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etCustom1, etCustom2);
+  TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
   TLogLevel = set of TEventType;
   TEventTypeNames = array of string;
 
@@ -58,11 +58,11 @@ const
   LOG_ONLYERRORS = [etHeader,etInfo,etError,etCritical,etException];
   LOG_ERRORSANDWARNINGS = [etHeader,etInfo,etWarning,etError,etCritical,etException];
   LOG_BASIC = [etInfo,etSuccess,etWarning,etError,etCritical,etException];
-  LOG_ALL = [etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etCustom1,etCustom2];
-  LOG_TRACE = [etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etTrace];
-  LOG_DEBUG = [etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etTrace,etDebug];
+  LOG_ALL = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etCustom1,etCustom2];
+  LOG_TRACE = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace];
+  LOG_DEBUG = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace,etDebug];
   LOG_VERBOSE : TLogLevel = [Low(TEventType)..high(TEventType)];
-  DEF_EVENTTYPENAMES : TEventTypeNames = ['','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','CUST1','CUST2'];
+  DEF_EVENTTYPENAMES : TEventTypeNames = ['','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2'];
 
   DEF_QUEUE_SIZE = 100000;
   DEF_QUEUE_PUSH_TIMEOUT = 1000;
@@ -297,6 +297,7 @@ begin
   while fLogQueue.QueueSize > 0 do
   begin
     fLogQueue.PopItem.Free;
+    Sleep(0);
   end;
   fStatus := psStopped;
 end;
@@ -648,7 +649,7 @@ begin
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
   logitem.EventDate := SystemTimeToDateTime(cEventDate);
-  if fLogQueue.PushItem(logitem) = TWaitResult.wrTimeout then
+  if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(logitem);
     if Assigned(fOnQueueError) then fOnQueueError('Logger insertion timeout!');
