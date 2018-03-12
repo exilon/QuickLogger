@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.21
   Created     : 12/10/2017
-  Modified    : 09/03/2018
+  Modified    : 12/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -44,6 +44,7 @@ uses
   System.DateUtils,
   System.IOUtils,
   System.Generics.Collections,
+  Quick.Threads,
   Quick.Commons;
 
 type
@@ -64,9 +65,9 @@ const
   LOG_VERBOSE : TLogLevel = [Low(TEventType)..high(TEventType)];
   DEF_EVENTTYPENAMES : TEventTypeNames = ['','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2'];
 
-  DEF_QUEUE_SIZE = 100000;
-  DEF_QUEUE_PUSH_TIMEOUT = 1000;
-  DEF_QUEUE_POP_TIMEOUT = 500;
+  DEF_QUEUE_SIZE = 10;
+  DEF_QUEUE_PUSH_TIMEOUT = 1500;
+  DEF_QUEUE_POP_TIMEOUT = 200;
 
 type
 
@@ -86,7 +87,7 @@ type
     function Clone : TLogItem;
   end;
 
-  TLogQueue = class(TThreadedQueue<TLogItem>);
+  TLogQueue = class(TThreadedQueueList<TLogItem>);
 
   ILogProvider = interface
   ['{0E50EA1E-6B69-483F-986D-5128DA917ED8}']
@@ -382,7 +383,7 @@ end;
 
 procedure TLogProviderBase.EnQueueItem(cLogItem : TLogItem);
 begin
-  if fLogQueue.PushItem(cLogItem) = TWaitResult.wrTimeout then
+  if fLogQueue.PushItem(cLogItem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(cLogItem);
     if Assigned(fOnQueueError) then fOnQueueError(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
@@ -424,8 +425,8 @@ end;
 procedure TLogProviderBase.SetTimePrecission(Value: Boolean);
 begin
   fTimePrecission := Value;
-  if fTimePrecission then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS','HH:NN:SS:ZZZ',[rfIgnoreCase])
-    else if fFormatSettings.ShortDateFormat.Contains('ZZZ') then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS:ZZZ','HH:NN:SS',[rfIgnoreCase]);
+  if fTimePrecission then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS','HH:NN:SS.ZZZ',[rfIgnoreCase])
+    else if fFormatSettings.ShortDateFormat.Contains('ZZZ') then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS.ZZZ','HH:NN:SS',[rfIgnoreCase]);
 end;
 
 { TThreadLog }
@@ -608,8 +609,8 @@ begin
   //wait for log queue finalization
   FinishTime := Now();
   repeat
-    Sleep(1);
-  until (fThreadProviderLog.LogQueue.QueueSize = 0) or (SecondsBetween(Now(),FinishTime) > 60);
+    Sleep(0);
+  until (fThreadProviderLog.LogQueue.QueueSize = 0) or (SecondsBetween(Now(),FinishTime) > 30);
   //finalize queue thread
   fThreadProviderLog.Terminate;
   fThreadProviderLog.WaitFor;
