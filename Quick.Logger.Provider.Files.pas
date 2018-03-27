@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.19
   Created     : 12/10/2017
-  Modified    : 07/03/2018
+  Modified    : 27/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -56,6 +56,7 @@ type
     fIsRotating : Boolean;
     fUnderlineHeaderEventType: Boolean;
     fAutoFlush : Boolean;
+    fAutoFileName : Boolean;
     procedure WriteToStream(const cMsg : string);
     procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
@@ -64,6 +65,9 @@ type
     constructor Create; override;
     destructor Destroy; override;
     property FileName : string read fFileName write fFileName;
+    {$IFDEF MSWINDOWS}
+    property AutoFileNameByProcess : Boolean read fAutoFileName write fAutoFileName;
+    {$ENDIF}
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
@@ -78,6 +82,10 @@ type
     procedure WriteLog(cLogItem : TLogItem); override;
     procedure RotateLog;
   end;
+
+  {$IFDEF MSWINDOWS}
+  function GetCurrentProcessId : Cardinal; stdcall; external 'kernel32.dll';
+  {$ENDIF}
 
 var
   GlobalLogFileProvider : TLogFileProvider;
@@ -98,6 +106,7 @@ begin
   fUnderlineHeaderEventType := False;
   fRotatedFilesPath := '';
   fAutoFlush := False;
+  fAutoFileName := False;
   LogLevel := LOG_ALL;
 end;
 
@@ -127,6 +136,10 @@ var
   FileMode : Word;
   fs : TFileStream;
 begin
+  {$IFDEF MSWINDOWS}
+  if fAutoFileName then fFileName := Format('%s\%s_%d.log',[TPath.GetDirectoryName(fFileName),TPath.GetFileNameWithoutExtension(fFileName),GetCurrentProcessId]);
+  {$ENDIF}
+
   if fMaxFileSizeInMB > 0 then fLimitLogSize := fMaxFileSizeInMB * 1024 * 1024
     else fLimitLogSize := 0;
 
