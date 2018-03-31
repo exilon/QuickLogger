@@ -1,13 +1,13 @@
-{ ***************************************************************************
+ï»¿{ ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2018 Kike PÃ©rez
 
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
-  Author      : Kike Pérez
-  Version     : 1.19
+  Author      : Kike PÃ©rez
+  Version     : 1.20
   Created     : 12/10/2017
-  Modified    : 27/03/2018
+  Modified    : 31/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -172,17 +172,25 @@ begin
     if fShowHeaderInfo then
     begin
       WriteToStream(FillStr('-',70));
+      {$IFDEF MSWINDOWS}
       WriteToStream(Format('Application : %s %s',[ExtractFilenameWithoutExt(ParamStr(0)),GetAppVersionFullStr]));
+      {$ELSE}
+      WriteToStream(Format('Application : %s',[ExtractFilenameWithoutExt(ParamStr(0))]));
+      {$ENDIF}
       WriteToStream(Format('Path        : %s',[ExtractFilePath(ParamStr(0))]));
       WriteToStream(Format('CPU cores   : %d',[CPUCount]));
       WriteToStream(Format('OS version  : %s',[TOSVersion.ToString]));
+      {$IFDEF MSWINDOWS}
       WriteToStream(Format('Host        : %s',[GetComputerName]));
       WriteToStream(Format('Username    : %s',[Trim(GetLoggedUserName)]));
+      {$ENDIF}
       WriteToStream(Format('Started     : %s',[NowStr]));
+      {$IFDEF MSWINDOWS}
       if IsService then WriteToStream('AppType     : Service')
         else if System.IsConsole then WriteToStream('AppType     : Console');
 
       if IsDebug then WriteToStream('Debug mode  : On');
+      {$ENDIF}
       WriteToStream(FillStr('-',70));
     end;
   except

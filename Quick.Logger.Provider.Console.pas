@@ -40,11 +40,16 @@ uses
 
 type
 
+  {$IF CompilerVersion > 27}
   TEventTypeColors = array of TConsoleColor;
+  {$ELSE}
+  TEventTypeColors = array[0..11] of TConsoleColor;
+  {$ENDIF}
 
 const
 
   //Reference for TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
+  {$IF CompilerVersion > 27}
   DEF_EVENTTYPECOLORS : TEventTypeColors = [ccLightGray {etHeader},
                                             ccWhite {etInfo},
                                             ccLightGreen {etSuccess},
@@ -58,6 +63,21 @@ const
                                             ccCyan {etCustom1},
                                             ccCyan {etCustom2}
                                             ];
+  {$ELSE}
+   DEF_EVENTTYPECOLORS : TEventTypeColors = (ccLightGray {etHeader},
+                                            ccWhite {etInfo},
+                                            ccLightGreen {etSuccess},
+                                            ccYellow {etWarning},
+                                            ccLightRed {etError},
+                                            ccYellow {etCritical},
+                                            ccRed {etException},
+                                            ccLightCyan {etDebug},
+                                            ccLightMagenta {etTrace},
+                                            ccGreen {etDone},
+                                            ccCyan {etCustom1},
+                                            ccCyan {etCustom2}
+                                            );
+  {$ENDIF}
 
 type
 

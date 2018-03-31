@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 12/10/2017
-  Modified    : 12/03/2018
+  Modified    : 29/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -37,7 +37,12 @@ unit Quick.Logger;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
   Windows,
+  {$IF CompilerVersion < 28}
+  System.SyncObjs,
+  {$ENDIF}
+  {$ENDIF}
   Classes,
   System.Types,
   System.SysUtils,
@@ -51,7 +56,11 @@ type
 
   TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
   TLogLevel = set of TEventType;
+  {$IF CompilerVersion > 27}
   TEventTypeNames = array of string;
+  {$ELSE}
+  TEventTypeNames = array[0..11] of string;
+  {$ENDIF}
 
   ELogger = class(Exception);
 
@@ -63,15 +72,24 @@ const
   LOG_TRACE = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace];
   LOG_DEBUG = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace,etDebug];
   LOG_VERBOSE : TLogLevel = [Low(TEventType)..high(TEventType)];
+  {$IF CompilerVersion > 27}
   DEF_EVENTTYPENAMES : TEventTypeNames = ['','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2'];
+  {$ELSE}
+  DEF_EVENTTYPENAMES : TEventTypeNames = ('','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2');
+  {$ENDIF}
 
   DEF_QUEUE_SIZE = 10;
   DEF_QUEUE_PUSH_TIMEOUT = 1500;
   DEF_QUEUE_POP_TIMEOUT = 200;
+  DEF_WAIT_FLUSH_LOG = 30;
 
 type
 
   TLogProviderStatus = (psNone, psStopped, psInitializing, psRunning, psDraining, psStopping, psRestarting);
+
+  {$IFNDEF MSWINDOWS}
+  TSystemTime = TDateTime;
+  {$ENDIF}
 
   TLogItem = class
   private
@@ -224,6 +242,7 @@ type
     fThreadProviderLog : TThreadProviderLog;
     fLogQueue : TLogQueue;
     fProviders : TLogProviderList;
+    fWaitForFlushBeforeExit : Integer;
     fOnQueueError: TQueueErrorEvent;
     function GetQueuedLogItems : Integer;
     procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType);
@@ -232,6 +251,7 @@ type
     constructor Create;
     destructor Destroy; override;
     property Providers : TLogProviderList read fProviders write fProviders;
+    property WaitForFlushBeforeExit : Integer read fWaitForFlushBeforeExit write fWaitForFlushBeforeExit;
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
@@ -246,6 +266,14 @@ var
   GlobalLoggerHandleException : procedure(E : Exception) of object;
 
 implementation
+
+
+{$IFNDEF MSWINDOWS}
+procedure GetLocalTime(localtime : TDateTime);
+begin
+  localtime := Now();
+end;
+{$ENDIF}
 
 
 procedure Log(const cMsg : string; cEventType : TEventType); overload;
@@ -478,6 +506,9 @@ begin
         end;
       end;
     end;
+    {$IF CompilerVersion < 28}
+    ProcessMessages;
+    {$ENDIF}
   end;
   //fProvider := nil;
   {$IFDEF LOGGER_DEBUG}
@@ -553,6 +584,9 @@ begin
           end;
         end;
       end;
+      {$IF CompilerVersion < 28}
+      ProcessMessages;
+      {$ENDIF}
     except
       on E : Exception do
       begin
@@ -593,6 +627,7 @@ constructor TLogger.Create;
 begin
   inherited;
   GlobalLoggerHandleException := HandleException;
+  fWaitForFlushBeforeExit := DEF_WAIT_FLUSH_LOG;
   fLogQueue := TLogQueue.Create(DEF_QUEUE_SIZE,DEF_QUEUE_PUSH_TIMEOUT,DEF_QUEUE_POP_TIMEOUT);
   fProviders := TLogProviderList.Create;
   fThreadProviderLog := TThreadProviderLog.Create;
@@ -610,7 +645,7 @@ begin
   FinishTime := Now();
   repeat
     Sleep(0);
-  until (fThreadProviderLog.LogQueue.QueueSize = 0) or (SecondsBetween(Now(),FinishTime) > 30);
+  until (fThreadProviderLog.LogQueue.QueueSize = 0) or (SecondsBetween(Now(),FinishTime) > fWaitForFlushBeforeExit);
   //finalize queue thread
   fThreadProviderLog.Terminate;
   fThreadProviderLog.WaitFor;
@@ -649,7 +684,7 @@ begin
   logitem := TLogItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
-  logitem.EventDate := SystemTimeToDateTime(cEventDate);
+  logitem.EventDate := {$IFDEF MSWINDOWS}SystemTimeToDateTime(cEventDate);{$ELSE}cEventDate;{$ENDIF}
   if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(logitem);

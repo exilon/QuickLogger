@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 15/10/2017
-  Modified    : 23/11/2017
+  Modified    : 31/03/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -34,7 +34,6 @@ uses
   Classes,
   System.SysUtils,
   IdTCPClient,
-  System.JSON,
   Quick.Commons,
   Quick.Logger;
 

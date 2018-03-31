@@ -54,6 +54,8 @@ var
   end;
 
 begin
+  //wait for 60 seconds to flush pending logs in queue on program finishes
+  Logger.WaitForFlushBeforeExit := 60;
   //configure Console Log provider
   Logger.Providers.Add(GlobalLogConsoleProvider);
   with GlobalLogConsoleProvider do
@@ -74,7 +76,7 @@ begin
     MaxRotateFiles := 3;
     MaxFileSizeInMB := 5;
     RotatedFilesPath := '.\RotatedLogs';
-    CompressRotatedFiles := True;
+    CompressRotatedFiles := False;
     Enabled := True;
   end;
   //configure Email log provider
