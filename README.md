@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
+Delphi/fpc library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
 
 ----------
 Quick Logger is asynchronous. All logs are sent to a queue and don't compromises your application flow. You can define many providers to sent every log entry and decide what level accepts every one.
