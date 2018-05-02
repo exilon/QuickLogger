@@ -28,12 +28,14 @@
  *************************************************************************** }
 unit Quick.Logger.ExceptionHook;
 
+{$i QuickLib.inc}
+
 interface
 
 implementation
 
 uses
-  System.SysUtils,
+  SysUtils,
   Quick.Logger;
 
 //var

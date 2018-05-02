@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 02/10/2017
-  Modified    : 23/11/2017
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,12 +28,14 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.IDEDebug;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
   Windows,
-  System.SysUtils,
+  SysUtils,
   Quick.Commons,
   Quick.Logger;
 

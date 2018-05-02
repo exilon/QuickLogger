@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.EventLog
   Description : Log Windows EventLog Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 02/10/2017
-  Modified    : 08/11/2017
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,12 +28,14 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.EventLog;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
   Windows,
-  System.SysUtils,
+  SysUtils,
   Quick.Commons,
   Quick.Logger;
 
@@ -50,6 +52,11 @@ type
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
   end;
+
+{$IFDEF FPC}
+const
+  EVENTLOG_SUCCESS = 0;
+{$ENDIF}
 
 var
   GlobalLogEventLogProvider : TLogEventLogProvider;
@@ -86,10 +93,11 @@ var
   eType : Integer;
 begin
   p := PWideChar(cLogItem.Msg);
-  h := RegisterEventSource(nil,PWideChar(fSource));
+  h := RegisterEventSource(nil,{$IFDEF FPC}PChar{$ELSE}PWideChar{$ENDIF}(fSource));
   try
     case cLogItem.EventType of
-      etSuccess : eType := EVENTLOG_SUCCESS;
+      etSuccess,
+      etDone : eType := EVENTLOG_SUCCESS;
       etWarning : eType := EVENTLOG_WARNING_TYPE;
       etError,
       etCritical,

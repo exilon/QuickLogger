@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Memory
   Description : Log memory Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 02/10/2017
-  Modified    : 08/11/2017
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -30,11 +30,13 @@ unit Quick.Logger.Provider.Memory;
 
 interface
 
+{$i QuickLib.inc}
+
 uses
   Classes,
   Windows,
-  System.SysUtils,
-  System.Generics.Collections,
+  SysUtils,
+  Generics.Collections,
   Quick.Commons,
   Quick.Logger;
 

@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.20
   Created     : 15/10/2017
-  Modified    : 01/04/2018
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,20 +28,27 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.Rest;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
-  System.SysUtils,
-  {$IF CompilerVersion > 28}
+  SysUtils,
+  {$IFDEF DELPHIXE8_UP}
   System.Net.HttpClient,
   System.Net.URLClient,
   System.NetConsts,
   System.JSON,
   {$ELSE}
   IdHTTP,
-  Data.DBXJSON,
-  {$ENDIF}
+    {$IFDEF FPC}
+    fpjson,
+    fpjsonrtti,
+    {$ELSE}
+    Data.DBXJSON,
+    {$ENDIF FPC}
+  {$ENDIF DELPHIXE8_UP}
   Quick.Commons,
   Quick.Logger;
 
@@ -52,7 +59,7 @@ type
 
   TLogRestProvider = class (TLogProviderBase)
   private
-    {$IF CompilerVersion > 28}
+    {$IFDEF DELPHIXE8_UP}
     fHTTPClient : THTTPClient;
     {$ELSE}
     fHTTPClient : TIdHTTP;
@@ -90,7 +97,7 @@ end;
 
 procedure TLogRestProvider.Init;
 begin
-  {$IF CompilerVersion > 28}
+  {$IFDEF DELPHIXE8_UP}
   fHTTPClient := THTTPClient.Create;
   fHTTPClient.ContentType := 'text/json';
   fHTTPClient.UserAgent := fUserAgent;
@@ -113,10 +120,13 @@ end;
 procedure TLogRestProvider.WriteLog(cLogItem : TLogItem);
 var
   json : TJSONObject;
-  {$IF CompilerVersion > 28}
+  {$IFDEF DELPHIXE8_UP}
   resp : IHTTPResponse;
   {$ELSE}
   resp : TIdHTTPResponse;
+    {$IFDEF FPC}
+    rs : TStringStream;
+    {$ENDIF}
   {$ENDIF}
   ss : TStringStream;
 begin
@@ -124,10 +134,10 @@ begin
   try
     json := TJSONObject.Create;
     try
-      json.AddPair('EventDate',DateTimeToStr(cLogItem.EventDate,FormatSettings));
-      json.AddPair('EventType',IntToStr(Integer(cLogItem.EventType)));
-      json.AddPair('Msg',cLogItem.Msg);
-      {$IF CompilerVersion > 28}
+      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('EventDate',DateTimeToStr(cLogItem.EventDate,FormatSettings));
+      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('EventType',IntToStr(Integer(cLogItem.EventType)));
+      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('Msg',cLogItem.Msg);
+      {$IFDEF DELPHIXE8_UP}
       ss.WriteString(json.ToJSON);
       {$ELSE}
       ss.WriteString(json.ToString);
@@ -135,16 +145,25 @@ begin
     finally
       json.Free;
     end;
-    {$IF CompilerVersion > 28}
+    {$IFDEF DELPHIXE8_UP}
     resp := fHTTPClient.Post(fURL,ss,nil);
     {$ELSE}
-    fHTTPClient.Post(fURL,ss,nil);
+      {$IFDEF FPC}
+      rs := TStringStream.Create;
+      try
+        fHTTPClient.Post(fURL,ss,rs);
+      finally
+        rs.Free;
+      end;
+      {$ELSE}
+      fHTTPClient.Post(fURL,ss,nil);
+      {$ENDIF}
     resp := fHTTPClient.Response;
     {$ENDIF}
   finally
     ss.Free;
   end;
-  {$IF CompilerVersion > 28}
+  {$IFDEF DELPHIXE8_UP}
   if resp.StatusCode <> 201 then
     raise ELogger.Create(Format('[TLogRestProvider] : Response %d : %s trying to post event',[resp.StatusCode,resp.StatusText]));
   {$ELSE}

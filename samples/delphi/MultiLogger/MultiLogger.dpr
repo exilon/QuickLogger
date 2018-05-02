@@ -1,4 +1,4 @@
-program QuickLoggerDemo;
+program MultiLogger;
 
 {$APPTYPE CONSOLE}
 
@@ -6,7 +6,7 @@ program QuickLoggerDemo;
 
 uses
   Classes,
-  System.SysUtils,
+  SysUtils,
   Quick.Console,
   Quick.Logger,
   Quick.Logger.ExceptionHook,
@@ -22,7 +22,6 @@ uses
 
 var
   a : Integer;
-  s : string;
 
   procedure Test;
   var
@@ -34,9 +33,9 @@ var
     Sleep(Random(50));
     for x := 1 to 10000 do
     begin
-      Log('Thread %d - Item %d (%s)',[threadnum,x,DateTimeToStr(Now())],etWarning);
+      Log('Thread %d - Item %d (%s)',[threadnum,x,DateTimeToStr(Now)],etWarning);
     end;
-    Log('Thread %d - (Finished) (%s)',[threadnum,DateTimeToStr(Now())],etWarning);
+    Log('Thread %d - (Finished) (%s)',[threadnum,DateTimeToStr(Now)],etWarning);
   end;
 
   procedure MultiThreadWriteTest;
@@ -51,6 +50,17 @@ var
     end;
     Sleep(1000);
     Log('Process finished. Press <Enter> to Exit',etInfo);
+  end;
+
+  type
+
+  TMyEvent = class
+    procedure Critical(logItem : TLogItem);
+  end;
+
+  procedure TMyEvent.Critical(logItem : TLogItem);
+  begin
+    Writeln(Format('OnCritical Event received: %s',[logitem.Msg]));
   end;
 
 begin
@@ -122,7 +132,7 @@ begin
   Logger.Providers.Add(GlobalLogEventLogProvider);
   with GlobalLogEventLogProvider do
   begin
-    LogLevel := [etError,etWarning];
+    LogLevel := [etSuccess,etError,etCritical,etException];
     Source := 'QuickLogger';
     Enabled := True;
   end;
@@ -169,16 +179,15 @@ begin
   end;
 
   Log('Press <Enter> to begin Thread collision Test',etInfo);
-  ConsoleWaitForEnterKey;
+  //ConsoleWaitForEnterKey;
 
   Log('Quick.Logger Demo 3 [Thread collision]',etHeader);
   MultiThreadWriteTest;
-
   ConsoleWaitForEnterKey;
 
   //check if you press the key before all items are flushed to console/disk
   if Logger.QueueCount > 0 then
   begin
-    Writeln(Format('There are %d log items in queue. Waiting 30 seconds max to flush...',[Logger.QueueCount]));
+    Writeln(Format('There are %d log items in queue. Waiting %d seconds max to flush...',[Logger.QueueCount,Logger.WaitForFlushBeforeExit]));
   end;
 end.

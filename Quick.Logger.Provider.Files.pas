@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.20
   Created     : 12/10/2017
-  Modified    : 31/03/2018
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,13 +28,20 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.Files;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
-  System.SysUtils,
+  SysUtils,
+  {$IFDEF FPC}
+  Quick.Files,
+  zipper,
+  {$ELSE}
   System.IOUtils,
-  System.Zip,
+  {$ENDIF}
+  Zip,
   Quick.Commons,
   Quick.Logger;
 
@@ -122,7 +129,7 @@ var
   tempfile : string;
 begin
   //resolve windows filesystem tunneling creation date?
-  fs := TFile.Create(aFilename,fmCreate);
+  fs := TFile.Create(aFilename);
   try
     //do nothing...created to set new creationdate
   finally
@@ -130,6 +137,13 @@ begin
   end;
   TFile.SetCreationTime(aFilename,Now());
 end;
+
+{$IFDEF FPC}
+function OSVersion: String;
+begin
+  Result := {$I %FPCTARGETOS%}+'-'+{$I %FPCTARGETCPU%};
+end;
+{$ENDIF}
 
 procedure TLogFileProvider.Init;
 var
@@ -179,7 +193,7 @@ begin
       {$ENDIF}
       WriteToStream(Format('Path        : %s',[ExtractFilePath(ParamStr(0))]));
       WriteToStream(Format('CPU cores   : %d',[CPUCount]));
-      WriteToStream(Format('OS version  : %s',[TOSVersion.ToString]));
+      WriteToStream(Format('OS version  : %s',{$IFDEF FPC}[OSVersion]{$ELSE}[TOSVersion.ToString]{$ENDIF}));
       {$IFDEF MSWINDOWS}
       WriteToStream(Format('Host        : %s',[GetComputerName]));
       WriteToStream(Format('Username    : %s',[Trim(GetLoggedUserName)]));
@@ -294,10 +308,15 @@ begin
   //compress log file
   if fCompressRotatedFiles then
   begin
+    {$IFDEF FPC}
+      CompressLogFile(RotateFile);
+    {$ELSE}
     TThread.CreateAnonymousThread(procedure
                                   begin
                                     CompressLogFile(RotateFile);
-                                  end).Start;
+                                  end
+                                  ).Start;
+    {$ENDIF}
   end;
 end;
 
@@ -310,23 +329,43 @@ begin
 end;
 
 procedure TLogFileProvider.CompressLogFile(const cFileName : string);
+{$IFDEF FPC}
+var
+  zip : TZipper;
+begin
+  try
+    zip := TZipper.Create;
+    try
+      zip.FileName := GetLogFileBackup(1,True);
+      zip.Entries.AddFileEntry(cFilename,ExtractFileName(cFilename));
+      zip.ZipAllFiles;
+    finally
+      zip.Free;
+    end;
+    TFile.Delete(cFileName);
+  except
+    raise ELogger.Create('Error trying to backup log file!');
+  end;
+end;
+{$ELSE}
 var
   zip : TZipFile;
 begin
-  zip := TZipFile.Create;
   try
+    zip := TZipFile.Create;
     try
       zip.Open(GetLogFileBackup(1,True),zmWrite);
       zip.Add(cFileName,'',TZipCompression.zcDeflate);
       zip.Close;
-    except
-      raise ELogger.Create('Error trying to backup log file!');
+    finally
+      zip.Free;
     end;
     TFile.Delete(cFileName);
-  finally
-    zip.Free;
+  except
+    raise ELogger.Create('Error trying to backup log file!');
   end;
 end;
+{$ENDIF}
 
 initialization
   GlobalLogFileProvider := TLogFileProvider.Create;

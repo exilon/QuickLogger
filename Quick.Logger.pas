@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.23
   Created     : 12/10/2017
-  Modified    : 29/03/2018
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -32,23 +32,32 @@
 
 unit Quick.Logger;
 
+{$i QuickLib.inc}
+
 {.$DEFINE LOGGER_DEBUG}
+{.$DEFINE LOGGER_DEBUG2}
 
 interface
 
 uses
   {$IFDEF MSWINDOWS}
   Windows,
-  {$IF CompilerVersion < 28}
-  System.SyncObjs,
-  {$ENDIF}
+    {$IFDEF DELPHIXE7_UP}
+    {$ELSE}
+    SyncObjs,
+    {$ENDIF}
   {$ENDIF}
   Classes,
-  System.Types,
-  System.SysUtils,
-  System.DateUtils,
+  Types,
+  SysUtils,
+  DateUtils,
+  {$IFDEF FPC}
+  Quick.Files,
+  Generics.Collections,
+  {$ELSE}
   System.IOUtils,
   System.Generics.Collections,
+  {$ENDIF}
   Quick.Threads,
   Quick.Commons;
 
@@ -56,7 +65,7 @@ type
 
   TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
   TLogLevel = set of TEventType;
-  {$IF CompilerVersion > 27}
+  {$IFDEF DELPHIXE7_UP}
   TEventTypeNames = array of string;
   {$ELSE}
   TEventTypeNames = array[0..11] of string;
@@ -72,7 +81,7 @@ const
   LOG_TRACE = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace];
   LOG_DEBUG = [etHeader,etInfo,etSuccess,etDone,etWarning,etError,etCritical,etException,etTrace,etDebug];
   LOG_VERBOSE : TLogLevel = [Low(TEventType)..high(TEventType)];
-  {$IF CompilerVersion > 27}
+  {$IFDEF DELPHIXE7_UP}
   DEF_EVENTTYPENAMES : TEventTypeNames = ['','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2'];
   {$ELSE}
   DEF_EVENTTYPENAMES : TEventTypeNames = ('','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2');
@@ -121,6 +130,8 @@ type
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
+    function GetLogLevel : TLogLevel;
+    function IsEnabled : Boolean;
   end;
 
   IRotable = interface
@@ -221,6 +232,8 @@ type
     procedure IncAndCheckErrors;
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
+    function GetLogLevel : TLogLevel;
+    function IsEnabled : Boolean;
   end;
 
   TLogProviderList = TList<ILogProvider>;
@@ -255,11 +268,11 @@ type
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
-    procedure Add(const cMsg : string; cValues : array of TVarRec; cEventType : TEventType); overload;
+    procedure Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
   end;
 
   procedure Log(const cMsg : string; cEventType : TEventType); overload;
-  procedure Log(const cMsg : string; cValues : array of TVarRec; cEventType : TEventType); overload;
+  procedure Log(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
 
 var
   Logger : TLogger;
@@ -281,7 +294,7 @@ begin
   Logger.Add(cMsg,cEventType);
 end;
 
-procedure Log(const cMsg : string; cValues : array of TVarRec; cEventType : TEventType); overload;
+procedure Log(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
 begin
   Logger.Add(cMsg,cValues,cEventType);
 end;
@@ -416,7 +429,14 @@ begin
     FreeAndNil(cLogItem);
     if Assigned(fOnQueueError) then fOnQueueError(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
     //raise ELogger.Create(Format('Logger provider "%s" insertion timeout!',[Self.ClassName]));
+    {$IFDEF LOGGER_DEBUG}
+    Writeln(Format('insertion timeout: %s',[Self.ClassName]));
+    {$ENDIF}
+  {$IFDEF LOGGER_DEBUG2}
+  end else Writeln(Format('pushitem %s (queue: %d): %s',[Self.ClassName,fLogQueue.QueueSize,cLogItem.fMsg]));
+  {$ELSE}
   end;
+  {$ENDIF}
 end;
 
 function TLogProviderBase.GetEventTypeName(cEventType: TEventType): string;
@@ -457,6 +477,16 @@ begin
     else if fFormatSettings.ShortDateFormat.Contains('ZZZ') then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS.ZZZ','HH:NN:SS',[rfIgnoreCase]);
 end;
 
+function TLogProviderBase.GetLogLevel : TLogLevel;
+begin
+  Result := fLogLevel;
+end;
+
+function TLogProviderBase.IsEnabled : Boolean;
+begin
+  Result := fEnabled;
+end;
+
 { TThreadLog }
 
 constructor TThreadLog.Create;
@@ -485,6 +515,9 @@ begin
   begin
     if fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled then
     begin
+      {$IFDEF LOGGER_DEBUG2}
+      Writeln(Format('popitem logger: %s',[logitem.Msg]));
+      {$ENDIF}
       if logitem <> nil then
       begin
         try
@@ -506,7 +539,8 @@ begin
         end;
       end;
     end;
-    {$IF CompilerVersion < 28}
+    {$IFDEF DELPHIXE7_UP}
+    {$ELSE}
     ProcessMessages;
     {$ENDIF}
   end;
@@ -556,12 +590,14 @@ begin
         if logitem <> nil then
         begin
           //send log item to all providers
+          {$IFDEF LOGGER_DEBUG2}
+          Writeln(Format('popitem %s: %s',[Self.ClassName,logitem.Msg]));
+          {$ENDIF}
           try
             for provider in fProviders do
             begin
               //send LogItem to provider if Provider Enabled and accepts LogLevel
-              if (TLogProviderBase(provider).Enabled)
-                  and (logitem.EventType in TLogProviderBase(provider).LogLevel) then
+              if (provider.IsEnabled) and (logitem.EventType in provider.GetLogLevel) then
               begin
                 if provider.IsQueueable then provider.EnQueueItem(logitem.Clone)
                 else
@@ -573,7 +609,7 @@ begin
                     Writeln(Format('fail: %s (%d)',[TLogProviderBase(provider).ClassName,TLogProviderBase(provider).Fails + 1]));
                     {$ENDIF}
                     //try to restart provider
-                    if not Terminated then TLogProviderBase(provider).IncAndCheckErrors;
+                    if not Terminated then provider.IncAndCheckErrors;
                   end;
                 end;
               end;
@@ -584,7 +620,8 @@ begin
           end;
         end;
       end;
-      {$IF CompilerVersion < 28}
+      {$IFDEF DELPHIXE7_UP}
+      {$ELSE}
       ProcessMessages;
       {$ENDIF}
     except
@@ -669,7 +706,7 @@ begin
   Self.EnQueueItem(SystemTime,cMsg,cEventType);
 end;
 
-procedure TLogger.Add(const cMsg : string; cValues : array of TVarRec; cEventType : TEventType);
+procedure TLogger.Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType);
 var
   SystemTime : TSystemTime;
 begin
@@ -690,7 +727,14 @@ begin
     FreeAndNil(logitem);
     if Assigned(fOnQueueError) then fOnQueueError('Logger insertion timeout!');
     //raise ELogger.Create('Logger insertion timeout!');
+    {$IFDEF LOGGER_DEBUG}
+    Writeln(Format('insertion timeout: %s',[Self.ClassName]));
+    {$ENDIF}
+  {$IFDEF LOGGER_DEBUG2}
+  end else Writeln(Format('pushitem logger (queue: %d): %s',[fLogQueue.QueueSize,cMsg]));
+  {$ELSE}
   end;
+  {$ENDIF}
 end;
 
 procedure TLogger.HandleException(E : Exception);

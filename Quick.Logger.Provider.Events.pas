@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Events
   Description : Log Email Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 16/10/2017
-  Modified    : 08/11/2017
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,17 +28,23 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.Events;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
-  System.SysUtils,
+  SysUtils,
   Quick.Commons,
   Quick.Logger;
 
 type
 
+  {$IFDEF FPC}
+  TLoggerEvent = procedure(LogItem : TLogItem) of object;
+  {$ELSE}
   TLoggerEvent = reference to procedure(LogItem : TLogItem);
+  {$ENDIF}
 
   TLogEventsProvider = class (TLogProviderBase)
   private

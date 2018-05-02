@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Email
   Description : Log Email Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 15/10/2017
-  Modified    : 23/11/2017
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,11 +28,13 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.Email;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
-  System.SysUtils,
+  SysUtils,
   Quick.Commons,
   Quick.SMTP,
   Quick.Logger;

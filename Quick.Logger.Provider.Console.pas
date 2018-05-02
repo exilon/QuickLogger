@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Console
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.19
+  Version     : 1.20
   Created     : 12/10/2017
-  Modified    : 07/03/2018
+  Modified    : 07/04/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -28,19 +28,21 @@
  *************************************************************************** }
 unit Quick.Logger.Provider.Console;
 
+{$i QuickLib.inc}
+
 interface
 
 uses
   Classes,
   Windows,
-  System.SysUtils,
+  SysUtils,
   Quick.Commons,
   Quick.Console,
   Quick.Logger;
 
 type
 
-  {$IF CompilerVersion > 27}
+  {$IFDEF DELPHIXE7_UP}
   TEventTypeColors = array of TConsoleColor;
   {$ELSE}
   TEventTypeColors = array[0..11] of TConsoleColor;
@@ -49,7 +51,7 @@ type
 const
 
   //Reference for TEventType = (etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etDone, etCustom1, etCustom2);
-  {$IF CompilerVersion > 27}
+  {$IFDEF DELPHIXE7_UP}
   DEF_EVENTTYPECOLORS : TEventTypeColors = [ccLightGray {etHeader},
                                             ccWhite {etInfo},
                                             ccLightGreen {etSuccess},
@@ -64,7 +66,7 @@ const
                                             ccCyan {etCustom2}
                                             ];
   {$ELSE}
-   DEF_EVENTTYPECOLORS : TEventTypeColors = (ccLightGray {etHeader},
+  DEF_EVENTTYPECOLORS : TEventTypeColors = (ccLightGray {etHeader},
                                             ccWhite {etInfo},
                                             ccLightGreen {etSuccess},
                                             ccYellow {etWarning},
@@ -77,6 +79,7 @@ const
                                             ccCyan {etCustom1},
                                             ccCyan {etCustom2}
                                             );
+
   {$ENDIF}
 
 type
