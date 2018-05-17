@@ -1,12 +1,17 @@
 program MultiLogger;
 
+{$IFDEF MSWINDOWS}
 {$APPTYPE CONSOLE}
+{$ENDIF}
 
 {$MODE DELPHI}
 
 {$R *.res}
 
 uses
+  {$IFDEF UNIX}
+  CThreads,
+  {$ENDIF}
   Classes,
   SysUtils,
   Quick.Console,
@@ -17,8 +22,10 @@ uses
   Quick.Logger.Provider.Events,
   Quick.Logger.Provider.Rest,
   Quick.Logger.Provider.Redis,
+  {$IFDEF MSWINDOWS}
   Quick.Logger.Provider.IDEDebug,
   Quick.Logger.Provider.EventLog,
+  {$ENDIF}
   Quick.Logger.Provider.Memory;
 
 var
@@ -34,9 +41,9 @@ var
     Sleep(Random(50));
     for x := 1 to 10000 do
     begin
-      Log('Thread %d - Item %d (%s)',[threadnum,x,DateTimeToStr(Now)],etWarning);
+      Log('Thread %d - Item %d (%s)',[threadnum,x,DateTimeToStr(Now,GlobalLogConsoleProvider.FormatSettings)],etWarning);
     end;
-    Log('Thread %d - (Finished) (%s)',[threadnum,DateTimeToStr(Now)],etWarning);
+    Log('Thread %d - (Finished) (%s)',[threadnum,DateTimeToStr(Now,GlobalLogConsoleProvider.FormatSettings)],etWarning);
   end;
 
   procedure MultiThreadWriteTest;
@@ -81,12 +88,12 @@ begin
   Logger.Providers.Add(GlobalLogFileProvider);
   with GlobalLogFileProvider do
   begin
-    FileName := '.\LoggerDemo.log';
+    FileName := './LoggerDemo.log';
     LogLevel := LOG_ALL;
     TimePrecission := True;
     MaxRotateFiles := 3;
     MaxFileSizeInMB := 5;
-    RotatedFilesPath := '.\RotatedLogs';
+    RotatedFilesPath := './RotatedLogs';
     CompressRotatedFiles := False;
     Enabled := True;
   end;
@@ -115,6 +122,7 @@ begin
     OnCritical := TMyEvent.Critical;
     Enabled := True;
   end;
+  {$IFDEF MSWINDOWS}
   //configure IDEDebug provider
   Logger.Providers.Add(GlobalLogIDEDebugProvider);
   with GlobalLogIDEDebugProvider do
@@ -130,6 +138,7 @@ begin
     Source := 'QuickLogger';
     Enabled := True;
   end;
+  {$ENDIF}
   //configure Rest log provider
   Logger.Providers.Add(GlobalLogRestProvider);
   with GlobalLogRestProvider do
@@ -147,7 +156,7 @@ begin
     MaxSize := 1000;
     Password := 'pass123';
     LogLevel := LOG_ALL;// [etError,etCritical,etException];
-    Enabled := False; //enable when you have a redis to connect
+    Enabled := True; //enable when you have a redis to connect
   end;
   //configure Mem log provider
   Logger.Providers.Add(GlobalLogMemoryProvider);

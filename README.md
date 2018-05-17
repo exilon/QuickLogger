@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi/fpc library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
+Delphi/fpc (Windows/Linux) library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
 
 ----------
 Quick Logger is asynchronous. All logs are sent to a queue and don't compromises your application flow. You can define many providers to sent every log entry and decide what level accepts every one.
@@ -157,6 +157,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **LogKey:** Redis will save log into this key.
     - **MaxSize:** Limits size of redis key. When reached, old entries are deleted.
     - **Password:** For access to secured Redis servers.
+	- **OutputAsJson:** Sends log as Json.
     - **Enabled:** Enables/disables receive logging.
 
 - **Quick.Logger.Provider.Memory:** Saves logging into memory.

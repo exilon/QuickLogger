@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Rest
   Description : Log Api Rest Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 15/10/2017
-  Modified    : 07/04/2018
+  Modified    : 17/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -39,15 +39,8 @@ uses
   System.Net.HttpClient,
   System.Net.URLClient,
   System.NetConsts,
-  System.JSON,
   {$ELSE}
   IdHTTP,
-    {$IFDEF FPC}
-    fpjson,
-    fpjsonrtti,
-    {$ELSE}
-    Data.DBXJSON,
-    {$ENDIF FPC}
   {$ENDIF DELPHIXE8_UP}
   Quick.Commons,
   Quick.Logger;
@@ -87,11 +80,13 @@ begin
   LogLevel := LOG_ALL;
   fURL := '';
   fUserAgent := DEF_USER_AGENT;
+  IncludedInfo := [iiAppName,iiHost];
 end;
 
 destructor TLogRestProvider.Destroy;
 begin
   if Assigned(fHTTPClient) then FreeAndNil(fHTTPClient);
+
   inherited;
 end;
 
@@ -119,7 +114,6 @@ end;
 
 procedure TLogRestProvider.WriteLog(cLogItem : TLogItem);
 var
-  json : TJSONObject;
   {$IFDEF DELPHIXE8_UP}
   resp : IHTTPResponse;
   {$ELSE}
@@ -132,19 +126,7 @@ var
 begin
   ss := TStringStream.Create;
   try
-    json := TJSONObject.Create;
-    try
-      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('EventDate',DateTimeToStr(cLogItem.EventDate,FormatSettings));
-      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('EventType',IntToStr(Integer(cLogItem.EventType)));
-      json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('Msg',cLogItem.Msg);
-      {$IFDEF DELPHIXE8_UP}
-      ss.WriteString(json.ToJSON);
-      {$ELSE}
-      ss.WriteString(json.ToString);
-      {$ENDIF}
-    finally
-      json.Free;
-    end;
+    ss.WriteString(LogItemToJson(cLogItem,False));
     {$IFDEF DELPHIXE8_UP}
     resp := fHTTPClient.Post(fURL,ss,nil);
     {$ELSE}

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="11"/>
+    <BuildModes Active="Default"/>
+    <Units Count="14">
+      <Unit0>
+        <Filename Value="ConsoleLogger.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="5" Y="16"/>
+        <UsageCount Value="91"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\..\..\Quick.Logger.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="267"/>
+        <CursorPos X="46" Y="308"/>
+        <UsageCount Value="45"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Threads.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="29" Y="37"/>
+        <UsageCount Value="35"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="D:\home\kike\lazarus\fpcsrc\packages\fcl-base\src\syncobjs.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="166"/>
+        <CursorPos X="25" Y="200"/>
+        <UsageCount Value="32"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="D:\home\kike\lazarus\fpcsrc\rtl\inc\objpash.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="186"/>
+        <CursorPos X="23" Y="206"/>
+        <UsageCount Value="3"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Files.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="164"/>
+        <CursorPos X="87" Y="201"/>
+        <UsageCount Value="32"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\datih.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="76"/>
+        <CursorPos X="4" Y="99"/>
+        <UsageCount Value="19"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Console.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="158"/>
+        <CursorPos X="87" Y="188"/>
+        <UsageCount Value="20"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Console.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="752"/>
+        <CursorPos Y="784"/>
+        <UsageCount Value="12"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\..\..\..\..\..\..\..\home\kike\lazarus\fpcsrc\rtl\objpas\sysutils\datih.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="74"/>
+        <CursorPos X="4" Y="99"/>
+        <UsageCount Value="11"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\..\..\..\..\..\..\..\..\home\kike\lazarus\fpcsrc\packages\rtl-console\src\inc\crth.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="85" Y="14"/>
+        <UsageCount Value="11"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Commons.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="500"/>
+        <CursorPos X="3" Y="541"/>
+        <UsageCount Value="10"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Redis.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="12"/>
+        <CursorPos X="3" Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Rest.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="18"/>
+        <CursorPos X="39" Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit13>
+    </Units>
+    <JumpHistory HistoryIndex="-1"/>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="0" ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="ConsoleLogger.lpr"/>
+        <Line Value="29"/>
+      </Item1>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>

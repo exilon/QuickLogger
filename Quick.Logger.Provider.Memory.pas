@@ -34,7 +34,9 @@ interface
 
 uses
   Classes,
+  {$IFDEF MSWINDOWS}
   Windows,
+  {$ENDIF}
   SysUtils,
   Generics.Collections,
   Quick.Commons,
@@ -74,7 +76,11 @@ begin
   inherited;
   LogLevel := LOG_ALL;
   fMaxSize := 0;
+  {$IFDEF MSWINDOWS}
   InitializeCriticalSection(CS);
+  {$ELSE}
+  InitCriticalSection(CS);
+  {$ENDIF}
 end;
 
 destructor TLogMemoryProvider.Destroy;
@@ -85,7 +91,11 @@ begin
   finally
     LeaveCriticalSection(CS);
   end;
+  {$IFDEF MSWINDOWS}
   DeleteCriticalSection(CS);
+  {$ELSE}
+  DoneCriticalsection(CS);
+  {$ENDIF}
   inherited;
 end;
 

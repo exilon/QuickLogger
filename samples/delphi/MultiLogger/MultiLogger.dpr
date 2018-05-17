@@ -142,6 +142,9 @@ begin
   begin
     URL := 'http://localhost/event';
     LogLevel := [etError,etCritical,etException];
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     Enabled := False; //enable when you have a http server server to connect
   end;
   //configure Redis log provider
@@ -152,8 +155,12 @@ begin
     LogKey := 'Log';
     MaxSize := 1000;
     Password := 'pass123';
+    Environment := 'Production';
+    PlatformInfo := 'API';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    OutputAsJson := True;
     LogLevel := LOG_ALL;// [etError,etCritical,etException];
-    Enabled := False; //enable when you have a redis to connect
+    Enabled := True; //enable when you have a redis to connect
   end;
   //configure Mem log provider
   Logger.Providers.Add(GlobalLogMemoryProvider);

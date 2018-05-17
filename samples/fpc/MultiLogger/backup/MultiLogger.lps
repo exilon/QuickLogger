@@ -4,428 +4,629 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Default"/>
-    <Units Count="61">
+    <Units Count="83">
       <Unit0>
         <Filename Value="MultiLogger.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="56" Y="167"/>
-        <UsageCount Value="140"/>
+        <TopLine Value="133"/>
+        <CursorPos X="29" Y="154"/>
+        <UsageCount Value="206"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\..\..\QuickLib\QuickLib.inc"/>
-        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="52"/>
         <CursorPos X="10" Y="67"/>
-        <UsageCount Value="140"/>
+        <UsageCount Value="134"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\..\..\QuickLib\Quick.Console.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="640"/>
         <CursorPos X="25" Y="655"/>
-        <UsageCount Value="67"/>
+        <UsageCount Value="61"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\..\..\QuickLib\Quick.Commons.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="712"/>
         <CursorPos X="96" Y="726"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="49"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\..\..\QuickLib\Quick.Amazon.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="32"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="1"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\..\..\QuickLib\Quick.AppService.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="43"/>
         <CursorPos X="2" Y="36"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="4"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\..\..\QuickLib\Quick.Files.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="781"/>
         <CursorPos X="29" Y="794"/>
-        <UsageCount Value="62"/>
+        <UsageCount Value="56"/>
       </Unit6>
       <Unit7>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\ascdef.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="98"/>
         <CursorPos X="10" Y="119"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="15"/>
       </Unit7>
       <Unit8>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\redef.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="701"/>
-        <CursorPos X="10" Y="722"/>
-        <UsageCount Value="46"/>
+        <TopLine Value="4"/>
+        <CursorPos X="3" Y="24"/>
+        <UsageCount Value="41"/>
       </Unit8>
       <Unit9>
         <Filename Value="..\..\..\QuickLib\Quick.Base64.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="20" Y="8"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="1"/>
       </Unit9>
       <Unit10>
         <Filename Value="..\..\..\QuickLib\Quick.Log.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="204"/>
         <CursorPos X="18" Y="239"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="3"/>
       </Unit10>
       <Unit11>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\filutilh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="142"/>
-        <CursorPos X="10" Y="163"/>
-        <UsageCount Value="59"/>
+        <TopLine Value="148"/>
+        <CursorPos X="70" Y="184"/>
+        <UsageCount Value="69"/>
       </Unit11>
       <Unit12>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\inc\ustringh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="28"/>
         <CursorPos X="25" Y="53"/>
-        <UsageCount Value="47"/>
+        <UsageCount Value="41"/>
       </Unit12>
       <Unit13>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\sysinth.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos X="3" Y="33"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit13>
       <Unit14>
         <Filename Value="..\..\..\QuickLib\Quick.Chrono.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="64"/>
         <CursorPos X="65" Y="70"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit14>
       <Unit15>
         <Filename Value="..\..\Quick.Logger.Provider.Rest.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="39" Y="155"/>
-        <UsageCount Value="48"/>
+        <UsageCount Value="42"/>
       </Unit15>
       <Unit16>
         <Filename Value="..\..\..\QuickLib\Quick.FileMonitor.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="64" Y="31"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\..\..\QuickLib\Quick.Format.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="20" Y="8"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\..\..\QuickLib\Quick.Network.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="26" Y="3"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\..\..\QuickLib\Quick.Process.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="13"/>
         <CursorPos X="60" Y="32"/>
-        <UsageCount Value="46"/>
+        <UsageCount Value="40"/>
       </Unit19>
       <Unit20>
         <Filename Value="..\..\..\QuickLib\Quick.Service.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="10"/>
         <CursorPos Y="39"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="39"/>
       </Unit20>
       <Unit21>
         <Filename Value="..\..\..\QuickLib\Quick.SMTP.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="45"/>
         <CursorPos X="103" Y="45"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="39"/>
       </Unit21>
       <Unit22>
         <Filename Value="..\..\..\QuickLib\Quick.Threads.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="352"/>
         <CursorPos X="30" Y="469"/>
-        <UsageCount Value="66"/>
+        <UsageCount Value="60"/>
       </Unit22>
       <Unit23>
         <Filename Value="D:\Lazarus\fpcsrc\packages\fcl-base\src\syncobjs.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="164"/>
-        <CursorPos X="64" Y="184"/>
-        <UsageCount Value="27"/>
+        <TopLine Value="166"/>
+        <CursorPos X="32" Y="128"/>
+        <UsageCount Value="22"/>
       </Unit23>
       <Unit24>
         <Filename Value="..\..\Quick.Logger.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="607"/>
         <CursorPos X="13" Y="624"/>
-        <UsageCount Value="66"/>
+        <UsageCount Value="60"/>
       </Unit24>
       <Unit25>
         <Filename Value="..\..\Quick.Logger.ExceptionHook.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="29"/>
         <CursorPos X="21" Y="70"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="2"/>
       </Unit25>
       <Unit26>
         <Filename Value="..\..\Quick.Logger.Provider.Console.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="39"/>
         <CursorPos X="25" Y="54"/>
-        <UsageCount Value="63"/>
+        <UsageCount Value="57"/>
       </Unit26>
       <Unit27>
         <Filename Value="..\..\Quick.Logger.Provider.Files.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="7"/>
         <CursorPos X="54" Y="31"/>
-        <UsageCount Value="63"/>
+        <UsageCount Value="57"/>
       </Unit27>
       <Unit28>
-        <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\datih.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="115"/>
-        <CursorPos X="10" Y="136"/>
-        <UsageCount Value="2"/>
-      </Unit28>
-      <Unit29>
         <Filename Value="..\..\Quick.Logger.Provider.Memory.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="39"/>
-        <UsageCount Value="29"/>
-      </Unit29>
-      <Unit30>
+        <UsageCount Value="23"/>
+      </Unit28>
+      <Unit29>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="185"/>
         <CursorPos X="23" Y="206"/>
-        <UsageCount Value="7"/>
-      </Unit30>
-      <Unit31>
+        <UsageCount Value="1"/>
+      </Unit29>
+      <Unit30>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\inc\threadh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="130"/>
         <CursorPos X="29" Y="163"/>
-        <UsageCount Value="7"/>
-      </Unit31>
-      <Unit32>
+        <UsageCount Value="1"/>
+      </Unit30>
+      <Unit31>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\func.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="108"/>
         <CursorPos X="10" Y="129"/>
-        <UsageCount Value="24"/>
-      </Unit32>
-      <Unit33>
+        <UsageCount Value="18"/>
+      </Unit31>
+      <Unit32>
         <Filename Value="..\..\Quick.Logger.Provider.EventLog.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="8" Y="59"/>
-        <UsageCount Value="8"/>
-      </Unit33>
-      <Unit34>
+        <UsageCount Value="2"/>
+      </Unit32>
+      <Unit33>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\defines.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2326"/>
         <CursorPos X="80" Y="2342"/>
-        <UsageCount Value="8"/>
-      </Unit34>
-      <Unit35>
+        <UsageCount Value="2"/>
+      </Unit33>
+      <Unit34>
         <Filename Value="..\..\Quick.Logger.Provider.Events.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="34"/>
         <CursorPos X="72" Y="44"/>
-        <UsageCount Value="8"/>
-      </Unit35>
-      <Unit36>
+        <UsageCount Value="2"/>
+      </Unit34>
+      <Unit35>
         <Filename Value="..\..\Quick.Logger.Provider.Email.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="21" Y="8"/>
-        <UsageCount Value="8"/>
-      </Unit36>
-      <Unit37>
+        <UsageCount Value="2"/>
+      </Unit35>
+      <Unit36>
         <Filename Value="..\..\Quick.Logger.Provider.Redis.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="56" Y="30"/>
-        <UsageCount Value="24"/>
-      </Unit37>
-      <Unit38>
+        <UsageCount Value="18"/>
+      </Unit36>
+      <Unit37>
         <Filename Value="..\..\Quick.Logger.Provider.IDEDebug.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="49"/>
         <CursorPos X="30" Y="37"/>
-        <UsageCount Value="21"/>
-      </Unit38>
-      <Unit39>
+        <UsageCount Value="15"/>
+      </Unit37>
+      <Unit38>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\rtlconsts.pp"/>
         <UnitName Value="RtlConsts"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
-      </Unit39>
-      <Unit40>
+        <UsageCount Value="2"/>
+      </Unit38>
+      <Unit39>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\rtlconst.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="53"/>
         <CursorPos X="98" Y="65"/>
-        <UsageCount Value="8"/>
-      </Unit40>
-      <Unit41>
+        <UsageCount Value="2"/>
+      </Unit39>
+      <Unit40>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\base.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="142"/>
-        <CursorPos X="6" Y="163"/>
-        <UsageCount Value="21"/>
-      </Unit41>
-      <Unit42>
+        <TopLine Value="259"/>
+        <CursorPos X="6" Y="279"/>
+        <UsageCount Value="17"/>
+      </Unit40>
+      <Unit41>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="88"/>
         <CursorPos X="22" Y="109"/>
-        <UsageCount Value="20"/>
-      </Unit42>
-      <Unit43>
+        <UsageCount Value="14"/>
+      </Unit41>
+      <Unit42>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\sysutilh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="18"/>
         <CursorPos X="4" Y="39"/>
-        <UsageCount Value="14"/>
-      </Unit43>
-      <Unit44>
+        <UsageCount Value="8"/>
+      </Unit42>
+      <Unit43>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\classes\classes.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="607"/>
         <CursorPos X="68" Y="607"/>
-        <UsageCount Value="10"/>
-      </Unit44>
-      <Unit45>
+        <UsageCount Value="4"/>
+      </Unit43>
+      <Unit44>
         <Filename Value="D:\Lazarus\fpcsrc\packages\paszlib\src\zipper.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="49"/>
-        <UsageCount Value="10"/>
-      </Unit45>
-      <Unit46>
+        <UsageCount Value="4"/>
+      </Unit44>
+      <Unit45>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\finah.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="24" Y="26"/>
-        <UsageCount Value="10"/>
-      </Unit46>
-      <Unit47>
+        <UsageCount Value="4"/>
+      </Unit45>
+      <Unit46>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\fina.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="109"/>
         <CursorPos Y="119"/>
-        <UsageCount Value="10"/>
-      </Unit47>
-      <Unit48>
+        <UsageCount Value="4"/>
+      </Unit46>
+      <Unit47>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\inc\exeinfo.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="521"/>
         <CursorPos X="24" Y="556"/>
-        <UsageCount Value="11"/>
-      </Unit48>
-      <Unit49>
+        <UsageCount Value="5"/>
+      </Unit47>
+      <Unit48>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\sysutils.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="62"/>
         <CursorPos X="10" Y="83"/>
-        <UsageCount Value="11"/>
-      </Unit49>
-      <Unit50>
+        <UsageCount Value="5"/>
+      </Unit48>
+      <Unit49>
         <Filename Value="D:\Lazarus\fpcsrc\rtl\win\wininc\struct.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5702"/>
-        <CursorPos X="6" Y="5648"/>
-        <UsageCount Value="11"/>
-      </Unit50>
-      <Unit51>
+        <TopLine Value="1014"/>
+        <CursorPos X="6" Y="1034"/>
+        <UsageCount Value="21"/>
+      </Unit49>
+      <Unit50>
         <Filename Value="D:\Lazarus\ccr\jcl\jcl\source\common\JclSysInfo.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="5827"/>
         <CursorPos X="25" Y="5862"/>
-        <UsageCount Value="10"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit51>
-      <Unit52>
+        <UsageCount Value="4"/>
+      </Unit50>
+      <Unit51>
         <Filename Value="D:\Lazarus\fpcsrc\packages\fcl-json\src\fpjsonrtti.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="95" Y="17"/>
-        <UsageCount Value="12"/>
-      </Unit52>
-      <Unit53>
+        <UsageCount Value="6"/>
+      </Unit51>
+      <Unit52>
         <Filename Value="..\..\QuickLib.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="47"/>
         <CursorPos X="23" Y="77"/>
-        <UsageCount Value="10"/>
-      </Unit53>
-      <Unit54>
+        <UsageCount Value="4"/>
+      </Unit52>
+      <Unit53>
         <Filename Value="..\..\..\QuickLib\Quick.Config.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="190"/>
         <CursorPos X="10" Y="211"/>
-        <UsageCount Value="10"/>
-      </Unit54>
-      <Unit55>
+        <UsageCount Value="4"/>
+      </Unit53>
+      <Unit54>
         <Filename Value="..\..\..\QuickLib\Quick.Config.Provider.Json.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="114"/>
         <CursorPos X="12" Y="132"/>
-        <UsageCount Value="10"/>
-      </Unit55>
-      <Unit56>
+        <UsageCount Value="4"/>
+      </Unit54>
+      <Unit55>
         <Filename Value="..\..\..\QuickLib\Quick.Config.Provider.Registry.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="106"/>
         <CursorPos X="8" Y="116"/>
-        <UsageCount Value="10"/>
-      </Unit56>
-      <Unit57>
+        <UsageCount Value="4"/>
+      </Unit55>
+      <Unit56>
         <Filename Value="..\..\..\QuickLib\Quick.JSONUtils.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="50"/>
         <CursorPos X="10" Y="72"/>
-        <UsageCount Value="10"/>
-      </Unit57>
-      <Unit58>
+        <UsageCount Value="4"/>
+      </Unit56>
+      <Unit57>
         <Filename Value="..\..\..\QuickLib\backup\QuickLib.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="52"/>
         <CursorPos X="10" Y="67"/>
-        <UsageCount Value="10"/>
-      </Unit58>
-      <Unit59>
+        <UsageCount Value="4"/>
+      </Unit57>
+      <Unit58>
         <Filename Value="D:\Lazarus\fpcsrc\packages\fcl-json\src\fpjson.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="450"/>
         <CursorPos X="3" Y="465"/>
-        <UsageCount Value="10"/>
-      </Unit59>
-      <Unit60>
+        <UsageCount Value="4"/>
+      </Unit58>
+      <Unit59>
         <Filename Value="D:\Lazarus\config_lazarus\onlinepackagemanager\packages\Indy10\Protocols\IdHTTP.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="561"/>
         <CursorPos X="15" Y="574"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="4"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit59>
+      <Unit60>
+        <Filename Value="..\..\..\Quick.Logger.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="541"/>
+        <CursorPos X="34" Y="563"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit60>
+      <Unit61>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Files.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="141"/>
+        <CursorPos X="99" Y="165"/>
+        <UsageCount Value="21"/>
+      </Unit61>
+      <Unit62>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Console.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="39"/>
+        <CursorPos X="2" Y="54"/>
+        <UsageCount Value="20"/>
+      </Unit62>
+      <Unit63>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\unix\sysutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="917"/>
+        <CursorPos X="63" Y="944"/>
+        <UsageCount Value="6"/>
+      </Unit63>
+      <Unit64>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\sysutils\datih.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="139"/>
+        <CursorPos X="10" Y="159"/>
+        <UsageCount Value="8"/>
+      </Unit64>
+      <Unit65>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Commons.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="799"/>
+        <CursorPos X="31" Y="824"/>
+        <UsageCount Value="8"/>
+      </Unit65>
+      <Unit66>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Log.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="262"/>
+        <CursorPos X="90" Y="268"/>
+        <UsageCount Value="7"/>
+      </Unit66>
+      <Unit67>
+        <Filename Value="D:\Lazarus\fpcsrc\packages\fcl-base\src\fileinfo.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="82"/>
+        <CursorPos X="27" Y="105"/>
+        <UsageCount Value="7"/>
+      </Unit67>
+      <Unit68>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\linux\sysosh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="3"/>
+        <CursorPos X="27" Y="28"/>
+        <UsageCount Value="7"/>
+      </Unit68>
+      <Unit69>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\objpas\objpas.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="37"/>
+        <CursorPos X="8" Y="35"/>
+        <UsageCount Value="7"/>
+      </Unit69>
+      <Unit70>
+        <Filename Value="D:\Lazarus\fpcsrc\packages\rtl-console\src\amiga\crt.pp"/>
+        <UnitName Value="Crt"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="528"/>
+        <CursorPos X="14" Y="561"/>
+        <UsageCount Value="7"/>
+      </Unit70>
+      <Unit71>
+        <Filename Value="..\..\..\..\QuickLib\Quick.AppService.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="22"/>
+        <CursorPos X="40" Y="57"/>
+        <UsageCount Value="6"/>
+      </Unit71>
+      <Unit72>
+        <Filename Value="D:\Lazarus\fpcsrc\rtl\wince\messages.pp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="6"/>
+      </Unit72>
+      <Unit73>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Console.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="122"/>
+        <CursorPos X="10" Y="148"/>
+        <UsageCount Value="6"/>
+      </Unit73>
+      <Unit74>
+        <Filename Value="..\..\..\..\QuickLib\Quick.SMTP.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="19"/>
+        <CursorPos X="14" Y="40"/>
+        <UsageCount Value="6"/>
+      </Unit74>
+      <Unit75>
+        <Filename Value="..\..\..\Quick.Logger.Provider.IDEDebug.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="10"/>
+        <CursorPos X="11" Y="36"/>
+        <UsageCount Value="6"/>
+      </Unit75>
+      <Unit76>
+        <Filename Value="..\..\..\Quick.Logger.Provider.EventLog.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="17"/>
+        <CursorPos X="20" Y="33"/>
+        <UsageCount Value="6"/>
+      </Unit76>
+      <Unit77>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Memory.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="65"/>
+        <CursorPos X="25" Y="97"/>
+        <UsageCount Value="6"/>
+      </Unit77>
+      <Unit78>
+        <Filename Value="D:\Lazarus\fpcsrc\packages\rtl-generics\src\generics.collections.pas"/>
+        <UnitName Value="Generics.Collections"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="69"/>
+        <CursorPos X="19" Y="89"/>
+        <UsageCount Value="6"/>
+      </Unit78>
+      <Unit79>
+        <Filename Value="D:\home\kike\lazarus\fpcsrc\packages\rtl-generics\src\generics.collections.pas"/>
+        <UnitName Value="Generics.Collections"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="137"/>
+        <CursorPos X="52" Y="163"/>
+        <UsageCount Value="6"/>
+      </Unit79>
+      <Unit80>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Files.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="150"/>
+        <CursorPos X="64" Y="175"/>
+        <UsageCount Value="6"/>
+      </Unit80>
+      <Unit81>
+        <Filename Value="..\..\..\..\QuickLib\Quick.Threads.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="416"/>
+        <CursorPos X="39" Y="442"/>
+        <UsageCount Value="6"/>
+      </Unit81>
+      <Unit82>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Redis.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="94"/>
+        <CursorPos Y="125"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+      </Unit82>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="11" HistoryIndex="10">
+      <Position1>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="25" Column="48" TopLine="7"/>
+      </Position1>
+      <Position2>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="137" Column="54" TopLine="94"/>
+      </Position2>
+      <Position3>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="147" Column="44" TopLine="104"/>
+      </Position3>
+      <Position4>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="158" Column="55" TopLine="115"/>
+      </Position4>
+      <Position5>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="165" Column="44" TopLine="122"/>
+      </Position5>
+      <Position6>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="176" Column="34" TopLine="133"/>
+      </Position6>
+      <Position7>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="155" Column="12" TopLine="124"/>
+      </Position7>
+      <Position8>
+        <Filename Value="MultiLogger.pas"/>
+        <Caret Line="154" Column="29" TopLine="133"/>
+      </Position8>
+      <Position9>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Redis.pas"/>
+        <Caret Line="74" Column="3" TopLine="51"/>
+      </Position9>
+      <Position10>
+        <Filename Value="..\..\..\Quick.Logger.Provider.Redis.pas"/>
+        <Caret Line="125" TopLine="94"/>
+      </Position10>
+      <Position11>
+        <Filename Value="..\..\..\Quick.Logger.pas"/>
+        <Caret Line="227" Column="61" TopLine="207"/>
+      </Position11>
+    </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes Count="0" ActiveMode=""/>

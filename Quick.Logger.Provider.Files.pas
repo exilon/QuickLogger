@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 12/10/2017
-  Modified    : 07/04/2018
+  Modified    : 17/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -40,8 +40,8 @@ uses
   zipper,
   {$ELSE}
   System.IOUtils,
+  System.Zip,
   {$ENDIF}
-  Zip,
   Quick.Commons,
   Quick.Logger;
 
@@ -102,7 +102,7 @@ implementation
 constructor TLogFileProvider.Create;
 begin
   inherited;
-  fFileName := TPath.GetDirectoryName(ParamStr(0)) + '\' + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
+  fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
   fIsRotating := False;
   fMaxRotateFiles := 5;
   fMaxFileSizeInMB := 20;
@@ -126,7 +126,6 @@ end;
 procedure CreateNewLogFile(const aFilename : string);
 var
   fs : TFileStream;
-  tempfile : string;
 begin
   //resolve windows filesystem tunneling creation date?
   fs := TFile.Create(aFilename);
@@ -137,13 +136,6 @@ begin
   end;
   TFile.SetCreationTime(aFilename,Now());
 end;
-
-{$IFDEF FPC}
-function OSVersion: String;
-begin
-  Result := {$I %FPCTARGETOS%}+'-'+{$I %FPCTARGETCPU%};
-end;
-{$ENDIF}
 
 procedure TLogFileProvider.Init;
 var
@@ -186,19 +178,22 @@ begin
     if fShowHeaderInfo then
     begin
       WriteToStream(FillStr('-',70));
-      {$IFDEF MSWINDOWS}
-      WriteToStream(Format('Application : %s %s',[ExtractFilenameWithoutExt(ParamStr(0)),GetAppVersionFullStr]));
-      {$ELSE}
-      WriteToStream(Format('Application : %s',[ExtractFilenameWithoutExt(ParamStr(0))]));
-      {$ENDIF}
+      if iiAppName in IncludedInfo then
+      begin
+        {$IFDEF MSWINDOWS}
+        WriteToStream(Format('Application : %s %s',[ExtractFilenameWithoutExt(ParamStr(0)),GetAppVersionFullStr]));
+        {$ELSE}
+        WriteToStream(Format('Application : %s',[ExtractFilenameWithoutExt(ParamStr(0))]));
+        {$ENDIF}
+      end;
       WriteToStream(Format('Path        : %s',[ExtractFilePath(ParamStr(0))]));
       WriteToStream(Format('CPU cores   : %d',[CPUCount]));
-      WriteToStream(Format('OS version  : %s',{$IFDEF FPC}[OSVersion]{$ELSE}[TOSVersion.ToString]{$ENDIF}));
+       if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[GetOSVersion]));
       {$IFDEF MSWINDOWS}
-      WriteToStream(Format('Host        : %s',[GetComputerName]));
+      if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[GetComputerName]));
       WriteToStream(Format('Username    : %s',[Trim(GetLoggedUserName)]));
       {$ENDIF}
-      WriteToStream(Format('Started     : %s',[NowStr]));
+      WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
       {$IFDEF MSWINDOWS}
       if IsService then WriteToStream('AppType     : Service')
         else if System.IsConsole then WriteToStream('AppType     : Console');
@@ -258,7 +253,7 @@ begin
   else
   begin
     ForceDirectories(fRotatedFilesPath);
-    LogName := IncludeTrailingBackslash(fRotatedFilesPath) + TPath.GetFileNameWithoutExtension(fFilename);
+    LogName := IncludeTrailingPathDelimiter(fRotatedFilesPath) + TPath.GetFileNameWithoutExtension(fFilename);
   end;
   LogExt := TPath.GetExtension(fFileName);
   Result := Format('%s.%d%s%s',[LogName,cNumBackup,LogExt,zipExt]);

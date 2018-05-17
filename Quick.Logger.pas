@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.23
+  Version     : 1.24
   Created     : 12/10/2017
-  Modified    : 07/04/2018
+  Modified    : 17/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -52,11 +52,21 @@ uses
   SysUtils,
   DateUtils,
   {$IFDEF FPC}
+  fpjson,
+  fpjsonrtti,
+    {$IFDEF LINUX}
+    SyncObjs,
+    {$ENDIF}
   Quick.Files,
   Generics.Collections,
   {$ELSE}
   System.IOUtils,
   System.Generics.Collections,
+    {$IFDEF DELPHIXE8_UP}
+    System.JSON,
+    {$ELSE}
+    Data.DBXJSON,
+    {$ENDIF}
   {$ENDIF}
   Quick.Threads,
   Quick.Commons;
@@ -97,8 +107,12 @@ type
   TLogProviderStatus = (psNone, psStopped, psInitializing, psRunning, psDraining, psStopping, psRestarting);
 
   {$IFNDEF MSWINDOWS}
-  TSystemTime = TDateTime;
+  //TSystemTime = TDateTime;
   {$ENDIF}
+
+  TLogInfoField = (iiAppName, iiHost, iiEnvironment, iiPlatform, iiOSVersion);
+
+  TIncludedLogInfo = set of TLogInfoField;
 
   TLogItem = class
   private
@@ -137,6 +151,10 @@ type
   IRotable = interface
   ['{EF5E004F-C7BE-4431-8065-6081FEB3FC65}']
     procedure RotateLog;
+  end;
+
+  IJsonable = interface
+  ['{EA611520-9AA7-4162-8407-8634935A122A}']
   end;
 
   TThreadLog = class(TThread)
@@ -188,6 +206,8 @@ type
     fMaxFailsToStop : Integer;
     fUsesQueue : Boolean;
     fStatus : TLogProviderStatus;
+    fEnvironment : string;
+    fPlatformInfo : string;
     fEventTypeNames : TEventTypeNames;
     fSendLimits : TLogSendLimit;
     fOnFailToLog: TFailToLogEvent;
@@ -196,6 +216,7 @@ type
     fOnStatusChanged : TStatusChangedEvent;
     fOnQueueError: TQueueErrorEvent;
     fOnSendLimits: TSendLimitsEvent;
+    fIncludedInfo : TIncludedLogInfo;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -203,6 +224,11 @@ type
     function GetEventTypeName(cEventType : TEventType) : string;
     procedure SetEventTypeName(cEventType: TEventType; const cValue : string);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
+    function EscapeJsonString(json: TJSONObject): string;
+  protected
+    function LogItemToJson(cLogItem : TLogItem; EscapedJson : Boolean) : string;
+    procedure IncAndCheckErrors;
+    function GetOSVersion : string;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -229,7 +255,9 @@ type
     property Enabled : Boolean read fEnabled write SetEnabled;
     property EventTypeName[cEventType : TEventType] : string read GetEventTypeName write SetEventTypeName;
     property SendLimits : TLogSendLimit read fSendLimits write fSendLimits;
-    procedure IncAndCheckErrors;
+    property Environment : string read fEnvironment write fEnvironment;
+    property PlatformInfo : string read fPlatformInfo write fPlatformInfo;
+    property IncludedInfo : TIncludedLogInfo read fIncludedInfo write fIncludedInfo;
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
     function GetLogLevel : TLogLevel;
@@ -318,6 +346,9 @@ begin
   fUsesQueue := True;
   fEventTypeNames := DEF_EVENTTYPENAMES;
   fLogQueue := TLogQueue.Create(DEF_QUEUE_SIZE,DEF_QUEUE_PUSH_TIMEOUT,DEF_QUEUE_POP_TIMEOUT);
+  fEnvironment := '';
+  fPlatformInfo := '';
+  fIncludedInfo := [iiAppName,iiHost];
 end;
 
 destructor TLogProviderBase.Destroy;
@@ -402,6 +433,51 @@ begin
   if Result and Assigned(fOnSendLimits) then fOnSendLimits;
 end;
 
+function TLogProviderBase.EscapeJsonString(json: TJSONObject): string;
+begin
+  {$IFDEF DELPHIXE8_UP}
+  Result := json.ToJSON;
+  {$ELSE}
+  Result := json.ToString;
+  {$ENDIF}
+  Result := StringReplace(Result,'\','\\"',[rfReplaceAll]);
+  Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
+  //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
+end;
+
+function TLogProviderBase.LogItemToJson(cLogItem: TLogItem; EscapedJson : Boolean): string;
+var
+  json : TJSONObject;
+begin
+  json := TJSONObject.Create;
+  try
+    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp', DateTimeToGMT(cLogItem.EventDate));
+    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
+    if iiHost in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',GetComputerName);
+    if iiAppName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',GetAppName);
+    if iiEnvironment in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('environment',fEnvironment);
+    if iiPlatform in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
+    if iiOSVersion in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',GetOSVersion);
+    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
+    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
+
+    if EscapedJson then
+    begin
+      Result := EscapeJsonString(json);
+    end
+    else
+    begin
+      {$IFDEF DELPHIXE8_UP}
+      Result := json.ToJSON;
+      {$ELSE}
+      Result := json.ToString;
+      {$ENDIF}
+    end;
+  finally
+    json.Free;
+  end;
+end;
+
 procedure TLogProviderBase.Stop;
 begin
   if (fStatus = psStopped) or (fStatus = psStopping) then Exit;
@@ -482,6 +558,11 @@ begin
   Result := fLogLevel;
 end;
 
+function TLogProviderBase.GetOSVersion: string;
+begin
+  Result := {$IFDEF FPC}{$I %FPCTARGETOS%}+'-'+{$I %FPCTARGETCPU%}{$ELSE}TOSVersion.ToString{$ENDIF};
+end;
+
 function TLogProviderBase.IsEnabled : Boolean;
 begin
   Result := fEnabled;
@@ -541,7 +622,9 @@ begin
     end;
     {$IFDEF DELPHIXE7_UP}
     {$ELSE}
-    ProcessMessages;
+      {$IFNDEF LINUX}
+      ProcessMessages;
+      {$ENDIF}
     {$ENDIF}
   end;
   //fProvider := nil;
@@ -622,7 +705,9 @@ begin
       end;
       {$IFDEF DELPHIXE7_UP}
       {$ELSE}
-      ProcessMessages;
+        {$IFNDEF LINUX}
+        ProcessMessages;
+        {$ENDIF}
       {$ENDIF}
     except
       on E : Exception do
@@ -702,7 +787,11 @@ procedure TLogger.Add(const cMsg : string; cEventType : TEventType);
 var
   SystemTime : TSystemTime;
 begin
+  {$IFDEF LINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
   GetLocalTime(SystemTime);
+  {$ENDIF}
   Self.EnQueueItem(SystemTime,cMsg,cEventType);
 end;
 
@@ -710,7 +799,11 @@ procedure TLogger.Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{
 var
   SystemTime : TSystemTime;
 begin
+  {$IFDEF LINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
   GetLocalTime(SystemTime);
+  {$ENDIF}
   Self.EnQueueItem(SystemTime,Format(cMsg,cValues),cEventType);
 end;
 
@@ -721,7 +814,7 @@ begin
   logitem := TLogItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
-  logitem.EventDate := {$IFDEF MSWINDOWS}SystemTimeToDateTime(cEventDate);{$ELSE}cEventDate;{$ENDIF}
+  logitem.EventDate := SystemTimeToDateTime(cEventDate);
   if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(logitem);
@@ -741,7 +834,11 @@ procedure TLogger.HandleException(E : Exception);
 var
   SystemTime : TSystemTime;
 begin
+  {$IFDEF LINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
   GetLocalTime(SystemTime);
+  {$ENDIF}
   Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
 end;
 

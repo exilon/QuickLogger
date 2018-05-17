@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 15/10/2017
-  Modified    : 07/04/2018
+  Modified    : 17/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -53,7 +53,9 @@ type
     fLogKey : string;
     fMaxSize : Int64;
     fPassword : string;
+    fOutputAsJson : Boolean;
     function RedisRPUSH(const aKey, Msg : string) : Int64;
+    function RedisLPUSH(const aKey, Msg : string) : Int64;
     function RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
     function RedisAUTH(const aPassword : string) : Boolean;
     function RedisQUIT : Boolean;
@@ -65,6 +67,7 @@ type
     property LogKey : string read fLogKey write fLogKey;
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     property Password : string read fPassword write fPassword;
+    property OutputAsJson : Boolean read fOutputAsJson write fOutputAsJson;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -84,6 +87,8 @@ begin
   fLogKey := 'Logger';
   fMaxSize := 0;
   fPassword := '';
+  IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+  fOutputAsJson := True;
 end;
 
 destructor TLogRedisProvider.Destroy;
@@ -100,6 +105,7 @@ begin
       //avoid closing erronrs
     end;
   end;
+
   inherited;
 end;
 
@@ -122,9 +128,17 @@ procedure TLogRedisProvider.WriteLog(cLogItem : TLogItem);
 var
   log : string;
 begin
-  log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+  if fOutputAsJson then
+  begin
+    log := LogItemToJson(cLogItem,True);
+  end
+  else
+  begin
+    log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+  end;
   try
     RedisRPUSH(fLogKey,log);
+    //RedisLPUSH(fLogKey+'1',log);
     if fMaxSize > 0 then RedisLTRIM(fLogKey,fMaxSize);
   except
     on E : Exception do raise ELogger.Create(Format('Error sending Log to Redis: %s',[e.Message]));
@@ -136,6 +150,19 @@ var
   res : string;
 begin
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
+  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  begin
+    res := fTCPClient.IOHandler.ReadLn;
+    Result := StrToInt64(StringReplace(res,':','',[]));
+  end
+  else Result := 0;
+end;
+
+function TLogRedisProvider.RedisLPUSH(const aKey, Msg : string) : Int64;
+var
+  res : string;
+begin
+  fTCPClient.IOHandler.Write(Format('LPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
     res := fTCPClient.IOHandler.ReadLn;

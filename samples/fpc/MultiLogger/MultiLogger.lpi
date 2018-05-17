@@ -31,7 +31,7 @@
     </RunParams>
     <RequiredPackages Count="1">
       <Item1>
-        <PackageName Value="QuickLib"/>
+        <PackageName Value="indylaz"/>
       </Item1>
     </RequiredPackages>
     <Units Count="1">
@@ -49,13 +49,13 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="..\..\..\QuickLogger"/>
-      <OtherUnitFiles Value="..\..\..\QuickLogger"/>
+      <Libraries Value="..\..\..\..\QuickLogger;..\..\..\..\QuickLib"/>
+      <OtherUnitFiles Value="..\..\..\..\QuickLogger;..\..\..\..\QuickLib"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetCPU Value="i386"/>
-      <TargetOS Value="win32"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="linux"/>
     </CodeGeneration>
   </CompilerOptions>
   <Debugging>

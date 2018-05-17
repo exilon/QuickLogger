@@ -31,18 +31,14 @@
     </RunParams>
     <RequiredPackages Count="1">
       <Item1>
-        <PackageName Value="QuickLib"/>
+        <PackageName Value="indylaz"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="1">
       <Unit0>
         <Filename Value="MultiLogger.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
-      <Unit1>
-        <Filename Value="..\..\..\QuickLib\QuickLib.inc"/>
-        <IsPartOfProject Value="True"/>
-      </Unit1>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -53,13 +49,13 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="..\..\..\QuickLogger"/>
-      <OtherUnitFiles Value="..\..\..\QuickLogger"/>
+      <Libraries Value="..\..\..\..\QuickLogger;..\..\..\..\QuickLib"/>
+      <OtherUnitFiles Value="..\..\..\..\QuickLogger;..\..\..\..\QuickLib"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <TargetCPU Value="i386"/>
-      <TargetOS Value="win32"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="win64"/>
     </CodeGeneration>
   </CompilerOptions>
   <Debugging>
