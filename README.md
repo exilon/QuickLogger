@@ -3,6 +3,10 @@
 
 Delphi/fpc (Windows/Linux) library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
 
+*NEW: Linux compatibility
+*NEW: Delphinus support
+*NEW: Json output with optional fields for Redis and Rest providers.
+
 ----------
 Quick Logger is asynchronous. All logs are sent to a queue and don't compromises your application flow. You can define many providers to sent every log entry and decide what level accepts every one.
 
@@ -173,6 +177,15 @@ There are some predefined providers, but you can make your own provider if neede
     - **AsStrings:** Returns a TStringList containing all log item entries.
     - **AsString:** Returns a string containing all log item entries.
     - **Enabled:** Enables/disables receive logging.
+
+### Optional output info fields:
+
+QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc) and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
+    Properties:
+    
+    - **Platform:** Define your log source (API, Destokp app or your own value).
+    - **Environment:** Define your environment (Production, Test, develop or your own value). 
+    - **IncludedInfo:** Define which fields do you want to include as part of your log info. Can be included: iiAppName,iiHost,iiEnvironment,iiPlatform, etc.
 
 ### Logging Exceptions:
 
