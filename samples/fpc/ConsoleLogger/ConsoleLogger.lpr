@@ -9,7 +9,7 @@ uses
   Classes,
   Quick.Logger,
   Quick.Logger.Provider.Console,
-  Quick.Logger.Provider.Files,
+  Quick.Logger.Provider.Files;
   //Quick.Logger.Provider.Events,
   //Quick.Logger.Provider.Rest,
   //Quick.Logger.Provider.Redis,

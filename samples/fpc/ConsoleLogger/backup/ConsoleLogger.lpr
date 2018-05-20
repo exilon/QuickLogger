@@ -10,10 +10,10 @@ uses
   Quick.Logger,
   Quick.Logger.Provider.Console,
   Quick.Logger.Provider.Files,
-  Quick.Logger.Provider.Events,
-  Quick.Logger.Provider.Rest,
-  Quick.Logger.Provider.Redis,
-  Quick.Logger.Provider.Memory;
+  //Quick.Logger.Provider.Events,
+  //Quick.Logger.Provider.Rest,
+  //Quick.Logger.Provider.Redis,
+  //Quick.Logger.Provider.Memory;
 
 begin
   GlobalLogConsoleProvider.LogLevel := LOG_DEBUG;

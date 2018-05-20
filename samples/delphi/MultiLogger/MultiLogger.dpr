@@ -160,7 +160,7 @@ begin
     IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     OutputAsJson := True;
     LogLevel := LOG_ALL;// [etError,etCritical,etException];
-    Enabled := True; //enable when you have a redis to connect
+    Enabled := False; //enable when you have a redis to connect
   end;
   //configure Mem log provider
   Logger.Providers.Add(GlobalLogMemoryProvider);
