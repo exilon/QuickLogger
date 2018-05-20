@@ -50,3 +50,7 @@ desktop.ini
 *.ppu
 
 *.rsj
+
+samples/fpc/MultiLogger/backup/
+
+*.lps
