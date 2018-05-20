@@ -102,7 +102,7 @@ begin
       if fTCPClient.Connected then fTCPClient.Disconnect(False);
       fTCPClient.Free;
     except
-      //avoid closing erronrs
+      //avoid closing errors
     end;
   end;
 

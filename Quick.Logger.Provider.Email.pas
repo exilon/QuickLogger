@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Email
   Description : Log Email Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 15/10/2017
-  Modified    : 07/04/2018
+  Modified    : 17/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -26,6 +26,7 @@
   limitations under the License.
 
  *************************************************************************** }
+
 unit Quick.Logger.Provider.Email;
 
 {$i QuickLib.inc}
@@ -45,17 +46,18 @@ type
   private
     fSMTP : TSMTP;
     fMail : TMailMessage;
-    fShowTimeStamp : Boolean;
   public
     constructor Create; override;
     destructor Destroy; override;
     property SMTP : TSMTP read fSMTP write fSMTP;
     property Mail : TMailMessage read fMail write fMail;
-    property ShowTimeStamp : Boolean read fShowTimeStamp write fShowTimeStamp;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
   end;
+
+const
+  CRLF = '<BR>';
 
 var
   GlobalLogEmailProvider : TLogEmailProvider;
@@ -66,9 +68,9 @@ constructor TLogEmailProvider.Create;
 begin
   inherited;
   LogLevel := LOG_ALL;
-  fShowTimeStamp := True;
   fSMTP := TSMTP.Create;
   fMail := fSMTP.Mail;
+  IncludedInfo := [iiAppName,iiHost,iiUserName,iiOSVersion];
 end;
 
 destructor TLogEmailProvider.Destroy;
@@ -91,12 +93,25 @@ end;
 
 procedure TLogEmailProvider.WriteLog(cLogItem : TLogItem);
 var
-  msg : string;
+  subject : string;
+  msg : TStringList;
 begin
-  if fShowTimeStamp then msg := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg])
-    else msg := Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg]);
-  if fSMTP.Mail.Subject = '' then fSMTP.Mail.Subject := Format('Logger: [%s] event in %s',[EventTypeName[cLogItem.EventType],ExtractFilenameWithoutExt(ParamStr(0))]);
-  fSMTP.Mail.Body := msg;
+  if fSMTP.Mail.Subject = '' then fSMTP.Mail.Subject := Format('%s [%s] %s',[SystemInfo.AppName,EventTypeName[cLogItem.EventType],Copy(cLogItem.Msg,1,50)]);
+  msg := TStringList.Create;
+  try
+    msg.Add(Format('<B>EventDate:</B> %s%s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),CRLF]));
+    msg.Add(Format('<B>Type:</B> %s%s',[EventTypeName[cLogItem.EventType],CRLF]));
+    if iiAppName in IncludedInfo then msg.Add(Format('<B>Application:</B> %s%s',[SystemInfo.AppName,CRLF]));
+    if iiHost in IncludedInfo then msg.Add(Format('<B>Host:</B> ',[SystemInfo.HostName,CRLF]));
+    if iiUserName in IncludedInfo then msg.Add(Format('<B>User:</B> %s%s',[SystemInfo.UserName,CRLF]));
+    if iiOSVersion in IncludedInfo then msg.Add(Format('<B>OS:</B> %s%s',[SystemInfo.OsVersion,CRLF]));
+    if iiEnvironment in IncludedInfo then msg.Add(Format('<B>Environment:</B> %s%s',[Environment,CRLF]));
+    if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,CRLF]));
+    msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,CRLF]));
+    fSMTP.Mail.Body := msg.Text;
+  finally
+    msg.Free;
+  end;
   fSMTP.SendMail;
 end;
 

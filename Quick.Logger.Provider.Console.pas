@@ -84,6 +84,8 @@ const
 
   {$ENDIF}
 
+  CR = #13;
+
 type
 
   TLogConsoleProvider = class (TLogProviderBase)
@@ -178,13 +180,13 @@ begin
 
     if cLogItem.EventType = etHeader then
     begin
-      Writeln(cLogItem.Msg{$IFDEF LINUX}+#13{$ENDIF});
+      Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
       if fUnderlineHeaderEventType then Writeln(FillStr('-',cLogItem.Msg.Length));
     end
     else
     begin
-      if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg{$IFDEF LINUX}+#13{$ENDIF}]))
-        else Writeln(cLogItem.Msg{$IFDEF LINUX}+#13{$ENDIF});
+      if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF}]))
+        else Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
     end;
 
     ResetColors;
@@ -192,8 +194,8 @@ begin
   else
   begin
     TextColor(ccWhite);
-    if fShowTimeStamp then Writeln(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg{$IFDEF LINUX}+#13{$ENDIF}]))
-      else Writeln(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg{$IFDEF LINUX}+#13{$ENDIF}]));
+    if fShowTimeStamp then Writeln(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF}]))
+      else Writeln(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF}]));
     if cLogItem.EventType = etHeader then Writeln(FillStr('-',cLogItem.Msg.Length));
   end;
 end;

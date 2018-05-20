@@ -115,6 +115,7 @@ begin
   fAutoFlush := False;
   fAutoFileName := False;
   LogLevel := LOG_ALL;
+  IncludedInfo := [iiAppName,iiHost,iiUserName,iiOSVersion];
 end;
 
 destructor TLogFileProvider.Destroy;
@@ -181,17 +182,17 @@ begin
       if iiAppName in IncludedInfo then
       begin
         {$IFDEF MSWINDOWS}
-        WriteToStream(Format('Application : %s %s',[ExtractFilenameWithoutExt(ParamStr(0)),GetAppVersionFullStr]));
+        WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
         {$ELSE}
-        WriteToStream(Format('Application : %s',[ExtractFilenameWithoutExt(ParamStr(0))]));
+        WriteToStream(Format('Application : %s',[SystemInfo.AppName]));
         {$ENDIF}
       end;
-      WriteToStream(Format('Path        : %s',[ExtractFilePath(ParamStr(0))]));
-      WriteToStream(Format('CPU cores   : %d',[CPUCount]));
-       if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[GetOSVersion]));
+      WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
+      WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
+      if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
       {$IFDEF MSWINDOWS}
-      if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[GetComputerName]));
-      WriteToStream(Format('Username    : %s',[Trim(GetLoggedUserName)]));
+      if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
+      if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[SystemInfo.UserName]));
       {$ENDIF}
       WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
       {$IFDEF MSWINDOWS}

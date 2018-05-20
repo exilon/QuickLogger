@@ -69,7 +69,8 @@ uses
     {$ENDIF}
   {$ENDIF}
   Quick.Threads,
-  Quick.Commons;
+  Quick.Commons,
+  Quick.SysInfo;
 
 type
 
@@ -110,7 +111,7 @@ type
   //TSystemTime = TDateTime;
   {$ENDIF}
 
-  TLogInfoField = (iiAppName, iiHost, iiEnvironment, iiPlatform, iiOSVersion);
+  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion);
 
   TIncludedLogInfo = set of TLogInfoField;
 
@@ -151,10 +152,6 @@ type
   IRotable = interface
   ['{EF5E004F-C7BE-4431-8065-6081FEB3FC65}']
     procedure RotateLog;
-  end;
-
-  IJsonable = interface
-  ['{EA611520-9AA7-4162-8407-8634935A122A}']
   end;
 
   TThreadLog = class(TThread)
@@ -217,6 +214,7 @@ type
     fOnQueueError: TQueueErrorEvent;
     fOnSendLimits: TSendLimitsEvent;
     fIncludedInfo : TIncludedLogInfo;
+    fSystemInfo : TSystemInfo;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -228,7 +226,9 @@ type
   protected
     function LogItemToJson(cLogItem : TLogItem; EscapedJson : Boolean) : string;
     procedure IncAndCheckErrors;
-    function GetOSVersion : string;
+    procedure SetStatus(cStatus : TLogProviderStatus);
+    function GetLogLevel : TLogLevel;
+    property SystemInfo : TSystemInfo read fSystemInfo;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -259,8 +259,6 @@ type
     property PlatformInfo : string read fPlatformInfo write fPlatformInfo;
     property IncludedInfo : TIncludedLogInfo read fIncludedInfo write fIncludedInfo;
     function Status : TLogProviderStatus;
-    procedure SetStatus(cStatus : TLogProviderStatus);
-    function GetLogLevel : TLogLevel;
     function IsEnabled : Boolean;
   end;
 
@@ -349,6 +347,7 @@ begin
   fEnvironment := '';
   fPlatformInfo := '';
   fIncludedInfo := [iiAppName,iiHost];
+  fSystemInfo := Quick.SysInfo.SystemInfo;
 end;
 
 destructor TLogProviderBase.Destroy;
@@ -438,7 +437,11 @@ begin
   {$IFDEF DELPHIXE8_UP}
   Result := json.ToJSON;
   {$ELSE}
-  Result := json.ToString;
+    {$IFDEF FPC}
+    Result := json.AsJSON;
+    {$ELSE}
+    Result := json.ToString;
+    {$ENDIF}
   {$ENDIF}
   Result := StringReplace(Result,'\','\\"',[rfReplaceAll]);
   Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
@@ -453,11 +456,12 @@ begin
   try
     json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp', DateTimeToGMT(cLogItem.EventDate));
     json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
-    if iiHost in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',GetComputerName);
-    if iiAppName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',GetAppName);
+    if iiHost in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
+    if iiAppName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',SystemInfo.AppName);
     if iiEnvironment in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('environment',fEnvironment);
     if iiPlatform in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
-    if iiOSVersion in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',GetOSVersion);
+    if iiOSVersion in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
+    if iiUserName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
     json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
     json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
 
@@ -470,7 +474,11 @@ begin
       {$IFDEF DELPHIXE8_UP}
       Result := json.ToJSON;
       {$ELSE}
-      Result := json.ToString;
+        {$IFDEF FPC}
+        Result := json.AsJSON;
+        {$ELSE}
+        Result := json.ToString;
+        {$ENDIF}
       {$ENDIF}
     end;
   finally
@@ -556,11 +564,6 @@ end;
 function TLogProviderBase.GetLogLevel : TLogLevel;
 begin
   Result := fLogLevel;
-end;
-
-function TLogProviderBase.GetOSVersion: string;
-begin
-  Result := {$IFDEF FPC}{$I %FPCTARGETOS%}+'-'+{$I %FPCTARGETCPU%}{$ELSE}TOSVersion.ToString{$ENDIF};
 end;
 
 function TLogProviderBase.IsEnabled : Boolean;
