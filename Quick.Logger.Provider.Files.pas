@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.21
   Created     : 12/10/2017
-  Modified    : 17/05/2018
+  Modified    : 22/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -143,6 +143,9 @@ var
   FileMode : Word;
   fs : TFileStream;
 begin
+  if fFileName.StartsWith('.'+PathDelim) then fFileName := StringReplace(fFileName,'.'+PathDelim,TPath.GetDirectoryName(ParamStr(0)) + PathDelim,[])
+    else if ExtractFilePath(fFileName) = '' then fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + fFileName;
+
   {$IFDEF MSWINDOWS}
   if fAutoFileName then fFileName := Format('%s\%s_%d.log',[TPath.GetDirectoryName(fFileName),TPath.GetFileNameWithoutExtension(fFileName),GetCurrentProcessId]);
   {$ENDIF}
