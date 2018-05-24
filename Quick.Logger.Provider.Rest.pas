@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Rest
   Description : Log Api Rest Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 15/10/2017
-  Modified    : 17/05/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -35,28 +35,15 @@ interface
 uses
   Classes,
   SysUtils,
-  {$IFDEF DELPHIXE8_UP}
-  System.Net.HttpClient,
-  System.Net.URLClient,
-  System.NetConsts,
-  {$ELSE}
-  IdHTTP,
-  {$ENDIF DELPHIXE8_UP}
+  Quick.HttpClient,
   Quick.Commons,
   Quick.Logger;
-
-const
-  DEF_USER_AGENT = 'Quick.Logger Agent';
 
 type
 
   TLogRestProvider = class (TLogProviderBase)
   private
-    {$IFDEF DELPHIXE8_UP}
-    fHTTPClient : THTTPClient;
-    {$ELSE}
-    fHTTPClient : TIdHTTP;
-    {$ENDIF}
+    fHTTPClient : TJsonHTTPClient;
     fURL : string;
     fUserAgent : string;
   public
@@ -92,15 +79,9 @@ end;
 
 procedure TLogRestProvider.Init;
 begin
-  {$IFDEF DELPHIXE8_UP}
-  fHTTPClient := THTTPClient.Create;
-  fHTTPClient.ContentType := 'text/json';
+  fHTTPClient := TJsonHTTPClient.Create;
+  fHTTPClient.ContentType := 'application/json';
   fHTTPClient.UserAgent := fUserAgent;
-  {$ELSE}
-  fHTTPClient := TIdHTTP.Create(nil);
-  fHTTPClient.Request.ContentType := 'text/json';
-  fHTTPClient.Request.UserAgent := fUserAgent;
-  {$ENDIF}
   fHTTPClient.HandleRedirects := True;
   inherited;
 end;
@@ -114,44 +95,13 @@ end;
 
 procedure TLogRestProvider.WriteLog(cLogItem : TLogItem);
 var
-  {$IFDEF DELPHIXE8_UP}
-  resp : IHTTPResponse;
-  {$ELSE}
-  resp : TIdHTTPResponse;
-    {$IFDEF FPC}
-    rs : TStringStream;
-    {$ENDIF}
-  {$ENDIF}
-  ss : TStringStream;
+  resp : IHttpRequestResponse;
 begin
-  ss := TStringStream.Create;
-  try
-    ss.WriteString(LogItemToJson(cLogItem,False));
-    {$IFDEF DELPHIXE8_UP}
-    resp := fHTTPClient.Post(fURL,ss,nil);
-    {$ELSE}
-      {$IFDEF FPC}
-      rs := TStringStream.Create;
-      try
-        fHTTPClient.Post(fURL,ss,rs);
-      finally
-        rs.Free;
-      end;
-      {$ELSE}
-      fHTTPClient.Post(fURL,ss,nil);
-      {$ENDIF}
-    resp := fHTTPClient.Response;
-    {$ENDIF}
-  finally
-    ss.Free;
-  end;
-  {$IFDEF DELPHIXE8_UP}
-  if resp.StatusCode <> 201 then
+  if CustomMsgOutput then resp := fHTTPClient.Post(fURL,cLogItem.Msg)
+    else resp := fHTTPClient.Post(fURL,LogItemToJson(cLogItem));
+
+  if not resp.StatusCode in [200,201] then
     raise ELogger.Create(Format('[TLogRestProvider] : Response %d : %s trying to post event',[resp.StatusCode,resp.StatusText]));
-  {$ELSE}
-  if resp.ResponseCode <> 201 then
-    raise ELogger.Create(Format('[TLogRestProvider] : Response %d : %s trying to post event',[resp.ResponseCode,resp.ResponseText]));
-  {$ENDIF}
 end;
 
 initialization

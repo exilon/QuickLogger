@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 15/10/2017
-  Modified    : 17/05/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -54,6 +54,7 @@ type
     fMaxSize : Int64;
     fPassword : string;
     fOutputAsJson : Boolean;
+    function EscapeString(const json: string): string;
     function RedisRPUSH(const aKey, Msg : string) : Int64;
     function RedisLPUSH(const aKey, Msg : string) : Int64;
     function RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
@@ -124,18 +125,31 @@ begin
   inherited;
 end;
 
+function TLogRedisProvider.EscapeString(const json: string): string;
+begin
+  Result := StringReplace(json,'\','\\"',[rfReplaceAll]);
+  Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
+  //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
+end;
+
 procedure TLogRedisProvider.WriteLog(cLogItem : TLogItem);
 var
   log : string;
 begin
-  if fOutputAsJson then
-  begin
-    log := LogItemToJson(cLogItem,True);
-  end
+  if CustomMsgOutput then log := cLogItem.Msg
   else
   begin
-    log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+    if fOutputAsJson then
+    begin
+      log := LogItemToJson(cLogItem);
+    end
+    else
+    begin
+      log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+    end;
   end;
+
+  log := EscapeString(log);
   try
     RedisRPUSH(fLogKey,log);
     //RedisLPUSH(fLogKey+'1',log);

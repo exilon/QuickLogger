@@ -1,8 +1,10 @@
 ## QuickLogger
 ----------
 
-Delphi/fpc (Windows/Linux) library for logging on files, console, memory, email, rest, eventlog, redis, ide debug messages or throw events.
+Delphi/Freepascal (Windows/Linux) library for logging on files, console, memory, email, rest, eventlog, redis, IDE debug messages or throw events.
 
+*NEW: Custom output Msg
+*NEW: ELK support
 *NEW: Linux compatibility
 *NEW: Delphinus support
 *NEW: Json output with optional fields for Redis and Rest providers.
@@ -178,14 +180,23 @@ There are some predefined providers, but you can make your own provider if neede
     - **AsString:** Returns a string containing all log item entries.
     - **Enabled:** Enables/disables receive logging.
 
-### Optional output info fields:
+### Optional output:
 
 QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc) and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
     Properties:
     
     - **Platform:** Define your log source (API, Destokp app or your own value).
     - **Environment:** Define your environment (Production, Test, develop or your own value). 
-    - **IncludedInfo:** Define which fields do you want to include as part of your log info. Can be included: iiAppName,iiHost,iiEnvironment,iiPlatform, etc.
+	- **AppName:** Uses default filename without extension, but can be customized.
+    - **IncludedInfo:** Define which fields do you want to include as part of your log info.
+```delphi
+GlobalLogConsoleProvider.IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+```
+	- **CustomMsgOutput:** If enabled, LogItem.Msg field is only included as output. It ables to send customized json to redis, rest, etc. 
+```delphi
+GlobalLogRedisProvider.CustomMsgOutput := True;
+Log('{"level":"warn","text":"my text"}',etInfo);
+```
 
 ### Logging Exceptions:
 

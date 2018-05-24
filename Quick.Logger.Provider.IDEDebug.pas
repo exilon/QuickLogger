@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 02/10/2017
-  Modified    : 07/04/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -79,7 +79,8 @@ end;
 
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
-  OutputDebugString(PChar(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg])));
+  if CustomMsgOutput then OutputDebugString(PChar(cLogItem.Msg))
+    else OutputDebugString(PChar(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg])));
 end;
 
 initialization

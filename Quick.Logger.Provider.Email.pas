@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Email
   Description : Log Email Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.23
   Created     : 15/10/2017
-  Modified    : 17/05/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -56,9 +56,6 @@ type
     procedure WriteLog(cLogItem : TLogItem); override;
   end;
 
-const
-  CRLF = '<BR>';
-
 var
   GlobalLogEmailProvider : TLogEmailProvider;
 
@@ -94,24 +91,12 @@ end;
 procedure TLogEmailProvider.WriteLog(cLogItem : TLogItem);
 var
   subject : string;
-  msg : TStringList;
 begin
   if fSMTP.Mail.Subject = '' then fSMTP.Mail.Subject := Format('%s [%s] %s',[SystemInfo.AppName,EventTypeName[cLogItem.EventType],Copy(cLogItem.Msg,1,50)]);
-  msg := TStringList.Create;
-  try
-    msg.Add(Format('<B>EventDate:</B> %s%s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),CRLF]));
-    msg.Add(Format('<B>Type:</B> %s%s',[EventTypeName[cLogItem.EventType],CRLF]));
-    if iiAppName in IncludedInfo then msg.Add(Format('<B>Application:</B> %s%s',[SystemInfo.AppName,CRLF]));
-    if iiHost in IncludedInfo then msg.Add(Format('<B>Host:</B> ',[SystemInfo.HostName,CRLF]));
-    if iiUserName in IncludedInfo then msg.Add(Format('<B>User:</B> %s%s',[SystemInfo.UserName,CRLF]));
-    if iiOSVersion in IncludedInfo then msg.Add(Format('<B>OS:</B> %s%s',[SystemInfo.OsVersion,CRLF]));
-    if iiEnvironment in IncludedInfo then msg.Add(Format('<B>Environment:</B> %s%s',[Environment,CRLF]));
-    if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,CRLF]));
-    msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,CRLF]));
-    fSMTP.Mail.Body := msg.Text;
-  finally
-    msg.Free;
-  end;
+
+  if CustomMsgOutput then fSMTP.Mail.Body := cLogItem.Msg
+    else fSMTP.Mail.Body := LogItemToHtml(cLogItem);
+
   fSMTP.SendMail;
 end;
 

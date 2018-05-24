@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Console
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.20
+  Version     : 1.21
   Created     : 12/10/2017
-  Modified    : 07/04/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -159,6 +159,12 @@ end;
 
 procedure TLogConsoleProvider.WriteLog(cLogItem : TLogItem);
 begin
+  if CustomMsgOutput then
+  begin
+    Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
+    Exit;
+  end;
+
   if fShowEventColors then
   begin
     //changes color for event

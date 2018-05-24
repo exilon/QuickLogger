@@ -97,11 +97,12 @@ const
   {$ELSE}
   DEF_EVENTTYPENAMES : TEventTypeNames = ('','INFO','SUCC','WARN','ERROR','CRITICAL','EXCEPT','DEBUG','TRACE','DONE','CUST1','CUST2');
   {$ENDIF}
-
+  HTMBR = '<BR>';
   DEF_QUEUE_SIZE = 10;
   DEF_QUEUE_PUSH_TIMEOUT = 1500;
   DEF_QUEUE_POP_TIMEOUT = 200;
   DEF_WAIT_FLUSH_LOG = 30;
+  DEF_USER_AGENT = 'Quick.Logger Agent';
 
 type
 
@@ -203,6 +204,7 @@ type
     fMaxFailsToStop : Integer;
     fUsesQueue : Boolean;
     fStatus : TLogProviderStatus;
+    fAppName : string;
     fEnvironment : string;
     fPlatformInfo : string;
     fEventTypeNames : TEventTypeNames;
@@ -215,6 +217,7 @@ type
     fOnSendLimits: TSendLimitsEvent;
     fIncludedInfo : TIncludedLogInfo;
     fSystemInfo : TSystemInfo;
+    fCustomMsgOutput : Boolean;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -222,9 +225,11 @@ type
     function GetEventTypeName(cEventType : TEventType) : string;
     procedure SetEventTypeName(cEventType: TEventType; const cValue : string);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
-    function EscapeJsonString(json: TJSONObject): string;
   protected
-    function LogItemToJson(cLogItem : TLogItem; EscapedJson : Boolean) : string;
+    function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
+    function LogItemToJson(cLogItem : TLogItem) : string; overload;
+    function LogItemToHtml(cLogItem: TLogItem): string;
+    function LogItemToText(cLogItem: TLogItem): string;
     procedure IncAndCheckErrors;
     procedure SetStatus(cStatus : TLogProviderStatus);
     function GetLogLevel : TLogLevel;
@@ -244,6 +249,7 @@ type
     property Fails : Integer read fFails write fFails;
     property MaxFailsToRestart : Integer read fMaxFailsToRestart write fMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
+    property CustomMsgOutput : Boolean read fCustomMsgOutput write fCustomMsgOutput;
     property OnFailToLog : TFailToLogEvent read fOnFailToLog write fOnFailToLog;
     property OnRestart : TRestartEvent read fOnRestart write fOnRestart;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
@@ -255,6 +261,7 @@ type
     property Enabled : Boolean read fEnabled write SetEnabled;
     property EventTypeName[cEventType : TEventType] : string read GetEventTypeName write SetEventTypeName;
     property SendLimits : TLogSendLimit read fSendLimits write fSendLimits;
+    property AppName : string read fAppName write fAppName;
     property Environment : string read fEnvironment write fEnvironment;
     property PlatformInfo : string read fPlatformInfo write fPlatformInfo;
     property IncludedInfo : TIncludedLogInfo read fIncludedInfo write fIncludedInfo;
@@ -348,6 +355,7 @@ begin
   fPlatformInfo := '';
   fIncludedInfo := [iiAppName,iiHost];
   fSystemInfo := Quick.SysInfo.SystemInfo;
+  fAppName := fSystemInfo.AppName;
 end;
 
 destructor TLogProviderBase.Destroy;
@@ -432,57 +440,80 @@ begin
   if Result and Assigned(fOnSendLimits) then fOnSendLimits;
 end;
 
-function TLogProviderBase.EscapeJsonString(json: TJSONObject): string;
+function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
 begin
-  {$IFDEF DELPHIXE8_UP}
-  Result := json.ToJSON;
-  {$ELSE}
-    {$IFDEF FPC}
-    Result := json.AsJSON;
-    {$ELSE}
-    Result := json.ToString;
-    {$ENDIF}
-  {$ENDIF}
-  Result := StringReplace(Result,'\','\\"',[rfReplaceAll]);
-  Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
-  //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
+  Result := TJSONObject.Create;
+  Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp', DateTimeToGMT(cLogItem.EventDate));
+  Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
+  if iiHost in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
+  if iiAppName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',fAppName);
+  if iiEnvironment in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('environment',fEnvironment);
+  if iiPlatform in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
+  if iiOSVersion in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
+  if iiUserName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
+  Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
+  Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
 end;
 
-function TLogProviderBase.LogItemToJson(cLogItem: TLogItem; EscapedJson : Boolean): string;
+function TLogProviderBase.LogItemToJson(cLogItem: TLogItem): string;
 var
   json : TJSONObject;
 begin
-  json := TJSONObject.Create;
+  json := LogItemToJsonObject(cLogItem);
   try
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp', DateTimeToGMT(cLogItem.EventDate));
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
-    if iiHost in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
-    if iiAppName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',SystemInfo.AppName);
-    if iiEnvironment in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('environment',fEnvironment);
-    if iiPlatform in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
-    if iiOSVersion in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
-    if iiUserName in fIncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
-
-    if EscapedJson then
-    begin
-      Result := EscapeJsonString(json);
-    end
-    else
-    begin
-      {$IFDEF DELPHIXE8_UP}
-      Result := json.ToJSON;
+    {$IFDEF DELPHIXE8_UP}
+    Result := json.ToJSON
+    {$ELSE}
+      {$IFDEF FPC}
+      Result := json.AsJSON;
       {$ELSE}
-        {$IFDEF FPC}
-        Result := json.AsJSON;
-        {$ELSE}
-        Result := json.ToString;
-        {$ENDIF}
+      Result := json.ToString;
       {$ENDIF}
-    end;
+    {$ENDIF}
   finally
     json.Free;
+  end;
+end;
+
+function TLogProviderBase.LogItemToHtml(cLogItem: TLogItem): string;
+var
+  msg : TStringList;
+begin
+  msg := TStringList.Create;
+  try
+    msg.Add(Format('<B>EventDate:</B> %s%s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),HTMBR]));
+    msg.Add(Format('<B>Type:</B> %s%s',[EventTypeName[cLogItem.EventType],HTMBR]));
+    if iiAppName in IncludedInfo then msg.Add(Format('<B>Application:</B> %s%s',[SystemInfo.AppName,HTMBR]));
+    if iiHost in IncludedInfo then msg.Add(Format('<B>Host:</B> %s%s ',[SystemInfo.HostName,HTMBR]));
+    if iiUserName in IncludedInfo then msg.Add(Format('<B>User:</B> %s%s',[SystemInfo.UserName,HTMBR]));
+    if iiOSVersion in IncludedInfo then msg.Add(Format('<B>OS:</B> %s%s',[SystemInfo.OsVersion,HTMBR]));
+    if iiEnvironment in IncludedInfo then msg.Add(Format('<B>Environment:</B> %s%s',[Environment,HTMBR]));
+    if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,HTMBR]));
+    msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,HTMBR]));
+    Result := msg.Text;
+  finally
+    msg.Free;
+  end;
+end;
+
+function TLogProviderBase.LogItemToText(cLogItem: TLogItem): string;
+var
+  msg : TStringList;
+begin
+  msg := TStringList.Create;
+  try
+    msg.Add(Format('EventDate: %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings)]));
+    msg.Add(Format('Type: %s',[EventTypeName[cLogItem.EventType]]));
+    if iiAppName in IncludedInfo then msg.Add(Format('Application: %s',[SystemInfo.AppName]));
+    if iiHost in IncludedInfo then msg.Add(Format('Host: %s',[SystemInfo.HostName]));
+    if iiUserName in IncludedInfo then msg.Add(Format('User: %s',[SystemInfo.UserName]));
+    if iiOSVersion in IncludedInfo then msg.Add(Format('OS: %s',[SystemInfo.OsVersion]));
+    if iiEnvironment in IncludedInfo then msg.Add(Format('Environment: %s',[Environment]));
+    if iiPlatform in IncludedInfo then msg.Add(Format('Platform: %s',[PlatformInfo]));
+    msg.Add(Format('Message: %s',[cLogItem.Msg]));
+    Result := msg.Text;
+  finally
+    msg.Free;
   end;
 end;
 

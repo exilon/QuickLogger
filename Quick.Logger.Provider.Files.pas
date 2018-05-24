@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 12/10/2017
-  Modified    : 22/05/2018
+  Modified    : 24/05/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -230,6 +230,12 @@ end;
 
 procedure TLogFileProvider.WriteLog(cLogItem : TLogItem);
 begin
+  if CustomMsgOutput then
+  begin
+    WriteToStream(cLogItem.Msg);
+    Exit;
+  end;
+
   if cLogItem.EventType = etHeader then
   begin
     WriteToStream(cLogItem.Msg);
