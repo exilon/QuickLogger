@@ -184,12 +184,23 @@ type
     function IsLimitReached(cEventType : TEventType): Boolean;
   end;
 
+  {$IFDEF FPC}
   TQueueErrorEvent = procedure(const msg : string) of object;
   TFailToLogEvent = procedure of object;
+  TStartEvent = procedure of object;
   TRestartEvent = procedure of object;
-  TCriticalErrorEvent = procedure of object;
+  TCriticalErrorEvent = procedure(ErrorMessage : string) of object;
   TSendLimitsEvent = procedure of object;
   TStatusChangedEvent = procedure(status : TLogProviderStatus) of object;
+  {$ELSE}
+  TQueueErrorEvent = reference to procedure(const msg : string);
+  TFailToLogEvent = reference to procedure;
+  TStartEvent = reference to procedure;
+  TRestartEvent = reference to procedure;
+  TCriticalErrorEvent = reference to procedure(ErrorMessage : string);
+  TSendLimitsEvent = reference to procedure;
+  TStatusChangedEvent = reference to procedure(status : TLogProviderStatus);
+  {$ENDIF}
 
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
   private
@@ -266,6 +277,8 @@ type
     property PlatformInfo : string read fPlatformInfo write fPlatformInfo;
     property IncludedInfo : TIncludedLogInfo read fIncludedInfo write fIncludedInfo;
     function Status : TLogProviderStatus;
+    function StatusAsString : string; overload;
+    class function StatusAsString(cStatus : TLogProviderStatus) : string; overload;
     function IsEnabled : Boolean;
   end;
 
@@ -372,14 +385,14 @@ end;
 procedure TLogProviderBase.Drain;
 begin
   //no receive more logs
-  fStatus := psDraining;
+  SetStatus(TLogProviderStatus.psDraining);
   fEnabled := False;
   while fLogQueue.QueueSize > 0 do
   begin
     fLogQueue.PopItem.Free;
     Sleep(0);
   end;
-  fStatus := psStopped;
+  SetStatus(TLogProviderStatus.psStopped);
 end;
 
 procedure TLogProviderBase.IncAndCheckErrors;
@@ -387,14 +400,14 @@ begin
   Inc(fFails);
   if Assigned(fOnFailToLog) then fOnFailToLog;
 
-  if fFails > fMaxFailsToStop then
+  if (fMaxFailsToStop > 0) and (fFails > fMaxFailsToStop) then
   begin
     //flush queue and stop provider from receiving new items
     {$IFDEF LOGGER_DEBUG}
     Writeln(Format('drain: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Drain;
-    if Assigned(fOnCriticalError) then fOnCriticalError;
+    if Assigned(fOnCriticalError) then fOnCriticalError('Max fails to Stop reached!');
   end
   else if fFails > fMaxFailsToRestart then
   begin
@@ -403,8 +416,8 @@ begin
     Writeln(Format('restart: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Restart;
+    SetStatus(TLogProviderStatus.psRestarting);
     if Assigned(fOnRestart) then fOnRestart;
-
   end;
 end;
 
@@ -413,13 +426,30 @@ begin
   Result := fStatus;
 end;
 
+function TLogProviderBase.StatusAsString : string;
+begin
+  Result := StatusAsString(fStatus);
+end;
+
+class function TLogProviderBase.StatusAsString(cStatus : TLogProviderStatus) : string;
+const
+  {$IFDEF DELPHIXE7_UP}
+  LogProviderStatusStr : array of string = ['Nothing','Stopped','Initializing','Running','Draining','Stopping','Restarting'];
+  {$ELSE}
+  LogProviderStatusStr : array[0..6] of string = ('Nothing','Stopped','Initializing','Running','Draining','Stopping','Restarting');
+  {$ENDIF}
+begin
+  Result := LogProviderStatusStr[Integer(cStatus)];
+end;
+
+
 procedure TLogProviderBase.Init;
 begin
   if not(fStatus in [psNone,psStopped]) then Exit;
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('init thread: %s',[Self.ClassName]));
   {$ENDIF}
-  fStatus := psInitializing;
+  SetStatus(TLogProviderStatus.psInitializing);
   if fUsesQueue then
   begin
     fThreadLog := TThreadLog.Create;
@@ -524,14 +554,14 @@ begin
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('stopping thread: %s',[Self.ClassName]));
   {$ENDIF}
-  fStatus := psStopping;
+  SetStatus(TLogProviderStatus.psStopping);
   if Assigned(fThreadLog) then
   begin
     fThreadLog.Terminate;
     fThreadLog.WaitFor;
     fThreadLog.Free;
   end;
-  fStatus := psStopped;
+  SetStatus(TLogProviderStatus.psStopped);
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('stopped thread: %s',[Self.ClassName]));
   {$ENDIF}
@@ -582,7 +612,7 @@ end;
 procedure TLogProviderBase.SetStatus(cStatus: TLogProviderStatus);
 begin
   fStatus := cStatus;
-  if Assigned(fOnStatusChanged) then fOnStatusChanged(cStatus);
+  if Assigned(OnStatusChanged) then OnStatusChanged(cStatus);
 end;
 
 procedure TLogProviderBase.SetTimePrecission(Value: Boolean);
