@@ -54,3 +54,5 @@ desktop.ini
 samples/fpc/MultiLogger/backup/
 
 *.lps
+
+samples/fpc/MultiLogger/MultiLogger
