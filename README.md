@@ -1,13 +1,31 @@
 ## QuickLogger
 ----------
 
-Delphi/Freepascal (Windows/Linux) library for logging on files, console, memory, email, rest, eventlog, redis, IDE debug messages or throw events.
+Delphi/Freepascal (Windows/Linux) library for logging on multi providers:
+- Files
+- Console
+- Memory
+- Email
+- Rest server
+- Windows EventLog
+- Redis server
+- IDE debug
+- Throw events
+- Telegram
+- Slack
+- MSSQL, MSAcces, etc with ADODB.
 
-*NEW: Custom output Msg
-*NEW: ELK support
-*NEW: Linux compatibility
-*NEW: Delphinus support
-*NEW: Json output with optional fields for Redis and Rest providers.
+### Updates:
+
+**May 28,2018:** Slack provider.
+**May 27,2018:** ADODB provider.
+**May 27,2018:** Telegram provider.
+**May 25,2018:** Custom output Msg.
+**May 22,2018:** ELK support.
+**May 20,2018:** Delphinus support.
+**May 20,2018:** Json output with optional fields for Redis and Rest providers.
+**May 17,2018:** FreePascal Linux compatibility.
+**May 02,2018:** FreePascal Windows compatibility.
 
 ----------
 Quick Logger is asynchronous. All logs are sent to a queue and don't compromises your application flow. You can define many providers to sent every log entry and decide what level accepts every one.
@@ -179,6 +197,47 @@ There are some predefined providers, but you can make your own provider if neede
     - **AsStrings:** Returns a TStringList containing all log item entries.
     - **AsString:** Returns a string containing all log item entries.
     - **Enabled:** Enables/disables receive logging.
+	
+	
+- **Quick.Logger.Provider.Telegram:** Send log as a message to public/private Telegram channel. (You need token of a bot in this channel)
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+    - **ChannelName:** Name of channel to send messages. If its a private channel, ChannelName will be an Id. QuickLogger can get this Id automatically if bot has sent a message to this channel first. You can get it with this request https://api.telegram.org/bot<token>/getUpdates
+	- **ChannelType:** Private or Public channel.
+    - **BotToken:** Telegram bot token key.
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.Slack:** Send log as a message to public/private Slack channel.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+    - **ChannelName:** Name of channel to send messages.
+    - **UserName:** Name included as sender.
+    - **WebHookURL:** Webhook with permissions to send to the channel. https://api.slack.com/incoming-webhooks
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.ADODB:** Saves log to ADO database (MSSQL, MSAccess, etc..).
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+    - **DBConfig:** Database config.
+    - **ConnectionString:** Alternativelly, you can specify a connectionstring directly.
+    - **FieldsMapping:** Customizes your log fields, mapping each log field with its corresponding database field.
+    - **Enabled:** Enables/disables receive logging.
+	
 
 ### Optional output:
 
