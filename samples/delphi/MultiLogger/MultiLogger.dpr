@@ -18,7 +18,9 @@ uses
   Quick.Logger.Provider.Redis,
   Quick.Logger.Provider.IDEDebug,
   Quick.Logger.Provider.EventLog,
-  Quick.Logger.Provider.Memory;
+  Quick.Logger.Provider.Memory,
+  Quick.Logger.Provider.Telegram,
+  Quick.Logger.Provider.Slack;
 
 var
   a : Integer;
@@ -66,6 +68,7 @@ var
 begin
   //wait for 60 seconds to flush pending logs in queue on program finishes
   Logger.WaitForFlushBeforeExit := 60;
+
   //configure Console Log provider
   Logger.Providers.Add(GlobalLogConsoleProvider);
   with GlobalLogConsoleProvider do
@@ -76,6 +79,7 @@ begin
     TimePrecission := True;
     Enabled := True;
   end;
+
   //configure File log provider
   Logger.Providers.Add(GlobalLogFileProvider);
   with GlobalLogFileProvider do
@@ -89,6 +93,7 @@ begin
     CompressRotatedFiles := False;
     Enabled := True;
   end;
+
   //configure Email log provider
   Logger.Providers.Add(GlobalLogEmailProvider);
   with GlobalLogEmailProvider do
@@ -103,6 +108,7 @@ begin
     Mail.CC := '';
     Enabled := False; //enable when you have a stmp server to connect
   end;
+
   //configure Events log provider
   Logger.Providers.Add(GlobalLogEventsProvider);
   with GlobalLogEventsProvider do
@@ -121,6 +127,7 @@ begin
               end;
     Enabled := True;
   end;
+
   //configure IDEDebug provider
   Logger.Providers.Add(GlobalLogIDEDebugProvider);
   with GlobalLogIDEDebugProvider do
@@ -128,6 +135,7 @@ begin
     LogLevel := [etCritical];
     Enabled := True;
   end;
+
   //configure EventLog provider
   Logger.Providers.Add(GlobalLogEventLogProvider);
   with GlobalLogEventLogProvider do
@@ -136,6 +144,7 @@ begin
     Source := 'QuickLogger';
     Enabled := True;
   end;
+
   //configure Rest log provider
   Logger.Providers.Add(GlobalLogRestProvider);
   with GlobalLogRestProvider do
@@ -147,6 +156,7 @@ begin
     IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     Enabled := False; //enable when you have a http server server to connect
   end;
+
   //configure Redis log provider
   Logger.Providers.Add(GlobalLogRedisProvider);
   with GlobalLogRedisProvider do
@@ -162,12 +172,35 @@ begin
     LogLevel := LOG_ALL;// [etError,etCritical,etException];
     Enabled := False; //enable when you have a redis to connect
   end;
+
   //configure Mem log provider
   Logger.Providers.Add(GlobalLogMemoryProvider);
   with GlobalLogMemoryProvider do
   begin
     LogLevel := [etError,etCritical,etException];
     Enabled := True;
+  end;
+
+  //configure Telegram log provider
+  Logger.Providers.Add(GlobalLogTelegramProvider);
+  with GlobalLogTelegramProvider do
+  begin
+    ChannelName := 'Exilon';
+    ChannelType := TTelegramChannelType.tcPrivate;
+    BotToken := 'xxxxxxxxxxxx';
+    LogLevel := [etError,etCritical,etException];
+    Enabled := False; //enable when you have a Telegram bot and Channel configured to send messages
+  end;
+
+  //configure Slack log provider
+  Logger.Providers.Add(GlobalLogSlackProvider);
+  with GlobalLogSlackProvider do
+  begin
+    ChannelName := '#alerts';
+    UserName := 'Exilon';
+    WebHookURL := 'https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX';
+    LogLevel := [etError,etCritical,etException];
+    Enabled := False; //enable when you have a Slack Weekhook to send messages
   end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);

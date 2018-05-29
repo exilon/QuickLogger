@@ -26,7 +26,9 @@ uses
   Quick.Logger.Provider.IDEDebug,
   Quick.Logger.Provider.EventLog,
   {$ENDIF}
-  Quick.Logger.Provider.Memory;
+  Quick.Logger.Provider.Memory,
+  Quick.Logger.Provider.Telegram,
+  Quick.Logger.Provider.Slack;
 
 var
   a : Integer;
@@ -162,6 +164,31 @@ begin
   Logger.Providers.Add(GlobalLogMemoryProvider);
   with GlobalLogMemoryProvider do
   begin
+    LogLevel := [etError,etCritical,etException];
+    Enabled := True;
+  end;
+
+  //configure Telegram log provider
+  Logger.Providers.Add(GlobalLogTelegramProvider);
+  with GlobalLogTelegramProvider do
+  begin
+    ChannelName := 'YourChannel';
+    ChannelType := TTelegramChannelType.tcPrivate;
+    BotToken := 'yourbottoken';
+    Environment := 'Test';
+    PlatformInfo := 'App';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    LogLevel := [etError,etCritical,etException];
+    Enabled := True;
+  end;
+
+  //configure Slack log provider
+  Logger.Providers.Add(GlobalLogSlackProvider);
+  with GlobalLogSlackProvider do
+  begin
+    ChannelName := 'alerts';
+    UserName := 'yourbot';
+    WebHookURL := 'https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX';
     LogLevel := [etError,etCritical,etException];
     Enabled := True;
   end;
