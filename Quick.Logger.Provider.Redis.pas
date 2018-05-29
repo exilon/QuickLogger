@@ -163,6 +163,7 @@ function TLogRedisProvider.RedisRPUSH(const aKey, Msg : string) : Int64;
 var
   res : string;
 begin
+  if not fTCPClient.Connected then fTCPClient.Connect;
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
@@ -176,6 +177,7 @@ function TLogRedisProvider.RedisLPUSH(const aKey, Msg : string) : Int64;
 var
   res : string;
 begin
+  if not fTCPClient.Connected then fTCPClient.Connect;
   fTCPClient.IOHandler.Write(Format('LPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
@@ -198,6 +200,7 @@ end;
 
 function TLogRedisProvider.RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
 begin
+  if not fTCPClient.Connected then fTCPClient.Connect;
   fTCPClient.IOHandler.Write(Format('LTRIM %s 0 %d%s',[aKey,fMaxSize,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
@@ -208,6 +211,7 @@ end;
 
 function TLogRedisProvider.RedisAUTH(const aPassword : string) : Boolean;
 begin
+  if not fTCPClient.Connected then fTCPClient.Connect;
   fTCPClient.IOHandler.Write(Format('AUTH %s%s',[aPassword,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
@@ -220,6 +224,7 @@ function TLogRedisProvider.RedisQUIT : Boolean;
 begin
   Result := True;
   try
+    if not fTCPClient.Connected then fTCPClient.Connect;
     fTCPClient.IOHandler.Write(Format('QUIT%s',[CRLF]));
     if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
     begin
