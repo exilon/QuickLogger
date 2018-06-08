@@ -154,6 +154,12 @@ type
     function IsSendLimitReached(cEventType : TEventType): Boolean;
     function GetLogLevel : TLogLevel;
     function IsEnabled : Boolean;
+    function GetVersion : string;
+    function GetName : string;
+    {$IFDEF DELPHIXE8_UP}
+    function ToJson : string;
+    procedure FromJson(const aJson : string);
+    {$ENDIF}
   end;
 
   IRotable = interface
@@ -292,6 +298,7 @@ type
     class function StatusAsString(cStatus : TLogProviderStatus) : string; overload;
     function GetVersion : string;
     function IsEnabled : Boolean;
+    function GetName : string;
     {$IFDEF DELPHIXE8_UP}
     function ToJson : string;
     procedure FromJson(const aJson : string);
@@ -673,6 +680,11 @@ end;
 function TLogProviderBase.GetLogLevel : TLogLevel;
 begin
   Result := fLogLevel;
+end;
+
+function TLogProviderBase.GetName: string;
+begin
+  Result := fName;
 end;
 
 function TLogProviderBase.IsEnabled : Boolean;
