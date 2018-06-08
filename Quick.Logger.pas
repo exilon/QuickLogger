@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.24
+  Version     : 1.27
   Created     : 12/10/2017
-  Modified    : 17/05/2018
+  Modified    : 08/06/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,6 +42,9 @@ interface
 uses
   {$IFDEF MSWINDOWS}
   Windows,
+    {$IFDEF DELPHIXE8_UP}
+    Quick.Json.Serializer,
+    {$ENDIF}
     {$IFDEF DELPHIXE7_UP}
     {$ELSE}
     SyncObjs,
@@ -71,6 +74,9 @@ uses
   Quick.Threads,
   Quick.Commons,
   Quick.SysInfo;
+
+const
+  QLVERSION = '1.27';
 
 type
 
@@ -194,16 +200,17 @@ type
   TStatusChangedEvent = procedure(status : TLogProviderStatus) of object;
   {$ELSE}
   TQueueErrorEvent = reference to procedure(const msg : string);
-  TFailToLogEvent = reference to procedure;
-  TStartEvent = reference to procedure;
-  TRestartEvent = reference to procedure;
-  TCriticalErrorEvent = reference to procedure(ErrorMessage : string);
-  TSendLimitsEvent = reference to procedure;
-  TStatusChangedEvent = reference to procedure(status : TLogProviderStatus);
+  TFailToLogEvent = reference to procedure(const aProviderName : string);
+  TStartEvent = reference to procedure(const aProviderName : string);
+  TRestartEvent = reference to procedure(const aProviderName : string);
+  TCriticalErrorEvent = reference to procedure(const aProviderName, ErrorMessage : string);
+  TSendLimitsEvent = reference to procedure(const aProviderName : string);
+  TStatusChangedEvent = reference to procedure(aProviderName : string; status : TLogProviderStatus);
   {$ENDIF}
 
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
   private
+    fName : string;
     fThreadLog : TThreadLog;
     fLogQueue : TLogQueue;
     fLogLevel : TLogLevel;
@@ -254,9 +261,12 @@ type
     procedure Drain;
     procedure WriteLog(cLogItem : TLogItem); virtual; abstract;
     function IsQueueable : Boolean;
+    property Name : string read fName write fName;
     property LogLevel : TLogLevel read fLogLevel write fLogLevel;
+    [TNotSerializableProperty]
     property FormatSettings : TFormatSettings read fFormatSettings write fFormatSettings;
     property TimePrecission : Boolean read fTimePrecission write SetTimePrecission;
+    [TNotSerializableProperty]
     property Fails : Integer read fFails write fFails;
     property MaxFailsToRestart : Integer read fMaxFailsToRestart write fMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
@@ -267,6 +277,7 @@ type
     property OnCriticalError : TCriticalErrorEvent read fOnCriticalError write fOnCriticalError;
     property OnStatusChanged : TStatusChangedEvent read fOnStatusChanged write fOnStatusChanged;
     property OnSendLimits : TSendLimitsEvent read fOnSendLimits write fOnSendLimits;
+    [TNotSerializableProperty]
     property QueueCount : Integer read GetQueuedLogItems;
     property UsesQueue : Boolean read fUsesQueue write fUsesQueue;
     property Enabled : Boolean read fEnabled write SetEnabled;
@@ -279,7 +290,12 @@ type
     function Status : TLogProviderStatus;
     function StatusAsString : string; overload;
     class function StatusAsString(cStatus : TLogProviderStatus) : string; overload;
+    function GetVersion : string;
     function IsEnabled : Boolean;
+    {$IFDEF DELPHIXE8_UP}
+    function ToJson : string;
+    procedure FromJson(const aJson : string);
+    {$ENDIF}
   end;
 
   TLogProviderList = TList<ILogProvider>;
@@ -350,6 +366,7 @@ end;
 
 constructor TLogProviderBase.Create;
 begin
+  fName := Self.ClassName;
   fFormatSettings.DateSeparator := '/';
   fFormatSettings.TimeSeparator := ':';
   fFormatSettings.ShortDateFormat := 'DD-MM-YYY HH:NN:SS';
@@ -398,7 +415,7 @@ end;
 procedure TLogProviderBase.IncAndCheckErrors;
 begin
   Inc(fFails);
-  if Assigned(fOnFailToLog) then fOnFailToLog;
+  if Assigned(fOnFailToLog) then fOnFailToLog(fName);
 
   if (fMaxFailsToStop > 0) and (fFails > fMaxFailsToStop) then
   begin
@@ -407,7 +424,7 @@ begin
     Writeln(Format('drain: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Drain;
-    if Assigned(fOnCriticalError) then fOnCriticalError('Max fails to Stop reached!');
+    if Assigned(fOnCriticalError) then fOnCriticalError(fName,'Max fails to Stop reached!');
   end
   else if fFails > fMaxFailsToRestart then
   begin
@@ -417,7 +434,7 @@ begin
     {$ENDIF}
     Restart;
     SetStatus(TLogProviderStatus.psRestarting);
-    if Assigned(fOnRestart) then fOnRestart;
+    if Assigned(fOnRestart) then fOnRestart(fName);
   end;
 end;
 
@@ -467,7 +484,7 @@ end;
 function TLogProviderBase.IsSendLimitReached(cEventType : TEventType): Boolean;
 begin
   Result := fSendLimits.IsLimitReached(cEventType);
-  if Result and Assigned(fOnSendLimits) then fOnSendLimits;
+  if Result and Assigned(fOnSendLimits) then fOnSendLimits(fName);
 end;
 
 function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
@@ -567,6 +584,32 @@ begin
   {$ENDIF}
 end;
 
+{$IFDEF DELPHIXE8_UP}
+function TLogProviderBase.ToJson: string;
+var
+  serializer : TJsonSerializer;
+begin
+  serializer := TJsonSerializer.Create;
+  try
+    Result := serializer.ObjectToJson(Self);
+  finally
+    serializer.Free;
+  end;
+end;
+
+procedure TLogProviderBase.FromJson(const aJson: string);
+var
+  serializer : TJsonSerializer;
+begin
+  serializer := TJsonSerializer.Create;
+  try
+    Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
+  finally
+    serializer.Free;
+  end;
+end;
+{$ENDIF}
+
 procedure TLogProviderBase.EnQueueItem(cLogItem : TLogItem);
 begin
   if fLogQueue.PushItem(cLogItem) <> TWaitResult.wrSignaled then
@@ -599,6 +642,11 @@ begin
   Result := fLogQueue.QueueSize;
 end;
 
+function TLogProviderBase.GetVersion: string;
+begin
+  Result := QLVERSION;
+end;
+
 procedure TLogProviderBase.SetEnabled(aValue: Boolean);
 begin
   if (aValue <> fEnabled) then
@@ -612,7 +660,7 @@ end;
 procedure TLogProviderBase.SetStatus(cStatus: TLogProviderStatus);
 begin
   fStatus := cStatus;
-  if Assigned(OnStatusChanged) then OnStatusChanged(cStatus);
+  if Assigned(OnStatusChanged) then OnStatusChanged(fName,cStatus);
 end;
 
 procedure TLogProviderBase.SetTimePrecission(Value: Boolean);
