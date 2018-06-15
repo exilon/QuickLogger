@@ -14,9 +14,11 @@ Delphi/Freepascal (Windows/Linux) library for logging on multi providers:
 - Telegram
 - Slack
 - MSSQL, MSAcces, etc with ADODB.
+- SysLog
 
 ### Updates:
 
+**Jun 15,2018:** SysLog provider.
 **May 28,2018:** Slack provider.
 **May 27,2018:** ADODB provider.
 **May 27,2018:** Telegram provider.
@@ -238,6 +240,18 @@ There are some predefined providers, but you can make your own provider if neede
     - **FieldsMapping:** Customizes your log fields, mapping each log field with its corresponding database field.
     - **Enabled:** Enables/disables receive logging.
 	
+- **Quick.Logger.Provider.SysLog:** Sends Logging to SysLog server.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+	- **Host:** SysLog server host.
+	- **Port:** SysLog server port.
+	- **Facility:** Type of program is logging to syslog.
+    - **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
 
