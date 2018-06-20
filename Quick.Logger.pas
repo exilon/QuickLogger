@@ -184,9 +184,11 @@ type
   TLogSendLimit = class
   private
     fCurrentNumSent : Integer;
+    fFirstSent : TDateTime;
     fLastSent : TDateTime;
     fTimeRange : TSendLimitTimeRange;
     fLimitEventTypes : TLogLevel;
+    fNumBlocked : Int64;
     fMaxSent: Integer;
   public
     constructor Create;
@@ -973,34 +975,54 @@ begin
   inherited;
   fTimeRange := slNoLimit;
   fMaxSent := 0;
+  fNumBlocked := 0;
+  fFirstSent := 0;
   fLastSent := 0;
   fCurrentNumSent := 0;
 end;
 
 function TLogSendLimit.IsLimitReached(cEventType : TEventType): Boolean;
+var
+  reset : Boolean;
 begin
   //check sent number in range
   if (fTimeRange = slNoLimit) or (not (cEventType in fLimitEventTypes)) then
   begin
+    fLastSent := Now();
     Result := False;
     Exit;
   end;
-  if fCurrentNumSent > 0 then
-  begin
-    case fTimeRange of
-      slByDay : if HoursBetween(Now(),fLastSent) > 24 then fCurrentNumSent := 0;
-      slByHour : if MinutesBetween(Now(),fLastSent) > 60 then fCurrentNumSent := 0;
-      slByMinute : if SecondsBetween(Now(),fLastSent) > 60 then fCurrentNumSent := 0;
-      slBySecond : if MilliSecondsBetween(Now(),fLastSent) > 999 then fCurrentNumSent := 0;
-    end;
-  end;
-  if fCurrentNumSent > fMaxSent then Result := True
-  else
+
+  if fCurrentNumSent < fMaxSent then
   begin
     Inc(fCurrentNumSent);
+    fLastSent := Now();
+    if fFirstSent = 0 then fFirstSent := Now();
     Result := False;
+  end
+  else
+  begin
+    reset := False;
+    case fTimeRange of
+      slByDay : if HoursBetween(Now(),fFirstSent) > 24 then reset := True;
+      slByHour : if MinutesBetween(Now(),fFirstSent) > 60 then reset := True;
+      slByMinute : if SecondsBetween(Now(),fFirstSent) > 60 then reset := True;
+      slBySecond : if MilliSecondsBetween(Now(),fFirstSent) > 999 then reset := True;
+    end;
+    if reset then
+    begin
+      fCurrentNumSent := 0;
+      fFirstSent := Now();
+      Inc(fCurrentNumSent);
+      fLastSent := Now();
+      Result := False;
+    end
+    else
+    begin
+      Inc(fNumBlocked);
+      Result := True;
+    end;
   end;
-  fLastSent := Now();
 end;
 
 initialization
