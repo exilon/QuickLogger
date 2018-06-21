@@ -94,7 +94,7 @@ begin
   Stop;
   if Assigned(fSysLog) then
   begin
-    if fSysLog.Connected then fSysLog.Disconnect(True);
+    if fSysLog.Connected then fSysLog.Disconnect;
     fSysLog.Free;
   end;
   Init;

@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Email
   Description : Log Email Provider
   Author      : Kike Pérez
-  Version     : 1.23
+  Version     : 1.24
   Created     : 15/10/2017
-  Modified    : 24/05/2018
+  Modified    : 21/06/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,15 +42,50 @@ uses
 
 type
 
+  TSMTPConfig = class
+  private
+    fHost : string;
+    fUserName : string;
+    fPassword : string;
+    fUseSSL : Boolean;
+  public
+    property Host : string read fHost write fHost;
+    property UserName : string read fUserName write fUserName;
+    property Password : string read fPassword write fPassword;
+    property UseSSL : Boolean read fUseSSL write fUseSSL;
+  end;
+
+  TMailConfig = class
+  private
+    fSenderName : string;
+    fFrom : string;
+    fRecipient : string;
+    fSubject : string;
+    fBody : string;
+    fCC : string;
+    fBCC : string;
+    fBodyFromFile : Boolean;
+  public
+    property SenderName : string read fSenderName write fSenderName;
+    property From : string read fFrom write fFrom;
+    property Recipient : string read fRecipient write fRecipient;
+    property Subject : string read fSubject write fSubject;
+    property Body : string read fBody write fBody;
+    property CC : string read fCC write fCC;
+    property BCC : string read fBCC write fBCC;
+  end;
+
   TLogEmailProvider = class (TLogProviderBase)
   private
     fSMTP : TSMTP;
     fMail : TMailMessage;
+    fSMTPConfig : TSMTPConfig;
+    fMailConfig : TMailConfig;
   public
     constructor Create; override;
     destructor Destroy; override;
-    property SMTP : TSMTP read fSMTP write fSMTP;
-    property Mail : TMailMessage read fMail write fMail;
+    property SMTP : TSMTPConfig read fSMTPConfig write fSMTPConfig;
+    property Mail : TMailConfig read fMailConfig write fMailConfig;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -65,8 +100,9 @@ constructor TLogEmailProvider.Create;
 begin
   inherited;
   LogLevel := LOG_ALL;
+  fSMTPConfig := TSMTPConfig.Create;
+  fMailConfig := TMailConfig.Create;
   fSMTP := TSMTP.Create;
-  fMail := fSMTP.Mail;
   IncludedInfo := [iiAppName,iiHost,iiUserName,iiOSVersion];
 end;
 
@@ -74,12 +110,25 @@ destructor TLogEmailProvider.Destroy;
 begin
   fMail := nil;
   if Assigned(fSMTP) then fSMTP.Free;
+  if Assigned(fSMTPConfig) then fSMTPConfig.Free;
+  if Assigned(fMailConfig) then fMailConfig.Free;
   inherited;
 end;
 
 procedure TLogEmailProvider.Init;
 begin
   inherited;
+  fSMTP.Host := fSMTPConfig.fHost;
+  fSMTP.Username := fSMTPConfig.fUserName;
+  fSMTP.Password := fSMTPConfig.Password;
+  fSMTP.UseSSL := fSMTPConfig.fUseSSL;
+  fSMTP.Mail.SenderName := fMailConfig.SenderName;
+  fSMTP.Mail.From := fMailConfig.From;
+  fSMTP.Mail.Recipient := fMailConfig.Recipient;
+  fSMTP.Mail.Subject := fMailConfig.Subject;
+  fSMTP.Mail.Body := fMailConfig.Body;
+  fSMTP.Mail.CC := fMailConfig.CC;
+  fSMTP.Mail.BCC := fMailConfig.BCC;
 end;
 
 procedure TLogEmailProvider.Restart;

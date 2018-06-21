@@ -36,6 +36,9 @@ uses
   Classes,
   {$IFDEF MSWINDOWS}
   Windows,
+    {$IFDEF DELPHIXE8_UP}
+    Quick.Json.Serializer,
+    {$ENDIF}
   {$ENDIF}
   SysUtils,
   Generics.Collections,
@@ -53,6 +56,7 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+    {$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]{$ENDIF}
     property MemLog : TMemLog read fMemLog write fMemLog;
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     procedure Init; override;
