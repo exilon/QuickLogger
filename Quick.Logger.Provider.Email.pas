@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.24
   Created     : 15/10/2017
-  Modified    : 21/06/2018
+  Modified    : 02/07/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -45,13 +45,17 @@ type
   TSMTPConfig = class
   private
     fHost : string;
+    fPort : Integer;
     fUserName : string;
     fPassword : string;
+    fServerAuth : Boolean;
     fUseSSL : Boolean;
   public
     property Host : string read fHost write fHost;
+    property Port : Integer read fPort write fPort;
     property UserName : string read fUserName write fUserName;
     property Password : string read fPassword write fPassword;
+    property ServerAuth : Boolean read fServerAuth write fServerAuth;
     property UseSSL : Boolean read fUseSSL write fUseSSL;
   end;
 
@@ -118,10 +122,12 @@ end;
 procedure TLogEmailProvider.Init;
 begin
   inherited;
-  fSMTP.Host := fSMTPConfig.fHost;
-  fSMTP.Username := fSMTPConfig.fUserName;
+  fSMTP.Host := fSMTPConfig.Host;
+  fSMTP.Port := fSMTPConfig.Port;
+  fSMTP.Username := fSMTPConfig.UserName;
   fSMTP.Password := fSMTPConfig.Password;
-  fSMTP.UseSSL := fSMTPConfig.fUseSSL;
+  fSMTP.ServerAuth := fSMTPConfig.ServerAuth;
+  fSMTP.UseSSL := fSMTPConfig.UseSSL;
   fSMTP.Mail.SenderName := fMailConfig.SenderName;
   fSMTP.Mail.From := fMailConfig.From;
   fSMTP.Mail.Recipient := fMailConfig.Recipient;
