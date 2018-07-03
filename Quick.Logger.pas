@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.28
+  Version     : 1.29
   Created     : 12/10/2017
-  Modified    : 21/06/2018
+  Modified    : 03/07/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -200,12 +200,12 @@ type
 
   {$IFDEF FPC}
   TQueueErrorEvent = procedure(const msg : string) of object;
-  TFailToLogEvent = procedure of object;
-  TStartEvent = procedure of object;
-  TRestartEvent = procedure of object;
-  TCriticalErrorEvent = procedure(ErrorMessage : string) of object;
-  TSendLimitsEvent = procedure of object;
-  TStatusChangedEvent = procedure(status : TLogProviderStatus) of object;
+  TFailToLogEvent = procedure(const aProviderName : string) of object;
+  TStartEvent = procedure(const aProviderName : string) of object;
+  TRestartEvent = procedure(const aProviderName : string) of object;
+  TCriticalErrorEvent = procedure(const aProviderName, ErrorMessage : string) of object;
+  TSendLimitsEvent = procedure(const aProviderName : string) of object;
+  TStatusChangedEvent = procedure(aProviderName : string; status : TLogProviderStatus) of object;
   {$ELSE}
   TQueueErrorEvent = reference to procedure(const msg : string);
   TFailToLogEvent = reference to procedure(const aProviderName : string);
@@ -271,10 +271,10 @@ type
     function IsQueueable : Boolean;
     property Name : string read fName write fName;
     property LogLevel : TLogLevel read fLogLevel write fLogLevel;
-    [TNotSerializableProperty]
+    {$IFDEF DELPHIXE7_UP}[TNotSerializableProperty]{$ENDIF}
     property FormatSettings : TFormatSettings read fFormatSettings write fFormatSettings;
     property TimePrecission : Boolean read fTimePrecission write SetTimePrecission;
-    [TNotSerializableProperty]
+    {$IFDEF DELPHIXE7_UP}[TNotSerializableProperty]{$ENDIF}
     property Fails : Integer read fFails write fFails;
     property MaxFailsToRestart : Integer read fMaxFailsToRestart write fMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
@@ -285,7 +285,7 @@ type
     property OnCriticalError : TCriticalErrorEvent read fOnCriticalError write fOnCriticalError;
     property OnStatusChanged : TStatusChangedEvent read fOnStatusChanged write fOnStatusChanged;
     property OnSendLimits : TSendLimitsEvent read fOnSendLimits write fOnSendLimits;
-    [TNotSerializableProperty]
+    {$IFDEF DELPHIXE7_UP}[TNotSerializableProperty]{$ENDIF}
     property QueueCount : Integer read GetQueuedLogItems;
     property UsesQueue : Boolean read fUsesQueue write fUsesQueue;
     property Enabled : Boolean read fEnabled write SetEnabled;
@@ -598,7 +598,7 @@ function TLogProviderBase.ToJson: string;
 var
   serializer : TJsonSerializer;
 begin
-  serializer := TJsonSerializer.Create;
+  serializer := TJsonSerializer.Create(slPublicProperty);
   try
     Result := serializer.ObjectToJson(Self);
   finally
@@ -610,7 +610,7 @@ procedure TLogProviderBase.FromJson(const aJson: string);
 var
   serializer : TJsonSerializer;
 begin
-  serializer := TJsonSerializer.Create;
+  serializer := TJsonSerializer.Create(slPublicProperty);
   try
     Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
   finally
