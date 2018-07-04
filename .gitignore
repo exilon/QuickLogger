@@ -419,3 +419,5 @@ ASALocalRun/
 
 
 # End of https://www.gitignore.io/api/delphi,freepascal,visualstudio
+
+test/MultiLoggerTest/
