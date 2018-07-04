@@ -14,9 +14,9 @@ namespace QuickLogger.Tests.Unit
         private static ILoggerConfigManager _configManager;
         private static ILoggerProviderProps _providerProps;
         private static string _configPath = String.Empty;
-        private static string _fileloggerName = "\\testfilelog.log";
+        private static string _fileloggerName = "%desktop%\\testfilelog.log";
         private static string _fileloggerPath = "";
-        private static string _configName = "\\qloggerconfig.json";
+        private static string _configName = "%desktop%\\qloggerconfig.json";
         private static string _environmentName = "Test Env";
         static Dictionary<string, object> _consoleProviderInfo = new Dictionary<string, object>()
         {

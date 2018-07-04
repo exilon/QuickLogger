@@ -80,7 +80,7 @@ namespace QuickLogger.NetStandard
         private ILoggerSettings _settings;
         private NativeLibrary _quickloggerlib;        
         private static string _appPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLoggerNative)).Location).FullName;
-        private static string[] libNames = { _appPath + "\\x86\\QuickLogger.dll", _appPath + "\\x64\\QuickLogger.dll" };
+        private static string[] libNames = { _appPath + "\\x86\\QuickLogger.dll", _appPath + "\\x64\\QuickLogger.dll", _appPath + "\\x86\\libquicklogger.so", _appPath + "\\x64\\libquicklogger.so" };
 
         public QuickLoggerNative(ILoggerConfigManager configManager)
         {

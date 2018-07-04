@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="libquickloggernative.redist" Version="1.2.9" />
+    <PackageReference Include="libquickloggernative.redist" Version="1.2.9.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="NativeLibraryLoader" Version="1.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
