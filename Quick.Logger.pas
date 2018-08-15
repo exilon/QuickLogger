@@ -114,8 +114,10 @@ type
 
   TLogProviderStatus = (psNone, psStopped, psInitializing, psRunning, psDraining, psStopping, psRestarting);
 
-  {$IFNDEF MSWINDOWS}
-  //TSystemTime = TDateTime;
+  {$IFNDEF FPC}
+    {$IFDEF ANDROID}
+    TSystemTime = TDateTime;
+    {$ENDIF}
   {$ENDIF}
 
   TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion);
@@ -157,8 +159,10 @@ type
     function GetVersion : string;
     function GetName : string;
     {$IFDEF DELPHIXE8_UP}
+    {$IFNDEF ANDROID}
     function ToJson : string;
     procedure FromJson(const aJson : string);
+    {$ENDIF}
     {$ENDIF}
   end;
 
@@ -302,8 +306,10 @@ type
     function IsEnabled : Boolean;
     function GetName : string;
     {$IFDEF DELPHIXE8_UP}
+    {$IFNDEF ANDROID}
     function ToJson : string;
     procedure FromJson(const aJson : string);
+    {$ENDIF}
     {$ENDIF}
   end;
 
@@ -594,29 +600,31 @@ begin
 end;
 
 {$IFDEF DELPHIXE8_UP}
-function TLogProviderBase.ToJson: string;
-var
-  serializer : TJsonSerializer;
-begin
-  serializer := TJsonSerializer.Create(slPublicProperty);
-  try
-    Result := serializer.ObjectToJson(Self);
-  finally
-    serializer.Free;
+  {$IFNDEF ANDROID}
+  function TLogProviderBase.ToJson: string;
+  var
+    serializer : TJsonSerializer;
+  begin
+    serializer := TJsonSerializer.Create(slPublicProperty);
+    try
+      Result := serializer.ObjectToJson(Self);
+    finally
+      serializer.Free;
+    end;
   end;
-end;
 
-procedure TLogProviderBase.FromJson(const aJson: string);
-var
-  serializer : TJsonSerializer;
-begin
-  serializer := TJsonSerializer.Create(slPublicProperty);
-  try
-    Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
-  finally
-    serializer.Free;
+  procedure TLogProviderBase.FromJson(const aJson: string);
+  var
+    serializer : TJsonSerializer;
+  begin
+    serializer := TJsonSerializer.Create(slPublicProperty);
+    try
+      Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
+    finally
+      serializer.Free;
+    end;
   end;
-end;
+  {$ENDIF}
 {$ENDIF}
 
 procedure TLogProviderBase.EnQueueItem(cLogItem : TLogItem);
@@ -940,7 +948,11 @@ begin
   logitem := TLogItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
+  {$IFNDEF ANDROID}
   logitem.EventDate := SystemTimeToDateTime(cEventDate);
+  {$ELSE}
+  logitem.EventDate := cEventDate;
+  {$ENDIF}
   if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(logitem);
