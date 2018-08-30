@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi/Freepascal (Windows/Linux) library for logging on multi providers:
+Delphi/Freepascal/.NET (Windows/Linux) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -18,6 +18,8 @@ Delphi/Freepascal (Windows/Linux) library for logging on multi providers:
 
 ### Updates:
 
+**Jul 04,2018:** Native dll and .Net warpper (thanks to Turrican)
+**Jun 29,2018:** Config from/to Json
 **Jun 15,2018:** SysLog provider.
 **May 28,2018:** Slack provider.
 **May 27,2018:** ADODB provider.
@@ -270,6 +272,66 @@ GlobalLogConsoleProvider.IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatf
 GlobalLogRedisProvider.CustomMsgOutput := True;
 Log('{"level":"warn","text":"my text"}',etInfo);
 ```
+
+### Load/Save Config:
+QuickLogger can import or export config from/to JSON format. This feature allows a easy way to preconfigure your providers.
+	Example configs:
+	
+	GlobalLogConsoleProvider:
+			{
+                "ShowEventColors": true,
+                "ShowTimeStamp": true,
+                "UnderlineHeaderEventType": false,
+                "Name": "TLogConsoleProvider",
+                "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDone,etCustom1,etCustom2]",
+                "TimePrecission": true,
+                "MaxFailsToRestart": 2,
+                "MaxFailsToStop": 10,
+                "CustomMsgOutput": false,
+                "UsesQueue": true,
+                "Enabled": true,
+                "SendLimits": {
+                               "TimeRange": "slNoLimit",
+                               "LimitEventTypes": "[]",
+                               "MaxSent": 0
+                },
+                "AppName": "QuickLoggerDemo",
+                "Environment": "",
+                "PlatformInfo": "",
+                "IncludedInfo": "[iiAppName,iiHost]"
+			}
+
+	GlobalLogFileProvider:
+			{
+                "FileName": "D:\\LoggerDemo.log",
+                "AutoFileNameByProcess": false,
+                "MaxRotateFiles": 3,
+                "MaxFileSizeInMB": 10,
+                "DailyRotate": false,
+                "RotatedFilesPath": "",
+                "CompressRotatedFiles": false,
+                "ShowEventType": true,
+                "ShowHeaderInfo": true,
+                "UnderlineHeaderEventType": false,
+                "AutoFlush": false,
+                "Name": "TLogFileProvider",
+                "LogLevel": "[etInfo,etSuccess,etWarning,etError,etCritical,etException]",
+                "TimePrecission": false,
+                "MaxFailsToRestart": 2,
+                "MaxFailsToStop": 10,
+                "CustomMsgOutput": false,
+                "UsesQueue": true,
+                "Enabled": true,
+                "SendLimits": {
+                               "TimeRange": "slNoLimit",
+                               "LimitEventTypes": "[etInfo]",
+                               "MaxSent": 0
+                },
+                "AppName": "QuickLoggerDemo",
+                "Environment": "",
+                "PlatformInfo": "",
+                "IncludedInfo": "[iiAppName,iiHost,iiUserName,iiOSVersion]"
+			}	
 
 ### Logging Exceptions:
 
