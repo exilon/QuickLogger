@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi/Freepascal/.NET (Windows/Linux) library for logging on multi providers:
+Delphi/Freepascal/.NET (Windows/Linux/Android) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -18,17 +18,30 @@ Delphi/Freepascal/.NET (Windows/Linux) library for logging on multi providers:
 
 ### Updates:
 
+**Sep 11,2018:** Firemonkey android compatibility improved
+
 **Jul 04,2018:** Native dll and .Net warpper (thanks to Turrican)
+
 **Jun 29,2018:** Config from/to Json
+
 **Jun 15,2018:** SysLog provider.
+
 **May 28,2018:** Slack provider.
+
 **May 27,2018:** ADODB provider.
+
 **May 27,2018:** Telegram provider.
+
 **May 25,2018:** Custom output Msg.
+
 **May 22,2018:** ELK support.
+
 **May 20,2018:** Delphinus support.
+
 **May 20,2018:** Json output with optional fields for Redis and Rest providers.
+
 **May 17,2018:** FreePascal Linux compatibility.
+
 **May 02,2018:** FreePascal Windows compatibility.
 
 ----------
