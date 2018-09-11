@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.29
+  Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 03/07/2018
+  Modified    : 08/09/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -221,9 +221,10 @@ type
   {$ENDIF}
 
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
+  protected
+    fThreadLog : TThreadLog;
   private
     fName : string;
-    fThreadLog : TThreadLog;
     fLogQueue : TLogQueue;
     fLogLevel : TLogLevel;
     fFormatSettings : TFormatSettings;
@@ -359,9 +360,9 @@ implementation
 
 
 {$IFNDEF MSWINDOWS}
-procedure GetLocalTime(localtime : TDateTime);
+procedure GetLocalTime(var vlocaltime : TDateTime);
 begin
-  localtime := Now();
+  vlocaltime := Now();
 end;
 {$ENDIF}
 
@@ -953,6 +954,7 @@ begin
   {$ELSE}
   logitem.EventDate := cEventDate;
   {$ENDIF}
+
   if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(logitem);
