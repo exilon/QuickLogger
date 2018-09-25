@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 08/09/2018
+  Modified    : 17/09/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -49,6 +49,9 @@ uses
     {$ELSE}
     SyncObjs,
     {$ENDIF}
+  {$ENDIF}
+  {$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
+  Quick.Json.Serializer,
   {$ENDIF}
   Classes,
   Types,
@@ -115,7 +118,7 @@ type
   TLogProviderStatus = (psNone, psStopped, psInitializing, psRunning, psDraining, psStopping, psRestarting);
 
   {$IFNDEF FPC}
-    {$IFDEF ANDROID}
+    {$IF Defined(ANDROID) OR Defined(LINUX)}
     TSystemTime = TDateTime;
     {$ENDIF}
   {$ENDIF}
@@ -922,7 +925,7 @@ procedure TLogger.Add(const cMsg : string; cEventType : TEventType);
 var
   SystemTime : TSystemTime;
 begin
-  {$IFDEF LINUX}
+  {$IFDEF FPCLINUX}
   DateTimeToSystemTime(Now(),SystemTime);
   {$ELSE}
   GetLocalTime(SystemTime);
@@ -934,7 +937,7 @@ procedure TLogger.Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{
 var
   SystemTime : TSystemTime;
 begin
-  {$IFDEF LINUX}
+  {$IFDEF FPCLINUX}
   DateTimeToSystemTime(Now(),SystemTime);
   {$ELSE}
   GetLocalTime(SystemTime);
@@ -949,10 +952,10 @@ begin
   logitem := TLogItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
-  {$IFNDEF ANDROID}
-  logitem.EventDate := SystemTimeToDateTime(cEventDate);
-  {$ELSE}
+  {$IF DEFINED(ANDROID) OR DEFINED(DELPHILINUX)}
   logitem.EventDate := cEventDate;
+  {$ELSE}
+  logitem.EventDate := SystemTimeToDateTime(cEventDate);
   {$ENDIF}
 
   if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
@@ -974,7 +977,7 @@ procedure TLogger.HandleException(E : Exception);
 var
   SystemTime : TSystemTime;
 begin
-  {$IFDEF LINUX}
+  {$IFDEF FPCLINUX}
   DateTimeToSystemTime(Now(),SystemTime);
   {$ELSE}
   GetLocalTime(SystemTime);

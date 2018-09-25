@@ -5,10 +5,12 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
+  FMX.Controls.Presentation, FMX.ScrollBox,
+  FMX.Memo, FMX.StdCtrls,
   Quick.Logger,
   Quick.Logger.Provider.Files,
-  Quick.Logger.Provider.Events, FMX.Controls.Presentation, FMX.ScrollBox,
-  FMX.Memo, FMX.StdCtrls;
+  Quick.Logger.Provider.IDEDebug,
+  Quick.Logger.Provider.Events;
 
 type
   TfrmMain = class(TForm)
@@ -32,18 +34,23 @@ implementation
 
 procedure TfrmMain.btnGenerateLogClick(Sender: TObject);
 begin
-  Log('A log line was created on memo and file',etInfo);
+  Log('Test log entry created!',etError);
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   GlobalLogFileProvider.LogLevel := LOG_ALL;
   GlobalLogFileProvider.Enabled := True;
-  GlobalLogEventsProvider.LogLevel := LOG_ALL;
-  GlobalLogEventsProvider.OnAny := OnNewLog;
-  GlobalLogEventsProvider.Enabled := True;
   Logger.Providers.Add(GlobalLogFileProvider);
+
+  GlobalLogEventsProvider.LogLevel := LOG_ALL;
+  GlobalLogEventsProvider.OnAny :=  OnNewLog;
+  GlobalLogEventsProvider.Enabled := True;
   Logger.Providers.Add(GlobalLogEventsProvider);
+
+  GlobalLogIDEDebugProvider.Enabled := True;
+  Logger.Providers.Add(GlobalLogIDEDebugProvider);
+
 end;
 
 procedure TfrmMain.OnNewLog(LogItem: TLogItem);
