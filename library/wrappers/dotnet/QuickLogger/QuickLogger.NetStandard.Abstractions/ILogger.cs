@@ -15,12 +15,13 @@ namespace QuickLogger.NetStandard.Abstractions
         void DisableProvider(string name);
         string[] GetLoggerProviderTypes();
         string GetLoggerNameAndVersion();
-        void Info(string message);        
+        void Info(string message);
+        void Success(string message);
         void Warning(string message);
         void Error(string message);
         void Error(Exception exception);
         void Trace(string message);
-        void KPI(string name, string value);
+        void KPI(string name, string value);        
         void Custom(string message);
         void TestCallbacks();
     }
