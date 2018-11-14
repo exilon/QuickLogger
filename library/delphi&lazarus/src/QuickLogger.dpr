@@ -9,7 +9,7 @@
   Author      : Kike Fuentes (Turric4n)
   Version     : 1.29
   Created     : 15/10/2017
-  Modified    : 03/06/2018
+  Modified    : 14/11/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -38,14 +38,16 @@ uses
   Memory,
   {$ENDIF}
   Quick.Logger,
+  {$IFDEF MSWINDOWS}
+  Quick.Logger.Provider.ADODB,
+  Quick.Logger.Provider.EventLog,
+  {$ENDIF}
   Quick.Logger.Provider.Console,
   Quick.Logger.Provider.Files,
   Quick.Logger.Provider.Redis,
   Quick.Logger.Provider.Slack,
-  Quick.Logger.Provider.ADODB,
   Quick.Logger.Provider.Email,
   Quick.Logger.Provider.SysLog,
-  Quick.Logger.Provider.EventLog,
   Quick.Logger.Provider.Telegram,
   Quick.Logger.Provider.Rest,
   {$IFDEF FPC}
@@ -134,8 +136,6 @@ begin
   MessageBox(0, PChar(msg), 'Test from native library', MB_OK +
     MB_ICONINFORMATION);
   {$ELSE}
-
-
   {$ENDIF}
 end;
 
@@ -151,8 +151,6 @@ begin
   {$ELSE}
     strcopy(result, pchar(str));
   {$ENDIF}
-
-  //Result := PChar(str);
 end;
 
 {$IFNDEF FPC}
@@ -374,6 +372,11 @@ end;
 procedure CustomNative(const Line : string); stdcall; export;
 begin
   Logger.Add(Line, Quick.Logger.TEventType.etCustom1);
+end;
+
+procedure SuccessNative(const Line : string); stdcall; export;
+begin
+  Logger.Add(Line, Quick.Logger.etSuccess);
 end;
 
 procedure AddWrapperErrorDelegateNative(const ProviderName : string; Callback : TWrapperError); stdcall; export;
@@ -629,6 +632,7 @@ exports
   CriticalNative,
   TraceNative,
   CustomNative,
+  SuccessNative,
   AddStandardConsoleProviderNative,
   AddStandardFileProviderNative,
   AddWrapperErrorDelegateNative,

@@ -3,10 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.3.0</Version>
+    <Authors>Exilon &amp; Turrican</Authors>
+    <Company>Exilon</Company>
+    <Description>Abstractions and user interfaces for QuickLogger</Description>
+    <PackageIconUrl>https://github.com/exilon/QuickLogger/blob/master/QuickLogger.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/exilon/QuickLogger</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
+    <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
 

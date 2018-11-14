@@ -40,6 +40,8 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate void InfoNative(string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private delegate void SuccessNative(string message);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate void WarningNative(string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate void ErrorNative(string message);
@@ -73,19 +75,23 @@ namespace QuickLogger.NetStandard
         private ErrorNative errorNative;
         private TraceNative traceNative;
         private CustomNative customNative;
+        private SuccessNative successNative;
         private GetLibVersionNative getLibVersion;
         private GetProviderNamesNative getProviderNamesNative;
 
         private readonly ILoggerConfigManager _configManager;
         private ILoggerSettings _settings;
-        private NativeLibrary _quickloggerlib;        
-        private static string _appPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLoggerNative)).Location).FullName;
-        private static string[] libNames = { _appPath + "\\x86\\QuickLogger.dll", _appPath + "\\x64\\QuickLogger.dll" };
+        private NativeLibrary _quickloggerlib;
+        private string _rootPath;
+        private string[] libNames = { "\\x86\\QuickLogger.dll", "\\x64\\QuickLogger.dll", "\\x86\\libquicklogger.so", "\\x64\\libquicklogger.so" };
 
-        public QuickLoggerNative(ILoggerConfigManager configManager)
+        public QuickLoggerNative(ILoggerConfigManager configManager, string rootPath)
         {
-            _quickloggerlib = new NativeLibrary(libNames);
-            _configManager = configManager;                        
+            if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
+            else { _rootPath = rootPath; }
+            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
+            _configManager = configManager;
+            _quickloggerlib = new NativeLibrary(libNames);             
             MapFunctionPointers();            
         }
 
@@ -114,6 +120,7 @@ namespace QuickLogger.NetStandard
             errorNative = _quickloggerlib.LoadFunction<ErrorNative>("ErrorNative");
             traceNative = _quickloggerlib.LoadFunction<TraceNative>("TraceNative");
             customNative = _quickloggerlib.LoadFunction<CustomNative>("CustomNative");
+            successNative = _quickloggerlib.LoadFunction<SuccessNative>("SuccessNative");
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
             getProviderNamesNative = _quickloggerlib.LoadFunction<GetProviderNamesNative>("GetProviderNamesNative");
         }
@@ -167,6 +174,10 @@ namespace QuickLogger.NetStandard
         {
             customNative?.Invoke(message);                        
         }
+        public void Success(string message)
+        {
+            successNative?.Invoke(message);
+        }
         public void Error(string message)
         {
             errorNative?.Invoke(message);
@@ -203,7 +214,6 @@ namespace QuickLogger.NetStandard
             addWrapperStartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderStartEventHandler(provider.OnStarted)));
             addWrapperStatusChangedDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderStatusChangedEventHandler(provider.OnStatusChanged)));
         }
-
         public void AddProvider(ILoggerProvider provider)
         {
             if (GetLoggerProviderTypes().Where(x => x.ToLower() == provider.getProviderProperties().GetProviderType().ToLower()).Count() == 0) { throw new Exception("Invalid provider type."); }
