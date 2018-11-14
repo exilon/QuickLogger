@@ -44,7 +44,7 @@ namespace QuickLogger.Sample
 
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ONLYERRORS }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
+                { "LogLevel", LoggerEventTypes.LOG_ALL }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
             });
             return new QuickLoggerProvider(providerProps);
         }
@@ -52,7 +52,6 @@ namespace QuickLogger.Sample
         {
             try
             {
-                System.Console.ReadLine();
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
                 DeleteDemoFiles();
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
@@ -67,7 +66,7 @@ namespace QuickLogger.Sample
                 settings.addProvider(myConsoleDemoProvider);
 
                 //Create a new instance of NativeQuickLogger
-                ILogger logger = new QuickLoggerNative(configManager);
+                ILogger logger = new QuickLoggerNative(configManager, "");
 
                 logger.AddProvider(myFileDemoProvider);
                 logger.AddProvider(myConsoleDemoProvider);
@@ -84,6 +83,7 @@ namespace QuickLogger.Sample
                         for (int z = 0; z < 100; z++)
                         {
                             logger.Custom("Custom");
+                            logger.Success("Success");
                         }
                     }
                 }

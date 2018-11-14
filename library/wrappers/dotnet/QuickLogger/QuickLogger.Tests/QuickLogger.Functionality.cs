@@ -81,7 +81,7 @@ namespace QuickLogger.Tests.Unit
         [Test]
         public void Add_Logger_Default_Console_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager);
+            ILogger logger = new QuickLoggerNative(_configManager, "");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider", "ConsoleProvider");
             providerProps.SetProviderInfo(_consoleProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -89,13 +89,14 @@ namespace QuickLogger.Tests.Unit
             logger.Info("Works");
             logger.Custom("Works");
             logger.Error("Works");
+            logger.Success("Works");
             logger.RemoveProvider(loggerProvider);
         }
 
         [Test]
         public void Add_Logger_Default_File_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager);
+            ILogger logger = new QuickLoggerNative(_configManager, "");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "FileProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -103,16 +104,18 @@ namespace QuickLogger.Tests.Unit
             logger.Info("Info line");
             logger.Custom("Custom line");
             logger.Error("Error line");
+            logger.Success("Success line");
             Assert.That(FindStringInsideFile(_fileloggerPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Error line"), Is.True);
+            Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
             logger.RemoveProvider(loggerProvider);
         }
 
         [Test]
         public void Add_Logger_Default_SMTP_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager);
+            ILogger logger = new QuickLoggerNative(_configManager, "");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "SMTPProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -120,15 +123,17 @@ namespace QuickLogger.Tests.Unit
             logger.Info("Info line");
             logger.Custom("Custom line");
             logger.Error("Error line");
+            logger.Success("Success line");
             Assert.That(FindStringInsideFile(_configPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Error line"), Is.True);
+            Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
             logger.RemoveProvider(loggerProvider);
         }
         [Test]
         public void Add_Logger_Default_Redis_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager);
+            ILogger logger = new QuickLoggerNative(_configManager, "");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provider", "RedisProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -136,9 +141,11 @@ namespace QuickLogger.Tests.Unit
             logger.Info("Info line");
             logger.Custom("Custom line");
             logger.Error("Error line");
+            logger.Success("Succes line");
             Assert.That(FindStringInsideFile(_configPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Error line"), Is.True);
+            Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
             logger.RemoveProvider(loggerProvider);
         }
     }

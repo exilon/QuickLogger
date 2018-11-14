@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 02/10/2017
-  Modified    : 24/05/2018
+  Modified    : 12/09/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -34,7 +34,11 @@ interface
 
 uses
   Classes,
+  {$IFNDEF NEXTGEN}
   Windows,
+  {$ELSE}
+  FMX.Types,
+  {$ENDIF}
   SysUtils,
   Quick.Commons,
   Quick.Logger;
@@ -77,11 +81,19 @@ begin
   Init;
 end;
 
+{$IFNDEF NEXTGEN}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then OutputDebugString(PChar(cLogItem.Msg))
     else OutputDebugString(PChar(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg])));
 end;
+{$ELSE}
+procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
+begin
+  if CustomMsgOutput then FMX.Types.Log.d(cLogItem.Msg)
+    else FMX.Types.Log.d(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg]));
+end;
+{$ENDIF}
 
 initialization
   GlobalLogIDEDebugProvider := TLogIDEDebugProvider.Create;

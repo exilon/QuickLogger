@@ -75,7 +75,7 @@ namespace QuickLogger.Sample
                 configManager.Write();
 
                 //Create a new instance of NativeQuickLogger
-                ILogger logger = new QuickLoggerNative(configManager);
+                ILogger logger = new QuickLoggerNative(configManager, "");
                 logger.InitializeConfiguration();              
 
                 // Main!

@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.23
   Created     : 12/10/2017
-  Modified    : 24/05/2018
+  Modified    : 08/09/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -102,7 +102,11 @@ implementation
 constructor TLogFileProvider.Create;
 begin
   inherited;
+  {$IFNDEF ANDROID}
   fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
+  {$ELSE}
+  fFileName := TPath.GetDocumentsPath + PathDelim + 'logger.log';
+  {$ENDIF}
   fIsRotating := False;
   fMaxRotateFiles := 5;
   fMaxFileSizeInMB := 20;
@@ -187,7 +191,7 @@ begin
         {$IFDEF MSWINDOWS}
         WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
         {$ELSE}
-        WriteToStream(Format('Application : %s',[SystemInfo.AppName]));
+        WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
         {$ENDIF}
       end;
       WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
