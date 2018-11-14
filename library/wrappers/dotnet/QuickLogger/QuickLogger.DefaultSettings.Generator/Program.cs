@@ -50,8 +50,7 @@ namespace QuickLogger.DefaultSettings.Generator
                                 "\"MaxSent\": 0" +
                                 "},";
 
-        static string _configPath = String.Empty;
-        static string _configName = "config.json";
+        static string _configName = "..\\..\\..\\..\\QuickLogger.DefaultSettings\\defaultSettings.json";
 
         static Dictionary<string, object> _consoleproviderinfo =
         new Dictionary<string, object>() {
@@ -131,7 +130,7 @@ namespace QuickLogger.DefaultSettings.Generator
 
         static void Main(string[] args)
         {
-            ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(".\\quicklogger_sample_settings.conf");
+            ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(_configName);
             ILoggerSettings settings = configManager.Load();      
             foreach (ILoggerProvider provider in _providers)
             {
