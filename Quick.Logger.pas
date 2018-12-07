@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.30
+  Version     : 1.31
   Created     : 12/10/2017
-  Modified    : 17/09/2018
+  Modified    : 07/12/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.28';
+  QLVERSION = '1.31';
 
 type
 
@@ -165,6 +165,8 @@ type
     {$IFNDEF ANDROID}
     function ToJson : string;
     procedure FromJson(const aJson : string);
+    procedure SaveToFile(const aJsonFile : string);
+    procedure LoadFromFile(const aJsonFile : string);
     {$ENDIF}
     {$ENDIF}
   end;
@@ -313,6 +315,8 @@ type
     {$IFNDEF ANDROID}
     function ToJson : string;
     procedure FromJson(const aJson : string);
+    procedure SaveToFile(const aJsonFile : string);
+    procedure LoadFromFile(const aJsonFile : string);
     {$ENDIF}
     {$ENDIF}
   end;
@@ -611,7 +615,7 @@ end;
   begin
     serializer := TJsonSerializer.Create(slPublicProperty);
     try
-      Result := serializer.ObjectToJson(Self);
+      Result := serializer.ObjectToJson(Self,True);
     finally
       serializer.Free;
     end;
@@ -626,6 +630,32 @@ end;
       Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
     finally
       serializer.Free;
+    end;
+  end;
+
+  procedure TLogProviderBase.SaveToFile(const aJsonFile : string);
+  var
+    json : TStringList;
+  begin
+    json := TStringList.Create;
+    try
+      json.Text := Self.ToJson;
+      json.SaveToFile(aJsonFile);
+    finally
+      json.Free;
+    end;
+  end;
+
+  procedure TLogProviderBase.LoadFromFile(const aJsonFile : string);
+  var
+    json : TStringList;
+  begin
+    json := TStringList.Create;
+    try
+      json.LoadFromFile(aJsonFile);
+      Self.FromJson(json.Text);
+    finally
+      json.Free;
     end;
   end;
   {$ENDIF}

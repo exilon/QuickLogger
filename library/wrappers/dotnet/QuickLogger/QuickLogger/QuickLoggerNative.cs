@@ -83,7 +83,7 @@ namespace QuickLogger.NetStandard
         private ILoggerSettings _settings;
         private NativeLibrary _quickloggerlib;
         private string _rootPath;
-        private string[] libNames = { "\\x86\\QuickLogger.dll", "\\x64\\QuickLogger.dll", "\\x86\\libquicklogger.so", "\\x64\\libquicklogger.so" };
+        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
 
         public QuickLoggerNative(ILoggerConfigManager configManager, string rootPath)
         {
@@ -93,6 +93,15 @@ namespace QuickLogger.NetStandard
             _configManager = configManager;
             _quickloggerlib = new NativeLibrary(libNames);             
             MapFunctionPointers();            
+        }
+
+        public QuickLoggerNative(string rootPath)
+        {            
+            if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
+            else { _rootPath = rootPath; }
+            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
+            _quickloggerlib = new NativeLibrary(libNames);
+            MapFunctionPointers();
         }
 
         ~QuickLoggerNative()
@@ -240,8 +249,11 @@ namespace QuickLogger.NetStandard
         }
         public void InitializeConfiguration()
         {
-            _settings = _configManager.Load();
-            _settings.Providers().ForEach(x => AddProvider(x));
+            if (_configManager != null)
+            {
+                _settings = _configManager.Load();
+                _settings.Providers().ForEach(x => AddProvider(x));
+            }
         }
 
         public void AddStandardConsoleProvider()
@@ -256,7 +268,8 @@ namespace QuickLogger.NetStandard
 
         public void ReloadConfig()
         {
-            _settings = _configManager.Load();
+            if (_configManager != null)
+                _settings = _configManager.Load();
         }
 
         public void Reload()
