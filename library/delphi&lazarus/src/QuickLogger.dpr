@@ -173,7 +173,6 @@ begin
   if provdr = nil then Result := Ord(False)
   else
   begin
-    Writeln('Quick logger : Added provider! ' + providername + ' - ' + providertype);
     provdr.FromJson(ProviderInfo);
     providerHandlers.Add(providername, TProviderEventHandler.Create(providername, provdr));
     Logger.Providers.Add(provdr);
@@ -200,6 +199,7 @@ begin
       vJSONScenario := TJSONObject.ParseJSONValue(Provider, False);
       if vJSONScenario <> nil then
       begin
+        Logger.Add('Segundo paso : OK ', TEventType.etInfo);
         if vJSONScenario is TJSONObject then
         begin
           vJSONObject := vJSONScenario as TJSONObject;
@@ -215,7 +215,7 @@ begin
         end;
       end;
     except
-      on e : Exception do Writeln(e.Message);
+      on e : Exception do Result := Ord(False);
     end;
   finally
     vJSONScenario.Free;
@@ -263,7 +263,6 @@ var
   providerinfo : string;
   providertype : string;
 begin
-  Writeln('Add provider from JSON is not implemented on linux yet... use Default Console and File Providers.');
   Result := 0;
   Exit;
   //TODO Implement Add providers from JSON and Linux
@@ -285,7 +284,6 @@ begin
             providername := string(vJSONObject.Get('providerName')).Replace('"','');
             providerinfo := string(vJSONObject.Get('providerInfo')).Replace('"','');
             providertype := string(vJSONObject.Get('providerType')).Replace('"','');
-            writeln('Adding provider ' + providername);
             InternalAddProviderFromJSON(providertype, providername, providerinfo);
             Result := Ord(True);
           end;
@@ -341,7 +339,7 @@ end;
 
 procedure ResetProviderNative(const ProviderName : string); stdcall; export;
 begin
-  Writeln('ResetProvider is not implemented yet.');
+  //Writeln('ResetProvider is not implemented yet.');
 end;
 
 procedure InfoNative(const Line : string); stdcall; export;
@@ -403,12 +401,9 @@ procedure AddWrapperStartDelegateNative(const ProviderName : string; Callback : 
 var
   providerhandler : TProviderEventHandler;
 begin
-  Writeln('AddWrapperStart delegate native called ' + ProviderName);
   if providerHandlers.TryGetValue(providername, providerHandler) then
   begin
-    Writeln('Provider handler is assigned and is ' + providerhandler.fproviderfriendlyname);
-    if not Assigned(Callback) then Writeln('But passed callback pointer is nil');
-    providerhandler.WrapperStart := Callback;
+    if Assigned(Callback) then providerhandler.WrapperStart := Callback;
   end;
 end;
 
@@ -466,10 +461,8 @@ procedure TestCallbacksNative; stdcall; export;
 var
   prov : TProviderEventHandler;
 begin
-  Writeln('TestCallBacksNativeCalled');
   for prov in providerHandlers.Values do
   begin
-    Writeln('Providername ' + prov.fproviderfriendlyname);
     prov.TestCallbacks;
   end;
 end;
@@ -495,7 +488,7 @@ begin
       end;
     end;
   except
-    on e : Exception do Writeln(e.Message);
+    on e : Exception do Result := Ord(False);
   end;
 end;
 
@@ -659,4 +652,5 @@ begin
   eventTypeConversion.Add('LOG_TRACE', LOG_BASIC);
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
+
 end.
