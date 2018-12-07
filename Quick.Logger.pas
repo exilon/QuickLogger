@@ -68,9 +68,8 @@ uses
   {$ELSE}
   System.IOUtils,
   System.Generics.Collections,
-    {$IFDEF DELPHIXE8_UP}
     System.JSON,
-    {$ELSE}
+    {$IFNDEF DELPHIXE8_UP}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
