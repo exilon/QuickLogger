@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi/Freepascal/.NET (Windows/Linux/Android) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -17,6 +17,10 @@ Delphi/Freepascal/.NET (Windows/Linux/Android) library for logging on multi prov
 - SysLog
 
 ### Updates:
+
+**Dec 08,2018:** Load/Save providers config from single json
+
+**Dec 07,2018:** Delphi 10.3 Rio support
 
 **Sep 11,2018:** Firemonkey android compatibility improved
 
@@ -288,9 +292,18 @@ Log('{"level":"warn","text":"my text"}',etInfo);
 
 ### Load/Save Config:
 QuickLogger can import or export config from/to JSON format. This feature allows a easy way to preconfigure your providers.
-	Example configs:
+```delphi
+	//Load single provider from json file
+	GlobalLogRedisProvider.LoadFromFile('C:\logfileprovider.json');
+	//Save all providers to json file
+	Logger.Providers.SaveToFile('C:\loggerconfig.json');
+	//Load all providers from json string
+	Logger.Providers.FromJson(json);
+```	
 	
-	GlobalLogConsoleProvider:
+	Example multiprovider config file:
+	
+	{"GlobalLogConsoleProvider":
 			{
                 "ShowEventColors": true,
                 "ShowTimeStamp": true,
@@ -312,9 +325,9 @@ QuickLogger can import or export config from/to JSON format. This feature allows
                 "Environment": "",
                 "PlatformInfo": "",
                 "IncludedInfo": "[iiAppName,iiHost]"
-			}
+			},
 
-	GlobalLogFileProvider:
+	"GlobalLogFileProvider":
 			{
                 "FileName": "D:\\LoggerDemo.log",
                 "AutoFileNameByProcess": false,
@@ -345,6 +358,7 @@ QuickLogger can import or export config from/to JSON format. This feature allows
                 "PlatformInfo": "",
                 "IncludedInfo": "[iiAppName,iiHost,iiUserName,iiOSVersion]"
 			}	
+	}
 
 ### Logging Exceptions:
 
