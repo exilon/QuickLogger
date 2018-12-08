@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.31
   Created     : 12/10/2017
-  Modified    : 07/12/2018
+  Modified    : 08/12/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -43,17 +43,17 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
     Quick.JSON.Utils,
-    {$IFDEF DELPHIXE8_UP}
-    Quick.Json.Serializer,
-    {$ENDIF}
+    //{$IFDEF DELPHIXE8_UP}
+    //Quick.Json.Serializer,
+    //{$ENDIF}
     {$IFDEF DELPHIXE7_UP}
     {$ELSE}
     SyncObjs,
     {$ENDIF}
   {$ENDIF}
-  {$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
+  //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
-  {$ENDIF}
+  //{$ENDIF}
   Classes,
   Types,
   SysUtils,
@@ -163,7 +163,7 @@ type
     function IsEnabled : Boolean;
     function GetVersion : string;
     function GetName : string;
-    {$IFDEF DELPHIXE8_UP}
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -311,7 +311,7 @@ type
     function GetVersion : string;
     function IsEnabled : Boolean;
     function GetName : string;
-    {$IFDEF DELPHIXE8_UP}
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -319,6 +319,7 @@ type
     {$ENDIF}
   end;
 
+  {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
   TLogProviderList = class(TList<ILogProvider>)
   public
     function ToJson(aIndent : Boolean = True) : string;
@@ -326,6 +327,9 @@ type
     procedure LoadFromFile(const aJsonFile : string);
     procedure SaveToFile(const aJsonFile : string);
   end;
+  {$ELSE}
+  TLogProviderList = TList<ILogProvider>;
+  {$ENDIF}
 
   TThreadProviderLog = class(TThread)
   private
@@ -611,7 +615,7 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF DELPHIXE8_UP}
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
   function TLogProviderBase.ToJson(aIndent : Boolean = True) : string;
   var
     serializer : TJsonSerializer;
@@ -1077,6 +1081,7 @@ end;
 
 { TLogProviderList }
 
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
 function TLogProviderList.ToJson(aIndent : Boolean = True) : string;
 var
   iprovider : ILogProvider;
@@ -1133,17 +1138,18 @@ begin
 end;
 
 procedure TLogProviderList.SaveToFile(const aJsonFile : string);
-  var
-    json : TStringList;
-  begin
-    json := TStringList.Create;
-    try
-      json.Text := Self.ToJson;
-      json.SaveToFile(aJsonFile);
-    finally
-      json.Free;
-    end;
+var
+  json : TStringList;
+begin
+  json := TStringList.Create;
+  try
+    json.Text := Self.ToJson;
+    json.SaveToFile(aJsonFile);
+  finally
+    json.Free;
   end;
+end;
+{$ENDIF}
 
 initialization
   Logger := TLogger.Create;
