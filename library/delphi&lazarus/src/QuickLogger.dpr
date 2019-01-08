@@ -199,7 +199,6 @@ begin
       vJSONScenario := TJSONObject.ParseJSONValue(Provider, False);
       if vJSONScenario <> nil then
       begin
-        Logger.Add('Segundo paso : OK ', TEventType.etInfo);
         if vJSONScenario is TJSONObject then
         begin
           vJSONObject := vJSONScenario as TJSONObject;
