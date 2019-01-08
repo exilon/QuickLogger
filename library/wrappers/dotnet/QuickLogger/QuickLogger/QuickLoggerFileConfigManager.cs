@@ -13,6 +13,7 @@ namespace QuickLogger.NetStandard
         private JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+            Formatting = Formatting.Indented,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,               
         };
 

@@ -1,1 +1,153 @@
-{"environment":null,"providers":[{"providerProps":{"providerName":"Default Console Provider","providerType":"ConsoleProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default File Provider","providerType":"FileProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default Redis Provider","providerType":"RedisProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default Telegram Provider","providerType":"TelegramProvider","providerInfo":{}}},{"providerProps":{"providerName":"Default Slack Provider","providerType":"SlackProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default Rest Provider","providerType":"RestProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default Email Provider","providerType":"EmailProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default ADODB Provider","providerType":"AdoProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default WindowsEventLog Provider","providerType":"WindowsEventProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}},{"providerProps":{"providerName":"Default SysLog Provider","providerType":"SyslogProvider","providerInfo":{"LogLevel":"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]","ShowTimeStamp":true,"ShowEventColors":true,"UnderlineHeaderEventType":false,"TimePrecission":true,"MaxFailsToRestart":2,"MaxFailsToStop":10,"AppName":"QuickLoggerDemo"}}}]}
+{
+  "environment": null,
+  "providers": [
+    {
+      "providerProps": {
+        "providerName": "Default Console Provider",
+        "providerType": "ConsoleProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "ShowTimeStamp": true,
+          "ShowEventColors": true,
+          "UnderlineHeaderEventType": false,
+          "TimePrecission": true,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10,
+          "AppName": "QuickLoggerDemo"
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default File Provider",
+        "providerType": "FileProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Filename": ".\\test.log",
+          "AutoFileNameByProcess": false,
+          "MaxRotateFiles": 3,
+          "MaxFileSizeInMB": 10,
+          "RotatedFilesPath": "",
+          "DailyRotate": false,
+          "CompressRotatedFiles": false,
+          "ShowEventType": true,
+          "ShowHeaderInfo": true,
+          "TimePrecission": true,
+          "UnderlineHeaderEventType": false,
+          "AutoFlush": false,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default Redis Provider",
+        "providerType": "RedisProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Host": "192.168.5.100",
+          "Port": 6379,
+          "Password": "1234",
+          "LogKey": "Log",
+          "MaxSize": 1000,
+          "OutputAsJson": true,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default Telegram Provider",
+        "providerType": "TelegramProvider",
+        "providerInfo": {}
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default Slack Provider",
+        "providerType": "SlackProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "ChannelName": "#myLogger",
+          "UserName": "mySlackUserName",
+          "WebHookURL": "https:\\\\hooks.slack.com\\services\\TAAAAAAAA\\BBBBBBBBB\\CCCCCCCCCCCCCCCCCCCCCCCC",
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default Rest Provider",
+        "providerType": "RestProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "URL": "http:\\\\localhost\\event",
+          "UserAgent": "Quick.Logger Agent",
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default Email Provider",
+        "providerType": "EmailProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "SMTP": "{\"Host\": \"mail.domain.com\",\"UserName\": \"email@domain.com\",\"Password\": \"jfs93as\",\"UseSSL\": false}",
+          "Mail": "{\"SenderName\": \"Quick.Logger Alert\",\"From\": \"email@domain.com\",\"Recipient\": \"alert@domain.com\",\"Subject\": \"\",\"Body\": \"\",\"CC\": \"myemail@domain.com\",\"BCC\": \"\"}",
+          "SendLimits": "{\"TimeRange\": \"slNoLimit\",\"LimitEventTypes\": \"[]\",\"MaxSent\": 0},",
+          "TimePrecission": true,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default ADODB Provider",
+        "providerType": "AdoProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "ConnectionString": "Provider=SQLOLEDB.1;Persist Security Info=False;User ID=myuser;Password=1234;Database=Logger;Data Source=localhost",
+          "DBConfig": "{\"Provider\": \"dbMSSQL\",\"Server\": \"localhost\",\"Database\": \"Logger\",\"Table\": \"QuickLogger\",\"UserName\": \"myuser\",\"Password\": \"1234\"},",
+          "FieldsMapping": "{\"EventDate\": \"EventDate\",\"EventType\": \"Level\",\"Msg\": \"Msg\",\"Environment\": \"Environment\",\"PlatformInfo\": \"PlaftormInfo\",\"OSVersion\": \"OSVersion\",\"AppName\": \"AppName\",\"UserName\": \"UserName\",\"Host\": \"Host\"},",
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default WindowsEventLog Provider",
+        "providerType": "WindowsEventProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Source": "QuickLogger",
+          "DailyRotate": false,
+          "ShowTimeStamp": true,
+          "TimePrecission": true,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Default SysLog Provider",
+        "providerType": "SyslogProvider",
+        "providerInfo": {
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Host": "127.0.0.1",
+          "Port": 514,
+          "Facility": "sfUserLevel",
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10
+        }
+      }
+    }
+  ]
+}
