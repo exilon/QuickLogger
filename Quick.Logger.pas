@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.30
+  Version     : 1.31
   Created     : 12/10/2017
-  Modified    : 17/09/2018
+  Modified    : 08/12/2018
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,17 +42,18 @@ interface
 uses
   {$IFDEF MSWINDOWS}
   Windows,
-    {$IFDEF DELPHIXE8_UP}
-    Quick.Json.Serializer,
-    {$ENDIF}
+    Quick.JSON.Utils,
+    //{$IFDEF DELPHIXE8_UP}
+    //Quick.Json.Serializer,
+    //{$ENDIF}
     {$IFDEF DELPHIXE7_UP}
     {$ELSE}
     SyncObjs,
     {$ENDIF}
   {$ENDIF}
-  {$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
+  //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
-  {$ENDIF}
+  //{$ENDIF}
   Classes,
   Types,
   SysUtils,
@@ -68,9 +69,8 @@ uses
   {$ELSE}
   System.IOUtils,
   System.Generics.Collections,
-    {$IFDEF DELPHIXE8_UP}
-    System.JSON,
-    {$ELSE}
+  System.JSON,
+    {$IFNDEF DELPHIXE8_UP}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.28';
+  QLVERSION = '1.31';
 
 type
 
@@ -92,6 +92,8 @@ type
   {$ENDIF}
 
   ELogger = class(Exception);
+  ELoggerLoadProviderError = class(Exception);
+  ELoggerSaveProviderError = class(Exception);
 
 const
   LOG_ONLYERRORS = [etHeader,etInfo,etError,etCritical,etException];
@@ -161,11 +163,11 @@ type
     function IsEnabled : Boolean;
     function GetVersion : string;
     function GetName : string;
-    {$IFDEF DELPHIXE8_UP}
-    {$IFNDEF ANDROID}
-    function ToJson : string;
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+    function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
-    {$ENDIF}
+    procedure SaveToFile(const aJsonFile : string);
+    procedure LoadFromFile(const aJsonFile : string);
     {$ENDIF}
   end;
 
@@ -309,15 +311,25 @@ type
     function GetVersion : string;
     function IsEnabled : Boolean;
     function GetName : string;
-    {$IFDEF DELPHIXE8_UP}
-    {$IFNDEF ANDROID}
-    function ToJson : string;
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+    function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
-    {$ENDIF}
+    procedure SaveToFile(const aJsonFile : string);
+    procedure LoadFromFile(const aJsonFile : string);
     {$ENDIF}
   end;
 
+  {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+  TLogProviderList = class(TList<ILogProvider>)
+  public
+    function ToJson(aIndent : Boolean = True) : string;
+    procedure FromJson(const aJson : string);
+    procedure LoadFromFile(const aJsonFile : string);
+    procedure SaveToFile(const aJsonFile : string);
+  end;
+  {$ELSE}
   TLogProviderList = TList<ILogProvider>;
+  {$ENDIF}
 
   TThreadProviderLog = class(TThread)
   private
@@ -603,15 +615,14 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF DELPHIXE8_UP}
-  {$IFNDEF ANDROID}
-  function TLogProviderBase.ToJson: string;
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+  function TLogProviderBase.ToJson(aIndent : Boolean = True) : string;
   var
     serializer : TJsonSerializer;
   begin
     serializer := TJsonSerializer.Create(slPublicProperty);
     try
-      Result := serializer.ObjectToJson(Self);
+      Result := serializer.ObjectToJson(Self,aIndent);
     finally
       serializer.Free;
     end;
@@ -624,11 +635,37 @@ end;
     serializer := TJsonSerializer.Create(slPublicProperty);
     try
       Self := TLogProviderBase(serializer.JsonToObject(Self,aJson));
+      if fEnabled then Self.Restart;
     finally
       serializer.Free;
     end;
   end;
-  {$ENDIF}
+
+  procedure TLogProviderBase.SaveToFile(const aJsonFile : string);
+  var
+    json : TStringList;
+  begin
+    json := TStringList.Create;
+    try
+      json.Text := Self.ToJson;
+      json.SaveToFile(aJsonFile);
+    finally
+      json.Free;
+    end;
+  end;
+
+  procedure TLogProviderBase.LoadFromFile(const aJsonFile : string);
+  var
+    json : TStringList;
+  begin
+    json := TStringList.Create;
+    try
+      json.LoadFromFile(aJsonFile);
+      Self.FromJson(json.Text);
+    finally
+      json.Free;
+    end;
+  end;
 {$ENDIF}
 
 procedure TLogProviderBase.EnQueueItem(cLogItem : TLogItem);
@@ -1041,6 +1078,78 @@ begin
     end;
   end;
 end;
+
+{ TLogProviderList }
+
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+function TLogProviderList.ToJson(aIndent : Boolean = True) : string;
+var
+  iprovider : ILogProvider;
+begin
+  Result := '{';
+  for iprovider in Self do
+  begin
+    Result := Result + '"' + iprovider.GetName + '": ';
+    Result := Result + iprovider.ToJson(False);
+    Result := Result + ',';
+  end;
+  if Result.EndsWith(',') then Result := RemoveLastChar(Result);
+  Result := Result + '}';
+  if aIndent then Result := TJsonUtils.JsonFormat(Result);
+end;
+
+procedure TLogProviderList.FromJson(const aJson : string);
+var
+  iprovider : ILogProvider;
+  jobject : TJSONObject;
+  jvalue : TJSONValue;
+begin
+  try
+    jobject := TJSONObject.ParseJSONValue(aJson) as TJSONObject;
+    try
+      for iprovider in Self do
+      begin
+        jvalue := jobject.GetValue(iprovider.GetName);
+        iprovider.FromJson(jvalue.ToJSON);
+      end;
+    finally
+      jobject.Free;
+    end;
+  except
+    on E : Exception do
+    begin
+      if iprovider <> nil then raise ELoggerLoadProviderError.CreateFmt('Error loading provider "%s" from json: %s',[iprovider.GetName,e.message])
+        else raise ELoggerLoadProviderError.CreateFmt('Error loading providers from json: %s',[e.message]);
+    end;
+  end;
+end;
+
+procedure TLogProviderList.LoadFromFile(const aJsonFile : string);
+var
+  json : TStringList;
+begin
+  json := TStringList.Create;
+  try
+    json.LoadFromFile(aJsonFile);
+    Self.FromJson(json.Text);
+  finally
+    json.Free;
+  end;
+end;
+
+procedure TLogProviderList.SaveToFile(const aJsonFile : string);
+var
+  json : TStringList;
+begin
+  json := TStringList.Create;
+  try
+    json.Text := Self.ToJson;
+    json.SaveToFile(aJsonFile);
+  finally
+    json.Free;
+  end;
+end;
+{$ENDIF}
 
 initialization
   Logger := TLogger.Create;
