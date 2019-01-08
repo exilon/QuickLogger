@@ -134,16 +134,15 @@ namespace QuickLogger.DefaultSettings.Generator
             ILoggerSettings settings = configManager.Load();      
             foreach (ILoggerProvider provider in _providers)
             {
-                if (provider.getProviderProperties().GetProviderType() == "ConsoleProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "ConsoleProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "FileProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "RedisProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "SlackProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "RestProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "EmailProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "AdoProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "WindowsEventProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
-                else if (provider.getProviderProperties().GetProviderType() == "SyslogProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }
+                if (provider.getProviderProperties().GetProviderType() == "ConsoleProvider") { provider.getProviderProperties().SetProviderInfo(_consoleproviderinfo); }                
+                else if (provider.getProviderProperties().GetProviderType() == "FileProvider") { provider.getProviderProperties().SetProviderInfo(_fileproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "RedisProvider") { provider.getProviderProperties().SetProviderInfo(_redisproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "SlackProvider") { provider.getProviderProperties().SetProviderInfo(_slackproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "RestProvider") { provider.getProviderProperties().SetProviderInfo(_restproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "EmailProvider") { provider.getProviderProperties().SetProviderInfo(_emailproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "AdoProvider") { provider.getProviderProperties().SetProviderInfo(_adoproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "WindowsEventProvider") { provider.getProviderProperties().SetProviderInfo(_windowseventlogproviderinfo); }
+                else if (provider.getProviderProperties().GetProviderType() == "SyslogProvider") { provider.getProviderProperties().SetProviderInfo(_syslogproviderinfo); }
                 settings.addProvider(provider);
             }
             configManager.Write();
