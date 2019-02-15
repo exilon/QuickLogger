@@ -55,7 +55,12 @@ end;
 
 procedure TfrmMain.OnNewLog(LogItem: TLogItem);
 begin
-  meLog.Lines.Add(Format('%s [%s] %s',[DateTimeToStr(LogItem.EventDate),LogItem.EventTypeName,LogItem.Msg]));
+  TThread.Synchronize(nil,
+  procedure
+  begin
+    meLog.Lines.Add(Format('%s [%s] %s',[DateTimeToStr(LogItem.EventDate),LogItem.EventTypeName,LogItem.Msg]));
+  end
+  );
 end;
 
 end.

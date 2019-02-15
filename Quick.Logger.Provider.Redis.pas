@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.23
   Created     : 15/10/2017
-  Modified    : 24/05/2018
+  Modified    : 12/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -50,11 +50,13 @@ type
     fTCPClient : TIdTCPClient;
     fHost : string;
     fPort : Integer;
+    fDataBase : Integer;
     fLogKey : string;
     fMaxSize : Int64;
     fPassword : string;
     fOutputAsJson : Boolean;
     function EscapeString(const json: string): string;
+    function RedisSELECT(dbIndex : Integer) : Int64;
     function RedisRPUSH(const aKey, Msg : string) : Int64;
     function RedisLPUSH(const aKey, Msg : string) : Int64;
     function RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
@@ -65,6 +67,7 @@ type
     destructor Destroy; override;
     property Host : string read fHost write fHost;
     property Port : Integer read fPort write fPort;
+    property DataBase : Integer read fDataBase write fDataBase;
     property LogKey : string read fLogKey write fLogKey;
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     property Password : string read fPassword write fPassword;
@@ -85,6 +88,7 @@ begin
   LogLevel := LOG_ALL;
   fHost := 'localhost';
   fPort := DEF_REDIS_PORT;
+  fDataBase := 0;
   fLogKey := 'Logger';
   fMaxSize := 0;
   fPassword := '';
@@ -121,6 +125,10 @@ begin
   if fPassword <> '' then
   begin
     if not RedisAUTH(fPassword) then raise  ELogger.Create('Redis authentication error!');
+  end;
+  if fDataBase > 0 then
+  begin
+    if not RedisSELECT(fDataBase) = 0 then raise ELogger.CreateFmt('Can''t select Redis Database "%d"',[fDataBase]);
   end;
   inherited;
 end;
@@ -169,6 +177,21 @@ begin
   begin
     res := fTCPClient.IOHandler.ReadLn;
     Result := StrToInt64(StringReplace(res,':','',[]));
+  end
+  else Result := 0;
+end;
+
+function TLogRedisProvider.RedisSELECT(dbIndex: Integer): Int64;
+var
+  res : string;
+begin
+  if not fTCPClient.Connected then fTCPClient.Connect;
+  fTCPClient.IOHandler.Write(Format('SELECT %d%s',[dbIndex,CRLF]));
+  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  begin
+    res := fTCPClient.IOHandler.ReadLn;
+    if res.Contains('+OK') then Result := 1
+      else Result := StrToInt64(StringReplace(res,':','',[]));
   end
   else Result := 0;
 end;
