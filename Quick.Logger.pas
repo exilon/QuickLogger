@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.31
+  Version     : 1.32
   Created     : 12/10/2017
-  Modified    : 08/12/2018
+  Modified    : 19/01/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,7 +42,6 @@ interface
 uses
   {$IFDEF MSWINDOWS}
   Windows,
-    Quick.JSON.Utils,
     //{$IFDEF DELPHIXE8_UP}
     //Quick.Json.Serializer,
     //{$ENDIF}
@@ -51,6 +50,7 @@ uses
     SyncObjs,
     {$ENDIF}
   {$ENDIF}
+  Quick.JSON.Utils,
   //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
   //{$ENDIF}
@@ -120,7 +120,7 @@ type
   TLogProviderStatus = (psNone, psStopped, psInitializing, psRunning, psDraining, psStopping, psRestarting);
 
   {$IFNDEF FPC}
-    {$IF Defined(ANDROID) OR Defined(LINUX)}
+    {$IF Defined(NEXTGEN) OR Defined(OSX) OR Defined(LINUX)}
     TSystemTime = TDateTime;
     {$ENDIF}
   {$ENDIF}
@@ -163,7 +163,7 @@ type
     function IsEnabled : Boolean;
     function GetVersion : string;
     function GetName : string;
-    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -311,7 +311,7 @@ type
     function GetVersion : string;
     function IsEnabled : Boolean;
     function GetName : string;
-    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -319,7 +319,7 @@ type
     {$ENDIF}
   end;
 
-  {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+  {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
   TLogProviderList = class(TList<ILogProvider>)
   public
     function ToJson(aIndent : Boolean = True) : string;
@@ -615,7 +615,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
   function TLogProviderBase.ToJson(aIndent : Boolean = True) : string;
   var
     serializer : TJsonSerializer;
@@ -989,7 +989,7 @@ begin
   logitem := TLogItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
-  {$IF DEFINED(ANDROID) OR DEFINED(DELPHILINUX)}
+  {$IF DEFINED(NEXTGEN) OR DEFINED(OSX) OR DEFINED(DELPHILINUX)}
   logitem.EventDate := cEventDate;
   {$ELSE}
   logitem.EventDate := SystemTimeToDateTime(cEventDate);
@@ -1081,7 +1081,7 @@ end;
 
 { TLogProviderList }
 
-{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(ANDROID)}
+{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
 function TLogProviderList.ToJson(aIndent : Boolean = True) : string;
 var
   iprovider : ILogProvider;
