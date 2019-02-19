@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.EventLog
   Description : Log Windows EventLog Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 02/10/2017
-  Modified    : 24/05/2018
+  Modified    : 18/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -35,6 +35,9 @@ interface
 uses
   Classes,
   Windows,
+  {$IFNDEF MSWINDOWS}
+  Only compatible with Microsoft Windows
+  {$ENDIF}
   SysUtils,
   Quick.Commons,
   Quick.Logger;

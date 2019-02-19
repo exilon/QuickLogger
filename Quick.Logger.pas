@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.32
+  Version     : 1.33
   Created     : 12/10/2017
-  Modified    : 19/01/2019
+  Modified    : 19/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -463,8 +463,8 @@ begin
     {$IFDEF LOGGER_DEBUG}
     Writeln(Format('restart: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
-    Restart;
     SetStatus(TLogProviderStatus.psRestarting);
+    Restart;
     if Assigned(fOnRestart) then fOnRestart(fName);
   end;
 end;
