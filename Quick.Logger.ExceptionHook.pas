@@ -59,7 +59,11 @@ begin
   //throw event in Quick Logger to log it
   if Assigned(GlobalLoggerHandleException) then
   begin
+    {$IFDEF DELPHILINUX}
+    GlobalLoggerHandleException(Pointer(pExRec^.ExceptObject));
+    {$ELSE}
     GlobalLoggerHandleException(pExRec^.ExceptObject);
+    {$ENDIF}
   end;
   //throw real exception
   //if Assigned(RealRaiseExceptObject) then TRaiseExceptObjectProc(RealRaiseExceptObject)(pExRec);
