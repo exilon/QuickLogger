@@ -129,6 +129,8 @@ type
 
   TIncludedLogInfo = set of TLogInfoField;
 
+  TProviderErrorEvent = procedure(const aProviderName, aError : string) of object;
+
   TLogItem = class
   private
     fEventType : TEventType;
@@ -236,6 +238,8 @@ type
     fEnabled : Boolean;
     fTimePrecission : Boolean;
     fFails : Integer;
+    fRestartTimes : Integer;
+    fFailsToRestart : Integer;
     fMaxFailsToRestart : Integer;
     fMaxFailsToStop : Integer;
     fUsesQueue : Boolean;
@@ -254,6 +258,7 @@ type
     fIncludedInfo : TIncludedLogInfo;
     fSystemInfo : TSystemInfo;
     fCustomMsgOutput : Boolean;
+    fOnNotifyError : TProviderErrorEvent;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -261,6 +266,8 @@ type
     function GetEventTypeName(cEventType : TEventType) : string;
     procedure SetEventTypeName(cEventType: TEventType; const cValue : string);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
+    procedure SetMaxFailsToRestart(const Value: Integer);
+    procedure NotifyError(const aError : string);
   protected
     function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
     function LogItemToJson(cLogItem : TLogItem) : string; overload;
@@ -286,7 +293,7 @@ type
     property TimePrecission : Boolean read fTimePrecission write SetTimePrecission;
     {$IFDEF DELPHIXE7_UP}[TNotSerializableProperty]{$ENDIF}
     property Fails : Integer read fFails write fFails;
-    property MaxFailsToRestart : Integer read fMaxFailsToRestart write fMaxFailsToRestart;
+    property MaxFailsToRestart : Integer read fMaxFailsToRestart write SetMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
     property CustomMsgOutput : Boolean read fCustomMsgOutput write fCustomMsgOutput;
     property OnFailToLog : TFailToLogEvent read fOnFailToLog write fOnFailToLog;
@@ -350,14 +357,20 @@ type
     fProviders : TLogProviderList;
     fWaitForFlushBeforeExit : Integer;
     fOnQueueError: TQueueErrorEvent;
+    fOwnErrorsProvider : TLogProviderBase;
+    fOnProviderError : TProviderErrorEvent;
     function GetQueuedLogItems : Integer;
     procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType);
     procedure HandleException(E : Exception);
+    procedure NotifyProviderError(const aProviderName, aError : string);
+    procedure SetOwnErrorsProvider(const Value: TLogProviderBase);
   public
     constructor Create;
     destructor Destroy; override;
     property Providers : TLogProviderList read fProviders write fProviders;
+    property RedirectOwnErrorsToProvider : TLogProviderBase read fOwnErrorsProvider write SetOwnErrorsProvider;
     property WaitForFlushBeforeExit : Integer read fWaitForFlushBeforeExit write fWaitForFlushBeforeExit;
+    property OnProviderError : TProviderErrorEvent read fOnProviderError write fOnProviderError;
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
@@ -406,8 +419,10 @@ begin
   fTimePrecission := False;
   fSendLimits := TLogSendLimit.Create;
   fFails := 0;
+  fRestartTimes := 0;
   fMaxFailsToRestart := 2;
   fMaxFailsToStop := 10;
+  fFailsToRestart := fMaxFailsToRestart;
   fEnabled := False;
   fUsesQueue := True;
   fEventTypeNames := DEF_EVENTTYPENAMES;
@@ -441,6 +456,7 @@ begin
     Sleep(0);
   end;
   SetStatus(TLogProviderStatus.psStopped);
+  //NotifyError(Format('Provider stopped!',[fMaxFailsToStop]));
 end;
 
 procedure TLogProviderBase.IncAndCheckErrors;
@@ -455,17 +471,27 @@ begin
     Writeln(Format('drain: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
     Drain;
+    NotifyError(Format('Max fails (%d) to Stop reached! It will be Drained & Stopped now!',[fMaxFailsToStop]));
     if Assigned(fOnCriticalError) then fOnCriticalError(fName,'Max fails to Stop reached!');
   end
-  else if fFails > fMaxFailsToRestart then
+  else if fFailsToRestart = 0 then
   begin
     //try to restart provider
     {$IFDEF LOGGER_DEBUG}
     Writeln(Format('restart: %s (%d)',[Self.ClassName,fFails]));
     {$ENDIF}
+    NotifyError(Format('Max fails (%d) to Restart reached! Restarting...',[fMaxFailsToRestart]));
     SetStatus(TLogProviderStatus.psRestarting);
     Restart;
+    Inc(fRestartTimes);
+    NotifyError(Format('Provider Restarted. This occurs for %d time(s)',[fRestartTimes]));
+    fFailsToRestart := fMaxFailsToRestart;
     if Assigned(fOnRestart) then fOnRestart(fName);
+  end
+  else
+  begin
+    Dec(fFailsToRestart);
+    NotifyError(Format('Failed %d time(s). Fails to restart %d/%d',[fFails,fFailsToRestart,fMaxFailsToRestart]));
   end;
 end;
 
@@ -505,6 +531,7 @@ begin
     fThreadLog.Provider := Self;
     fThreadLog.Start;
   end;
+  fEnabled := True;
 end;
 
 function TLogProviderBase.IsQueueable: Boolean;
@@ -559,6 +586,7 @@ var
 begin
   msg := TStringList.Create;
   try
+    msg.Add('<html><body>');
     msg.Add(Format('<B>EventDate:</B> %s%s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),HTMBR]));
     msg.Add(Format('<B>Type:</B> %s%s',[EventTypeName[cLogItem.EventType],HTMBR]));
     if iiAppName in IncludedInfo then msg.Add(Format('<B>Application:</B> %s%s',[SystemInfo.AppName,HTMBR]));
@@ -568,6 +596,7 @@ begin
     if iiEnvironment in IncludedInfo then msg.Add(Format('<B>Environment:</B> %s%s',[Environment,HTMBR]));
     if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,HTMBR]));
     msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,HTMBR]));
+    msg.Add('</body></html>');
     Result := msg.Text;
   finally
     msg.Free;
@@ -595,6 +624,11 @@ begin
   end;
 end;
 
+procedure TLogProviderBase.NotifyError(const aError: string);
+begin
+  if Assigned(fOnNotifyError) then fOnNotifyError(fName,aError);
+end;
+
 procedure TLogProviderBase.Stop;
 begin
   if (fStatus = psStopped) or (fStatus = psStopping) then Exit;
@@ -602,6 +636,7 @@ begin
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('stopping thread: %s',[Self.ClassName]));
   {$ENDIF}
+  fEnabled := False;
   SetStatus(TLogProviderStatus.psStopping);
   if Assigned(fThreadLog) then
   begin
@@ -695,6 +730,12 @@ begin
   fEventTypeNames[Integer(cEventType)] := cValue;
 end;
 
+procedure TLogProviderBase.SetMaxFailsToRestart(const Value: Integer);
+begin
+  fMaxFailsToRestart := Value;
+  fFailsToRestart := Value;
+end;
+
 function TLogProviderBase.GetQueuedLogItems: Integer;
 begin
   Result := fLogQueue.QueueSize;
@@ -709,7 +750,6 @@ procedure TLogProviderBase.SetEnabled(aValue: Boolean);
 begin
   if (aValue <> fEnabled) then
   begin
-    fEnabled := aValue;
     if aValue then Init
       else Stop;
   end;
@@ -784,11 +824,15 @@ begin
               if not fProvider.IsSendLimitReached(logitem.EventType) then fProvider.WriteLog(logitem);
             end;
           except
-            {$IFDEF LOGGER_DEBUG}
-            Writeln(Format('fail: %s (%d)',[TLogProviderBase(fProvider).ClassName,TLogProviderBase(fProvider).Fails + 1]));
-            {$ENDIF}
-            //check if there are many errors and needs to restart or stop provider
-            if not Terminated then fProvider.IncAndCheckErrors;
+            on E : Exception do
+            begin
+              {$IFDEF LOGGER_DEBUG}
+              Writeln(Format('fail: %s (%d)',[TLogProviderBase(fProvider).ClassName,TLogProviderBase(fProvider).Fails + 1]));
+              {$ENDIF}
+              TLogProviderBase(fProvider).NotifyError(e.message);
+              //check if there are many errors and needs to restart or stop provider
+              if not Terminated then fProvider.IncAndCheckErrors;
+            end;
           end;
         finally
           logitem.Free;
@@ -863,11 +907,15 @@ begin
                   try
                     provider.WriteLog(logitem);
                   except
-                    {$IFDEF LOGGER_DEBUG}
-                    Writeln(Format('fail: %s (%d)',[TLogProviderBase(provider).ClassName,TLogProviderBase(provider).Fails + 1]));
-                    {$ENDIF}
-                    //try to restart provider
-                    if not Terminated then provider.IncAndCheckErrors;
+                    on E : Exception do
+                    begin
+                      {$IFDEF LOGGER_DEBUG}
+                      Writeln(Format('fail: %s (%d)',[TLogProviderBase(provider).ClassName,TLogProviderBase(provider).Fails + 1]));
+                      {$ENDIF}
+                      TLogProviderBase(provider).NotifyError(e.message);
+                      //try to restart provider
+                      if not Terminated then provider.IncAndCheckErrors;
+                    end;
                   end;
                 end;
               end;
@@ -1020,6 +1068,33 @@ begin
   GetLocalTime(SystemTime);
   {$ENDIF}
   Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
+end;
+
+procedure TLogger.NotifyProviderError(const aProviderName, aError: string);
+var
+  logitem : TLogItem;
+begin
+  if Assigned(fOwnErrorsProvider) then
+  begin
+    logitem := TLogItem.Create;
+    logitem.EventType := etError;
+    logitem.EventDate := Now();
+    logitem.Msg := Format('LOGGER "%s": %s',[aProviderName,aError]);
+    fOwnErrorsProvider.EnQueueItem(logitem);
+  end;
+  if Assigned(fOnProviderError) then fOnProviderError(aProviderName,aError);
+end;
+
+procedure TLogger.SetOwnErrorsProvider(const Value: TLogProviderBase);
+var
+  provider : ILogProvider;
+begin
+  fOwnErrorsProvider := Value;
+  for provider in fProviders do
+  begin
+    //redirect provider errors to logger
+    TLogProviderBase(provider).fOnNotifyError := NotifyProviderError;
+  end;
 end;
 
 { TLogSendLimit }
