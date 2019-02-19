@@ -168,7 +168,9 @@ There are some predefined providers, but you can make your own provider if neede
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
-    - **Enabled:** Enables/disables receive logging.
+    - **Enabled:** Enables/disables receive logging. Provider begins to receive logs after enabled.
+	- **OnProviderError:** Event to receive provider error notifications.
+	- **RedirectOwnErrorsToProvider:** Select provider to get all provider notification errors.
 
 - **Quick.Logger.Provider.EventLog:** Sends Logging to Windows EventLog.
 	
