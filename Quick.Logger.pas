@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.31';
+  QLVERSION = '1.32';
 
 type
 
