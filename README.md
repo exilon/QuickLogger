@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -17,6 +17,10 @@ Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Andro
 - SysLog
 
 ### Updates:
+
+**Feb 19,2019:** Delphi Linux compatilibity.
+
+**Feb 10,2019:** Firemonkey OSX & IOS compatibility.
 
 **Dec 08,2018:** Load/Save providers config from single json
 
