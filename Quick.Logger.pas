@@ -1,10 +1,10 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pï¿½rez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
-  Author      : Kike Pérez
+  Author      : Kike Pï¿½rez
   Version     : 1.33
   Created     : 12/10/2017
   Modified    : 19/02/2019
@@ -373,6 +373,7 @@ type
     property OnProviderError : TProviderErrorEvent read fOnProviderError write fOnProviderError;
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
+    class function GetVersion : string;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
     procedure Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
   end;
@@ -1004,6 +1005,11 @@ end;
 function TLogger.GetQueuedLogItems : Integer;
 begin
   Result := fLogQueue.QueueSize;
+end;
+
+class function TLogger.GetVersion: string;
+begin
+  Result := QLVERSION;
 end;
 
 procedure TLogger.Add(const cMsg : string; cEventType : TEventType);
