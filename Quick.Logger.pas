@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pï¿½rez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
-  Author      : Kike Pï¿½rez
+  Author      : Kike Pérez
   Version     : 1.33
   Created     : 12/10/2017
-  Modified    : 19/02/2019
+  Modified    : 20/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.32';
+  QLVERSION = '1.33';
 
 type
 
@@ -267,7 +267,6 @@ type
     procedure SetEventTypeName(cEventType: TEventType; const cValue : string);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
     procedure SetMaxFailsToRestart(const Value: Integer);
-    procedure NotifyError(const aError : string);
   protected
     function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
     function LogItemToJson(cLogItem : TLogItem) : string; overload;
@@ -277,6 +276,7 @@ type
     procedure SetStatus(cStatus : TLogProviderStatus);
     function GetLogLevel : TLogLevel;
     property SystemInfo : TSystemInfo read fSystemInfo;
+    procedure NotifyError(const aError : string);
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -423,7 +423,7 @@ begin
   fRestartTimes := 0;
   fMaxFailsToRestart := 2;
   fMaxFailsToStop := 10;
-  fFailsToRestart := fMaxFailsToRestart;
+  fFailsToRestart := fMaxFailsToRestart-1;
   fEnabled := False;
   fUsesQueue := True;
   fEventTypeNames := DEF_EVENTTYPENAMES;
@@ -483,10 +483,20 @@ begin
     {$ENDIF}
     NotifyError(Format('Max fails (%d) to Restart reached! Restarting...',[fMaxFailsToRestart]));
     SetStatus(TLogProviderStatus.psRestarting);
-    Restart;
+    try
+      Restart;
+    except
+      on E : Exception do
+      begin
+        NotifyError(Format('Failed to restart: %s',[e.Message]));
+        //set as running to try again
+        SetStatus(TLogProviderStatus.psRunning);
+        Exit;
+      end;
+    end;
     Inc(fRestartTimes);
     NotifyError(Format('Provider Restarted. This occurs for %d time(s)',[fRestartTimes]));
-    fFailsToRestart := fMaxFailsToRestart;
+    fFailsToRestart := fMaxFailsToRestart-1;
     if Assigned(fOnRestart) then fOnRestart(fName);
   end
   else
@@ -520,18 +530,22 @@ end;
 
 procedure TLogProviderBase.Init;
 begin
-  if not(fStatus in [psNone,psStopped]) then Exit;
+  if not(fStatus in [psNone,psStopped,psRestarting]) then Exit;
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('init thread: %s',[Self.ClassName]));
   {$ENDIF}
   SetStatus(TLogProviderStatus.psInitializing);
   if fUsesQueue then
   begin
-    fThreadLog := TThreadLog.Create;
-    fThreadLog.LogQueue := fLogQueue;
-    fThreadLog.Provider := Self;
-    fThreadLog.Start;
+    if not Assigned(fThreadLog) then
+    begin
+      fThreadLog := TThreadLog.Create;
+      fThreadLog.LogQueue := fLogQueue;
+      fThreadLog.Provider := Self;
+      fThreadLog.Start;
+    end;
   end;
+  SetStatus(TLogProviderStatus.psRunning);
   fEnabled := True;
 end;
 
@@ -733,8 +747,9 @@ end;
 
 procedure TLogProviderBase.SetMaxFailsToRestart(const Value: Integer);
 begin
-  fMaxFailsToRestart := Value;
-  fFailsToRestart := Value;
+  if Value > 0 then fMaxFailsToRestart := Value
+    else fMaxFailsToRestart := 1;
+  fFailsToRestart := fMaxFailsToRestart-1;
 end;
 
 function TLogProviderBase.GetQueuedLogItems: Integer;
