@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.23
+  Version     : 1.24
   Created     : 12/10/2017
-  Modified    : 08/09/2018
+  Modified    : 21/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -102,11 +102,7 @@ implementation
 constructor TLogFileProvider.Create;
 begin
   inherited;
-  {$IFNDEF ANDROID}
-  fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
-  {$ELSE}
-  fFileName := TPath.GetDocumentsPath + PathDelim + 'logger.log';
-  {$ENDIF}
+  fFileName := '';
   fIsRotating := False;
   fMaxRotateFiles := 5;
   fMaxFileSizeInMB := 20;
@@ -147,6 +143,15 @@ var
   FileMode : Word;
   fs : TFileStream;
 begin
+  if fFileName = '' then
+  begin
+    {$IFNDEF ANDROID}
+    fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
+    {$ELSE}
+    fFileName := TPath.GetDocumentsPath + PathDelim + 'logger.log';
+    {$ENDIF}
+  end;
+
   if fFileName.StartsWith('.'+PathDelim) then fFileName := StringReplace(fFileName,'.'+PathDelim,TPath.GetDirectoryName(ParamStr(0)) + PathDelim,[])
     else if ExtractFilePath(fFileName) = '' then fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + fFileName;
 
