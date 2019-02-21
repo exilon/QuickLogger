@@ -21,6 +21,8 @@ namespace QuickLogger.NetStandard
         private Dictionary<string, object> _providerInfo { get; set; }
         public Dictionary<string, object> providerInfo { get { return _providerInfo; } set { _providerInfo = value; } }
 
+
+
         public QuickLoggerProviderProps(string providerName, string providerType)
         {
             SetProviderName(providerName);
@@ -39,7 +41,7 @@ namespace QuickLogger.NetStandard
         }
         public void SetProviderName(string providerName)
         {
-            if (String.IsNullOrEmpty(providerName)) { throw new Exception("Invalid provider name"); }
+            if (string.IsNullOrEmpty(providerName)) { throw new Exception("Invalid provider name"); }
             _providerName = providerName;
         }
 
@@ -55,7 +57,7 @@ namespace QuickLogger.NetStandard
 
         public void SetProviderType(string providerType)
         {
-            if (String.IsNullOrEmpty(providerName)) { throw new Exception("Invalid provider type, call getProviders() to get valid providers"); }
+            if (string.IsNullOrEmpty(providerName)) { throw new Exception("Invalid provider type, call getProviders() to get valid providers"); }
             _providerType = providerType;
         }
 

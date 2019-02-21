@@ -4,8 +4,6 @@ namespace QuickLogger.NetStandard.Abstractions
 {
     public interface ILogger
     {
-        void InitializeConfiguration();
-        void Reload();
         void AddStandardConsoleProvider();
         void AddStandardFileProvider(string filename);
         void AddProvider(ILoggerProvider provider);               
@@ -24,5 +22,6 @@ namespace QuickLogger.NetStandard.Abstractions
         void KPI(string name, string value);        
         void Custom(string message);
         void TestCallbacks();
+        string GetLastError();
     }
 }
