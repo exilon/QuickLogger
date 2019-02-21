@@ -47,7 +47,7 @@ namespace QuickLogger.Sample
 
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ONLYERRORS }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
+                { "LogLevel", LoggerEventTypes.LOG_ALL }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
             });
             return new QuickLoggerProvider(providerProps);
         }
@@ -82,6 +82,7 @@ namespace QuickLogger.Sample
                 configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
+                logger.TestCallbacks();
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
