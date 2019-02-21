@@ -1,6 +1,5 @@
 ﻿using QuickLogger.NetStandard;
 using QuickLogger.NetStandard.Abstractions;
-using System;
 using System.Collections.Generic;
 
 namespace QuickLogger.DefaultSettings.Generator

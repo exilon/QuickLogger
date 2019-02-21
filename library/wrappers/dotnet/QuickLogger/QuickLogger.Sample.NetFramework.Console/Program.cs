@@ -17,16 +17,19 @@ namespace QuickLogger.Sample
         }
         static void AssignProviderCallbacks(ILoggerProvider provider)
         {
-            provider.CriticalError += (x => System.Console.WriteLine(x));
-            provider.Error += (x => {
-                System.Console.WriteLine("Provider Error " + provider.getProviderProperties().GetProviderName() + " " + x);
-                System.Console.ReadLine();
-            });
-            provider.QueueError += (x => System.Console.WriteLine("Provider Error " + provider.getProviderProperties().GetProviderName() + " " + x));
-            provider.StatusChanged += (x => System.Console.WriteLine("Provider Error " + provider.getProviderProperties().GetProviderName() + " " + x));
-            provider.QueueError += (x => System.Console.WriteLine("Provider Error " + provider.getProviderProperties().GetProviderName() + " " + x));
-            provider.Started += (x => System.Console.WriteLine("Provider Error " + provider.getProviderProperties().GetProviderName() + " " + x));
+            provider.CriticalError += (x => Console.WriteLine("Provider Critical Error : " + x));
+            provider.Error += (x => Console.WriteLine("Provider Error : " + x));
+            provider.QueueError += (x => Console.WriteLine("Provider QueueError : " + x));
+            provider.StatusChanged += (x => Console.WriteLine("Provider Status Changed : " + x));
+            provider.FailToLog += Provider_FailToLog;
+            provider.Started += (x => Console.WriteLine("Provider Started : " + x));
         }
+
+        private static void Provider_FailToLog()
+        {
+            Console.WriteLine("Provider Fail to log");
+        }
+
         static ILoggerProvider CreateFileDemoProvider(string logPath)
         {
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Dirty File Logger", "FileProvider");
@@ -44,16 +47,20 @@ namespace QuickLogger.Sample
 
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ALL }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
+                { "LogLevel", LoggerEventTypes.LOG_ONLYERRORS }, { "ShowEventColors", true }, { "ShowTimeStamp", true }
             });
             return new QuickLoggerProvider(providerProps);
         }
+
         static void Main(string[] args)
         {
+            ILogger logger = new QuickLoggerNative(".\\");
             try
             {
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
+
                 DeleteDemoFiles();
+
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
                 ILoggerProvider myConsoleDemoProvider = CreateConsoleDemoProvider();
                 AssignProviderCallbacks(myFileDemoProvider);
@@ -61,15 +68,20 @@ namespace QuickLogger.Sample
 
                 //Create new config instance, ADD Providers and Write to disk.
                 ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(CONFIGPATH);
-                ILoggerSettings settings = configManager.Load();
-                settings.addProvider(myFileDemoProvider);
-                settings.addProvider(myConsoleDemoProvider);
+                if (File.Exists(CONFIGPATH)) { configManager.Load(); }
+                else
+                {
+                    //Add providers to settings
+                    configManager.GetSettings().addProvider(myFileDemoProvider);
+                    configManager.GetSettings().addProvider(myConsoleDemoProvider);
+                    //Write settings to disk
+                    configManager.Write();
+                }
 
-                //Create a new instance of NativeQuickLogger
-                ILogger logger = new QuickLoggerNative(configManager, "");
+                //Create a new instance of NativeQuickLogger                
+                configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));
 
-                logger.AddProvider(myFileDemoProvider);
-                logger.AddProvider(myConsoleDemoProvider);
+                System.Console.WriteLine(logger.GetLoggerNameAndVersion());
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
@@ -83,7 +95,6 @@ namespace QuickLogger.Sample
                         for (int z = 0; z < 100; z++)
                         {
                             logger.Custom("Custom");
-                            logger.Success("Success");
                         }
                     }
                 }
@@ -93,8 +104,14 @@ namespace QuickLogger.Sample
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex.Message);
+                System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
+                System.Console.ReadKey();
             }
+        }
+
+        private static void MyFileDemoProvider_CriticalError(string msg)
+        {
+            Console.WriteLine(msg);
         }
     }
 }

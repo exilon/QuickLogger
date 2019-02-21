@@ -26,7 +26,7 @@ namespace QuickLogger.NetStandard
 
         public void setEnvironment(string environment)
         {
-            if (String.IsNullOrEmpty(environment)) { throw new Exception("Invalid environment name"); }
+            if (string.IsNullOrEmpty(environment)) { throw new Exception("Invalid environment name"); }
             _environment = environment;
         }
 

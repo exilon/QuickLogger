@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
 using QuickLogger.NetStandard.Abstractions;
 using Newtonsoft.Json;
 using NativeLibraryLoader;
@@ -55,45 +54,35 @@ namespace QuickLogger.NetStandard
         private delegate int GetProviderNamesNative(out string str);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate void TestCallbacksNative();
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private delegate int GetLastErrorNative(out string str);
 
         //Native Library native function pointers 
-        private AddProviderJSONNative addProviderJSONNative;
-        private RemoveProviderNative removeProviderNative;
-        private AddWrapperStatusChangedDelegateNative addWrapperStatusChangedDelegateNative;
-        private AddWrapperSendLimitsDelegateNative addWrapperSendLimitsDelegateNative;
-        private AddWrapperCriticalErrorDelegateNative addWrapperCriticalErrorDelegateNative;
-        private AddWrapperQueueErrorDelegateNative addWrapperQueueErrorDelegateNative;
-        private AddWrapperRestartDelegateNative addWrapperRestartDelegateNative;
-        private AddWrapperStartDelegateNative addWrapperStartDelegateNative;
-        private AddWrapperFailDelegateNative addWrapperFailDelegateNative;
-        private AddWrapperErrorDelegateNative addWrapperErrorDelegateNative;
-        private AddStandardConsoleProviderNative addStandardConsoleProviderNative;
-        private AddStandardFileProviderNative addStandardFileProviderNative;
-        private TestCallbacksNative testCallbacksNative;
-        private InfoNative infoNative;
-        private WarningNative warningNative;
-        private ErrorNative errorNative;
-        private TraceNative traceNative;
-        private CustomNative customNative;
-        private SuccessNative successNative;
-        private GetLibVersionNative getLibVersion;
-        private GetProviderNamesNative getProviderNamesNative;
-
-        private readonly ILoggerConfigManager _configManager;
-        private ILoggerSettings _settings;
+        private static AddProviderJSONNative addProviderJSONNative;
+        private static RemoveProviderNative removeProviderNative;
+        private static AddWrapperStatusChangedDelegateNative addWrapperStatusChangedDelegateNative;
+        private static AddWrapperSendLimitsDelegateNative addWrapperSendLimitsDelegateNative;
+        private static AddWrapperCriticalErrorDelegateNative addWrapperCriticalErrorDelegateNative;
+        private static AddWrapperQueueErrorDelegateNative addWrapperQueueErrorDelegateNative;
+        private static AddWrapperRestartDelegateNative addWrapperRestartDelegateNative;
+        private static AddWrapperStartDelegateNative addWrapperStartDelegateNative;
+        private static AddWrapperFailDelegateNative addWrapperFailDelegateNative;
+        private static AddWrapperErrorDelegateNative addWrapperErrorDelegateNative;
+        private static AddStandardConsoleProviderNative addStandardConsoleProviderNative;
+        private static AddStandardFileProviderNative addStandardFileProviderNative;
+        private static TestCallbacksNative testCallbacksNative;
+        private static InfoNative infoNative;
+        private static WarningNative warningNative;
+        private static ErrorNative errorNative;
+        private static TraceNative traceNative;
+        private static CustomNative customNative;
+        private static SuccessNative successNative;
+        private static GetLibVersionNative getLibVersion;
+        private static GetProviderNamesNative getProviderNamesNative;
+        private static GetLastErrorNative getLastErrorNative;
         private NativeLibrary _quickloggerlib;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
-
-        public QuickLoggerNative(ILoggerConfigManager configManager, string rootPath)
-        {
-            if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
-            else { _rootPath = rootPath; }
-            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
-            _configManager = configManager;
-            _quickloggerlib = new NativeLibrary(libNames);             
-            MapFunctionPointers();            
-        }
 
         public QuickLoggerNative(string rootPath)
         {            
@@ -132,53 +121,9 @@ namespace QuickLogger.NetStandard
             successNative = _quickloggerlib.LoadFunction<SuccessNative>("SuccessNative");
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
             getProviderNamesNative = _quickloggerlib.LoadFunction<GetProviderNamesNative>("GetProviderNamesNative");
+            getLastErrorNative = _quickloggerlib.LoadFunction<GetLastErrorNative>("GetLastError");
         }
-        private Dictionary<string, string> BuildBaseLogEvent(string message, string level)
-        {
-            return new Dictionary<string, string>{
-                { "@timestamp", DateTimeOffset.Now.UtcDateTime.ToString("O") },
-                { "type", "logevent" },
-                { "environment", _settings.getEnvironment() },
-                { "message", message },
-                { "level", level }
-                };
-        }
-        private string BuildExceptionEvent(Exception exception, string level, object correlatedId = null, string message = "")
-        {
-            var logevent = BuildLogEvent(message, level, correlatedId);
 
-            logevent.Add("exception", exception.GetType().ToString());
-
-            if (!string.IsNullOrWhiteSpace(exception.Source))
-                logevent.Add("source", exception.Source);
-
-            if (!string.IsNullOrWhiteSpace(exception.StackTrace))
-                logevent.Add("stackTrace", exception.StackTrace);
-
-            if (exception.TargetSite != null)
-                logevent.Add("targetSite", exception.TargetSite.ToString());
-
-            return JsonConvert.SerializeObject(logevent);
-        }
-        private Dictionary<string, string> BuildLogEvent(string message, string level, object correlatedId = null)
-        {
-            var logevent = BuildBaseLogEvent(message, level);
-
-            if (correlatedId != null)
-                logevent.Add("correlatedId", correlatedId.ToString());
-
-            return logevent;
-        }
-        private Dictionary<string, string> BuildKpiEvent(string name, string value, object correlatedId = null)
-        {
-            var logevent = BuildLogEvent(name + " - " + value, "KPI");
-
-            logevent.Add("kpi", name);
-
-            logevent.Add("value", value);
-
-            return logevent;
-        }
         public void Custom(string message)
         {
             customNative?.Invoke(message);                        
@@ -247,14 +192,6 @@ namespace QuickLogger.NetStandard
         {
             AddProvider(QuickLoggerBuiltInStandardProviders.CreateStandardFileProvider(FilePath));
         }
-        public void InitializeConfiguration()
-        {
-            if (_configManager != null)
-            {
-                _settings = _configManager.Load();
-                _settings.Providers().ForEach(x => AddProvider(x));
-            }
-        }
 
         public void AddStandardConsoleProvider()
         {
@@ -264,17 +201,6 @@ namespace QuickLogger.NetStandard
         public void AddStandardFileProvider(string FileName)
         {
             addStandardFileProviderNative(FileName);
-        }
-
-        public void ReloadConfig()
-        {
-            if (_configManager != null)
-                _settings = _configManager.Load();
-        }
-
-        public void Reload()
-        {
-            throw new NotImplementedException();
         }
 
         public string[] GetLoggerProviderTypes()
@@ -301,9 +227,16 @@ namespace QuickLogger.NetStandard
             throw new NotImplementedException();
         }
 
-        void ILogger.TestCallbacks()
+        public void TestCallbacks()
         {
             testCallbacksNative?.Invoke();
+        }
+
+        public string GetLastError()
+        {
+            string lasterror = "";
+            getLastErrorNative(out lasterror);
+            return lasterror;
         }
     }
 }
