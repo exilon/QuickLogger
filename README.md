@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -17,6 +17,10 @@ Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Andro
 - SysLog
 
 ### Updates:
+
+**Feb 19,2019:** Delphi Linux compatilibity.
+
+**Feb 10,2019:** Firemonkey OSX & IOS compatibility.
 
 **Dec 08,2018:** Load/Save providers config from single json
 
@@ -164,7 +168,9 @@ There are some predefined providers, but you can make your own provider if neede
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
-    - **Enabled:** Enables/disables receive logging.
+    - **Enabled:** Enables/disables receive logging. Provider begins to receive logs after enabled.
+	- **OnProviderError:** Event to receive provider error notifications.
+	- **RedirectOwnErrorsToProvider:** Select provider to get all provider notification errors.
 
 - **Quick.Logger.Provider.EventLog:** Sends Logging to Windows EventLog.
 	

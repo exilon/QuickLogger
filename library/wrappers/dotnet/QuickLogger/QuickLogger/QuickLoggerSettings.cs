@@ -9,7 +9,9 @@ namespace QuickLogger.NetStandard
     public class QuickLoggerSettings : ILoggerSettings  
     {
         private string _environment { get; set; }
+        private string _appName { get; set; }
         public string environment { get { return _environment; } set { _environment = value; } }
+        public string appName { get; set; }
         public List<ILoggerProvider> providers { get; set; }
 
         public QuickLoggerSettings() => providers = new List<ILoggerProvider>();
@@ -26,7 +28,7 @@ namespace QuickLogger.NetStandard
 
         public void setEnvironment(string environment)
         {
-            if (String.IsNullOrEmpty(environment)) { throw new Exception("Invalid environment name"); }
+            if (string.IsNullOrEmpty(environment)) { throw new Exception("Invalid environment name"); }
             _environment = environment;
         }
 

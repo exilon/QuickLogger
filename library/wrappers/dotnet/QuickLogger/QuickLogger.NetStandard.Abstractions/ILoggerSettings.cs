@@ -8,6 +8,6 @@ namespace QuickLogger.NetStandard.Abstractions
         string getEnvironment();
         void addProvider(ILoggerProvider provider);        
         List<ILoggerProvider> Providers();
-        ILoggerProvider getProvider(string name);                
+        ILoggerProvider getProvider(string name);                     
     }
 }

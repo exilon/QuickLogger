@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.24
   Created     : 02/10/2017
-  Modified    : 12/09/2018
+  Modified    : 18/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -34,10 +34,12 @@ interface
 
 uses
   Classes,
-  {$IFNDEF NEXTGEN}
+  {$IFDEF MSWINDOWS}
   Windows,
   {$ELSE}
-  FMX.Types,
+    {$IFNDEF DELPHILINUX}
+    FMX.Types,
+    {$ENDIF}
   {$ENDIF}
   SysUtils,
   Quick.Commons,
@@ -81,7 +83,7 @@ begin
   Init;
 end;
 
-{$IFNDEF NEXTGEN}
+{$IFDEF MSWINDOWS}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then OutputDebugString(PChar(cLogItem.Msg))
@@ -90,8 +92,10 @@ end;
 {$ELSE}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
+  {$IFNDEF DELPHILINUX}
   if CustomMsgOutput then FMX.Types.Log.d(cLogItem.Msg)
     else FMX.Types.Log.d(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg]));
+  {$ENDIF}
 end;
 {$ENDIF}
 

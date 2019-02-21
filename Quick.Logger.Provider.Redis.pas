@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.24
   Created     : 15/10/2017
-  Modified    : 24/05/2018
+  Modified    : 20/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -50,21 +50,26 @@ type
     fTCPClient : TIdTCPClient;
     fHost : string;
     fPort : Integer;
+    fDataBase : Integer;
     fLogKey : string;
     fMaxSize : Int64;
     fPassword : string;
     fOutputAsJson : Boolean;
-    function EscapeString(const json: string): string;
-    function RedisRPUSH(const aKey, Msg : string) : Int64;
-    function RedisLPUSH(const aKey, Msg : string) : Int64;
-    function RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
+    function EscapeString(const json: string) : string;
+    function IsIntegerResult(const aValue : string) : Boolean;
+    function RedisSELECT(dbIndex : Integer) : Boolean;
+    function RedisRPUSH(const aKey, Msg : string) : Boolean;
+    function RedisLPUSH(const aKey, Msg : string) : Boolean;
+    function RedisLTRIM(const aKey : string; aFirstElement, aMaxSize : Int64) : Boolean;
     function RedisAUTH(const aPassword : string) : Boolean;
     function RedisQUIT : Boolean;
+    procedure Connect;
   public
     constructor Create; override;
     destructor Destroy; override;
     property Host : string read fHost write fHost;
     property Port : Integer read fPort write fPort;
+    property DataBase : Integer read fDataBase write fDataBase;
     property LogKey : string read fLogKey write fLogKey;
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     property Password : string read fPassword write fPassword;
@@ -79,12 +84,31 @@ var
 
 implementation
 
+procedure TLogRedisProvider.Connect;
+begin
+  if not fTCPClient.Connected then
+  begin
+    fTCPClient.Connect;
+    if not fTCPClient.Connected then raise ELogger.Create('Can''t connect to Redis Server!');
+    NotifyError('Reconnected to Redis server');
+  end;
+  if fPassword <> '' then
+  begin
+    if not RedisAUTH(fPassword) then raise  ELogger.Create('Redis authentication error!');
+  end;
+  if fDataBase > 0 then
+  begin
+    if not RedisSELECT(fDataBase) then raise ELogger.CreateFmt('Can''t select Redis Database "%d"',[fDataBase]);
+  end;
+end;
+
 constructor TLogRedisProvider.Create;
 begin
   inherited;
   LogLevel := LOG_ALL;
   fHost := 'localhost';
   fPort := DEF_REDIS_PORT;
+  fDataBase := 0;
   fLogKey := 'Logger';
   fMaxSize := 0;
   fPassword := '';
@@ -116,13 +140,15 @@ begin
   fTCPClient.Host := fHost;
   fTCPClient.Port := fPort;
   fTCPClient.ConnectTimeout := 5000;
-  fTCPClient.Connect;
-  if not fTCPClient.Connected then raise ELogger.Create('Can''t connect to Redis Server!');
-  if fPassword <> '' then
-  begin
-    if not RedisAUTH(fPassword) then raise  ELogger.Create('Redis authentication error!');
-  end;
+  fTCPClient.Connect; //first connection
+  //connect password and database
+  Connect;
   inherited;
+end;
+
+function TLogRedisProvider.IsIntegerResult(const aValue: string): Boolean;
+begin
+  Result := IsInteger(StringReplace(aValue,':','',[]));
 end;
 
 function TLogRedisProvider.EscapeString(const json: string): string;
@@ -152,79 +178,98 @@ begin
   log := EscapeString(log);
   try
     RedisRPUSH(fLogKey,log);
-    //RedisLPUSH(fLogKey+'1',log);
-    if fMaxSize > 0 then RedisLTRIM(fLogKey,fMaxSize);
+    if fMaxSize > 0 then RedisLTRIM(fLogKey,fMaxSize*-1,-2);
   except
     on E : Exception do raise ELogger.Create(Format('Error sending Log to Redis: %s',[e.Message]));
   end;
 end;
 
-function TLogRedisProvider.RedisRPUSH(const aKey, Msg : string) : Int64;
+function TLogRedisProvider.RedisRPUSH(const aKey, Msg : string) : Boolean;
 var
   res : string;
 begin
-  if not fTCPClient.Connected then fTCPClient.Connect;
+  if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
     res := fTCPClient.IOHandler.ReadLn;
-    Result := StrToInt64(StringReplace(res,':','',[]));
-  end
-  else Result := 0;
+    if IsIntegerResult(res) then Result := True
+      else raise ELogger.CreateFmt('RPUSH error: %s',[res]);
+  end;
 end;
 
-function TLogRedisProvider.RedisLPUSH(const aKey, Msg : string) : Int64;
+function TLogRedisProvider.RedisSELECT(dbIndex: Integer): Boolean;
 var
   res : string;
 begin
-  if not fTCPClient.Connected then fTCPClient.Connect;
+  Result := False;
+  if not fTCPClient.Connected then Connect;
+  fTCPClient.IOHandler.Write(Format('SELECT %d%s',[dbIndex,CRLF]));
+  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  begin
+    res := fTCPClient.IOHandler.ReadLn;
+    if res.Contains('+OK') then Result := True
+      else raise ELogger.CreateFmt('SELECT error: %s',[res]);
+  end;
+end;
+
+function TLogRedisProvider.RedisLPUSH(const aKey, Msg : string) : Boolean;
+var
+  res : string;
+begin
+  Result := False;
+  if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('LPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
     res := fTCPClient.IOHandler.ReadLn;
-    Result := StrToInt64(StringReplace(res,':','',[]));
-  end
-  else Result := 0;
+    if IsIntegerResult(res) then Result := True
+      else raise ELogger.CreateFmt('LPUSH error: %s',[res]);
+  end;
 end;
 
 procedure TLogRedisProvider.Restart;
 begin
-  Stop;
+  //Stop; no stop to avoid clear current queue
   if Assigned(fTCPClient) then
   begin
-    if fTCPClient.Connected then fTCPClient.Disconnect(False);
+    try
+      if fTCPClient.Connected then fTCPClient.Disconnect(False);
+    except
+      //avoid error in a already failing connection
+    end;
     fTCPClient.Free;
   end;
   Init;
 end;
 
-function TLogRedisProvider.RedisLTRIM(const aKey : string; aMaxSize : Int64) : Boolean;
+function TLogRedisProvider.RedisLTRIM(const aKey : string; aFirstElement, aMaxSize : Int64) : Boolean;
 begin
-  if not fTCPClient.Connected then fTCPClient.Connect;
-  fTCPClient.IOHandler.Write(Format('LTRIM %s 0 %d%s',[aKey,fMaxSize,CRLF]));
+  Result := False;
+  if not fTCPClient.Connected then Connect;
+  fTCPClient.IOHandler.Write(Format('LTRIM %s %d %d%s',[aKey,aFirstElement,fMaxSize,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
     Result := fTCPClient.IOHandler.ReadLn = '+OK';
-  end
-  else Result := False;
+  end;
 end;
 
 function TLogRedisProvider.RedisAUTH(const aPassword : string) : Boolean;
 begin
-  if not fTCPClient.Connected then fTCPClient.Connect;
+  Result := False;
+  if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('AUTH %s%s',[aPassword,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
   begin
     Result := fTCPClient.IOHandler.ReadLn = '+OK';
-  end
-  else Result := False;
+  end;
 end;
 
 function TLogRedisProvider.RedisQUIT : Boolean;
 begin
   Result := True;
   try
-    if not fTCPClient.Connected then fTCPClient.Connect;
+    if not fTCPClient.Connected then Connect;
     fTCPClient.IOHandler.Write(Format('QUIT%s',[CRLF]));
     if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
     begin
