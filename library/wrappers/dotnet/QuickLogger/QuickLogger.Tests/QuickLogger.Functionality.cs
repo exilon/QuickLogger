@@ -81,7 +81,7 @@ namespace QuickLogger.Tests.Unit
         [Test]
         public void Add_Logger_Default_Console_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager, "");
+            ILogger logger = new QuickLoggerNative(".\\");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider", "ConsoleProvider");
             providerProps.SetProviderInfo(_consoleProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -96,7 +96,7 @@ namespace QuickLogger.Tests.Unit
         [Test]
         public void Add_Logger_Default_File_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager, "");
+            ILogger logger = new QuickLoggerNative(".\\");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "FileProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -115,7 +115,7 @@ namespace QuickLogger.Tests.Unit
         [Test]
         public void Add_Logger_Default_SMTP_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager, "");
+            ILogger logger = new QuickLoggerNative(".\\");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "SMTPProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -133,7 +133,7 @@ namespace QuickLogger.Tests.Unit
         [Test]
         public void Add_Logger_Default_Redis_Provider_To_New_Logger()
         {
-            ILogger logger = new QuickLoggerNative(_configManager, "");
+            ILogger logger = new QuickLoggerNative(".\\");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provider", "RedisProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);

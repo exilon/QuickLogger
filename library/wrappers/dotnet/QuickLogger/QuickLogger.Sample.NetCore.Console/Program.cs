@@ -54,9 +54,11 @@ namespace QuickLogger.Sample
 
         static void Main(string[] args)
         {
+            ILogger logger = new QuickLoggerNative(".\\");
             try
             {
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
+                
                 DeleteDemoFiles();
 
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
@@ -66,17 +68,20 @@ namespace QuickLogger.Sample
 
                 //Create new config instance, ADD Providers and Write to disk.
                 ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(CONFIGPATH);
-                ILoggerSettings settings = configManager.Load();
+                if (File.Exists(CONFIGPATH)) { configManager.Load(); }   
+                else
+                {
+                    //Add providers to settings
+                    configManager.GetSettings().addProvider(myFileDemoProvider);
+                    configManager.GetSettings().addProvider(myConsoleDemoProvider);
+                    //Write settings to disk
+                    configManager.Write();
+                }
+                
+                //Create a new instance of NativeQuickLogger                
+                configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));                
 
-                //Add providers to settings
-                settings.addProvider(myFileDemoProvider);
-                settings.addProvider(myConsoleDemoProvider);
-                //Write config to disk
-                configManager.Write();
-
-                //Create a new instance of NativeQuickLogger
-                ILogger logger = new QuickLoggerNative(configManager, "");
-                logger.InitializeConfiguration();              
+                System.Console.WriteLine(logger.GetLoggerNameAndVersion());
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
@@ -99,7 +104,8 @@ namespace QuickLogger.Sample
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex.Message);
+                System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
+                System.Console.ReadKey();
             }
         }
 

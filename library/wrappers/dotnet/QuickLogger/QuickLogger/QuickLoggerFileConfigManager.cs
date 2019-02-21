@@ -4,43 +4,27 @@ using Newtonsoft.Json;
 
 namespace QuickLogger.NetStandard
 {
-    public class QuickLoggerFileConfigManager : ILoggerConfigManager
+    public class QuickLoggerFileConfigManager : QuickConfigManager
     {        
         private readonly string _configurationFilePath;
-
-        private ILoggerSettings _settings;
-
-        private JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
-        {
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            Formatting = Formatting.Indented,
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,               
-        };
 
         public QuickLoggerFileConfigManager(string configurationFilePath)
         {
             _configurationFilePath = configurationFilePath;
-            JsonSerializerSettings.Converters.Add(new ILoggerProviderTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerProviderPropsTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerLoggerTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerHashSetTypeConverter());
         }
-        public ILoggerSettings Load()
+
+        public override ILoggerSettings Load()
         {
             _settings = null;
-            if (!File.Exists(_configurationFilePath))
-            {
-                _settings = new QuickLoggerSettings();
-                return _settings;
-            }
-                
+            if (!File.Exists(_configurationFilePath)) throw new FileNotFoundException("[QuickLogger Exception] Config File not found");
+
             var jsonFile = File.ReadAllText(_configurationFilePath);
 
             _settings = (QuickLoggerSettings)JsonConvert.DeserializeObject(jsonFile, typeof(QuickLoggerSettings), JsonSerializerSettings);
             return _settings;
         }
 
-        public void Write()
+        public override void Write()
         {
             if (_settings == null) { _settings = new QuickLoggerSettings(); }
             if (File.Exists(_configurationFilePath))
@@ -48,12 +32,6 @@ namespace QuickLogger.NetStandard
 
             using (var sw = new StreamWriter(_configurationFilePath))
                 sw.Write(JsonConvert.SerializeObject(_settings, JsonSerializerSettings));
-        }
-
-        public ILoggerSettings Reset()
-        {
-            _settings = null;
-            return _settings; 
         }
     }
 }

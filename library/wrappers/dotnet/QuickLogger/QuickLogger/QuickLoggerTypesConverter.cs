@@ -46,17 +46,17 @@ namespace QuickLogger.NetStandard
     {
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(LoggerEventTypes.EventType);
+            return objectType == typeof(EventType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return serializer.Deserialize(reader, typeof(LoggerEventTypes.EventType));
+            return serializer.Deserialize(reader, typeof(EventType));
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {  
-            serializer.Serialize(writer, Enum.GetName(typeof(LoggerEventTypes.EventType), value));
+            serializer.Serialize(writer, Enum.GetName(typeof(EventType), value));
         }
     }
 

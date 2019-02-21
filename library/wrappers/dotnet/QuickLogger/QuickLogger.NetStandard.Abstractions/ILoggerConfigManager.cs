@@ -6,6 +6,7 @@ namespace QuickLogger.NetStandard.Abstractions
     {
         ILoggerSettings Load();
         ILoggerSettings Reset();
+        ILoggerSettings GetSettings();
         void Write();
     }
 }
