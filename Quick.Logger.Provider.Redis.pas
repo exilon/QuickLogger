@@ -74,6 +74,7 @@ type
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     property Password : string read fPassword write fPassword;
     property OutputAsJson : Boolean read fOutputAsJson write fOutputAsJson;
+    property JsonOutputOptions : TJsonOutputOptions read fJsonOutputOptions write fJsonOutputOptions;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;

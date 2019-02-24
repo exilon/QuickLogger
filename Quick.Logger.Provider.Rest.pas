@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Rest
   Description : Log Api Rest Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.23
   Created     : 15/10/2017
-  Modified    : 24/05/2018
+  Modified    : 23/02/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -51,6 +51,7 @@ type
     destructor Destroy; override;
     property URL : string read fURL write fURL;
     property UserAgent : string read fUserAgent write fUserAgent;
+    property JsonOutputOptions : TJsonOutputOptions read fJsonOutputOptions write fJsonOutputOptions;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -100,7 +101,7 @@ begin
   if CustomMsgOutput then resp := fHTTPClient.Post(fURL,cLogItem.Msg)
     else resp := fHTTPClient.Post(fURL,LogItemToJson(cLogItem));
 
-  if not resp.StatusCode in [200,201] then
+  if not (resp.StatusCode in [200,201]) then
     raise ELogger.Create(Format('[TLogRestProvider] : Response %d : %s trying to post event',[resp.StatusCode,resp.StatusText]));
 end;
 
