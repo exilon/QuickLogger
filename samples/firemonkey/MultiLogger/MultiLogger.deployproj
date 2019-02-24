@@ -80,8 +80,27 @@
             <RemoteCommand/>
             <Overwrite>True</Overwrite>
         </DeployFile>
+        <DeployFile Include="OSX32\Debug\MultiLogger.rsm" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>MultiLogger.app\Contents\MacOS\</RemoteDir>
+            <RemoteName>MultiLogger.rsm</RemoteName>
+            <DeployClass>DebugSymbols</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+        </DeployFile>
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='Android'">
+        <DeployFile Include="Android\Debug\libMultiLogger.so" Condition="'$(Config)'=='Debug'">
+            <RemoteDir>MultiLogger\library\lib\armeabi-v7a\</RemoteDir>
+            <RemoteName>libMultiLogger.so</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
         <DeployFile Include="$(BDS)\bin\Artwork\Android\FM_LauncherIcon_36x36.png" Condition="'$(Config)'=='Debug'">
             <RemoteDir>MultiLogger\res\drawable-ldpi\</RemoteDir>
             <RemoteName>ic_launcher.png</RemoteName>
@@ -225,25 +244,6 @@
             <LocalCommand/>
             <RemoteCommand/>
             <Overwrite>True</Overwrite>
-        </DeployFile>
-        <DeployFile Include="Android\Debug\styles-v21.xml" Condition="'$(Config)'=='Debug'">
-            <RemoteDir>MultiLogger\res\values-v21\</RemoteDir>
-            <RemoteName>styles.xml</RemoteName>
-            <DeployClass>AndroidSplashStylesV21</DeployClass>
-            <Operation>1</Operation>
-            <LocalCommand/>
-            <RemoteCommand/>
-            <Overwrite>True</Overwrite>
-        </DeployFile>
-        <DeployFile Include="Android\Debug\libMultiLogger.so" Condition="'$(Config)'=='Debug'">
-            <RemoteDir>MultiLogger\library\lib\armeabi-v7a\</RemoteDir>
-            <RemoteName>libMultiLogger.so</RemoteName>
-            <DeployClass>ProjectOutput</DeployClass>
-            <Operation>1</Operation>
-            <LocalCommand/>
-            <RemoteCommand/>
-            <Overwrite>True</Overwrite>
-            <Required>True</Required>
         </DeployFile>
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='iOSSimulator'">
