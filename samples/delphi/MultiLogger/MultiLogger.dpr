@@ -20,7 +20,9 @@ uses
   Quick.Logger.Provider.EventLog,
   Quick.Logger.Provider.Memory,
   Quick.Logger.Provider.Telegram,
-  Quick.Logger.Provider.Slack;
+  Quick.Logger.Provider.Slack,
+  Quick.Logger.Provider.Logstash,
+  Quick.Logger.Provider.ElasticSearch;
 
 var
   a : Integer;
@@ -201,6 +203,32 @@ begin
     WebHookURL := 'https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX';
     LogLevel := [etError,etCritical,etException];
     Enabled := False; //enable when you have a Slack Weekhook to send messages
+  end;
+
+  //configure Logstash log provider
+  Logger.Providers.Add(GlobalLogLogstashProvider);
+  with GlobalLogLogstashProvider do
+ begin
+    URL := 'http://192.168.1.133:5011';
+    IndexName := 'logger';
+    LogLevel := [etError,etCritical,etException];
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a logstash service to connect
+  end;
+
+  //configure ElasticSearch log provider
+  Logger.Providers.Add(GlobalLogElasticSearchProvider);
+  with GlobalLogElasticSearchProvider do
+  begin
+    URL := 'http://192.168.1.133:9200';
+    IndexName := 'logger';
+    LogLevel := [etError,etCritical,etException];
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a ElasticSearch service to connect
   end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
