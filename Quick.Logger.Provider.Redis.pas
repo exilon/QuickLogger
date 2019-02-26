@@ -141,9 +141,13 @@ begin
   fTCPClient.Host := fHost;
   fTCPClient.Port := fPort;
   fTCPClient.ConnectTimeout := 5000;
-  fTCPClient.Connect; //first connection
-  //connect password and database
-  Connect;
+  try
+    fTCPClient.Connect; //first connection
+    //connect password and database
+    Connect;
+  except
+    on E : Exception do NotifyError(Format('Can''t connect to Redis service %s:%d (%s)',[Self.Host,Self.Port,e.Message]));
+  end;
   inherited;
 end;
 
