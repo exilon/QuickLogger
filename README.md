@@ -17,8 +17,11 @@ Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Andro
 - SysLog
 - Logstash
 - ElasticSearch
+- InfluxDB
 
 ### Updates:
+
+**Feb 28,2019:** InfluxDB provider
 
 **Feb 26,2019:** ElasticSearch provider
 
@@ -311,6 +314,21 @@ There are some predefined providers, but you can make your own provider if neede
 	- **JsonOutputOptions:** Json options to format output json.
 	- **IndexName:** ElasticSearch index name.
 	- **DocType:** Entry document type.
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.InfluxDB:** Sends Logging to InfluxDB Database.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+	- **URL:** Host
+	- **Database:** Database name.
+	- **UserName:** Database username.
+	- **Password:** Database password.
+	- **CreateDatabaseIfNotExists:** Creates influxdb database if not exists on server.
+	- **IncludedTags:** Tags included to influxdb.
     - **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
