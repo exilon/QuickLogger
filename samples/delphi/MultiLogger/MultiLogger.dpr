@@ -22,7 +22,8 @@ uses
   Quick.Logger.Provider.Telegram,
   Quick.Logger.Provider.Slack,
   Quick.Logger.Provider.Logstash,
-  Quick.Logger.Provider.ElasticSearch;
+  Quick.Logger.Provider.ElasticSearch,
+  Quick.Logger.Provider.InfluxDB;
 
 var
   a : Integer;
@@ -229,6 +230,23 @@ begin
     PlatformInfo := 'Desktop';
     IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     Enabled := False; //enable when you have a ElasticSearch service to connect
+  end;
+
+  //configure InfluxDB log provider
+  Logger.Providers.Add(GlobalLogInfluxDBProvider);
+  with GlobalLogInfluxDBProvider do
+  begin
+    URL := 'http://192.168.1.133:8086';
+    DataBase := 'logger';
+    CreateDataBaseIfNotExists := True;
+    LogLevel := LOG_DEBUG;
+    MaxFailsToRestart := 5;
+    MaxFailsToStop := 0;
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedTags := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a InfluxDB server to connect
   end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
