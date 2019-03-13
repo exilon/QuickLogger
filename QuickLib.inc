@@ -1,7 +1,7 @@
 ﻿{
     This file is part of QuickLib: https://github.com/exilon/QuickLib
 
-    QuickLibs. Copyright (C) 2018 Kike Pérez
+    QuickLibs. Copyright (C) 2019 Kike Pérez
       Exilon - https://www.exilon.es
 
      ***************************************************************************
@@ -123,6 +123,10 @@
       {$ifdef LINUX}
         {$define DELPHILINUX}
       {$ifend}
+    {$ifend}
+    {$if CompilerVersion >= 33.0} //Delphi RX10.3 Rio
+      {$define DELPHIRX103_UP}
+	    {$define DELPHIRIO_UP}
     {$ifend}
   {$else}
     //Delphi 5 or older

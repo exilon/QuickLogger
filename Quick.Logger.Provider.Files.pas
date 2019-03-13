@@ -202,10 +202,10 @@ begin
       WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
       WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
       if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
-      {$IFDEF MSWINDOWS}
+      //{$IFDEF MSWINDOWS}
       if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
       if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[SystemInfo.UserName]));
-      {$ENDIF}
+      //{$ENDIF}
       WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
       {$IFDEF MSWINDOWS}
       if IsService then WriteToStream('AppType     : Service')

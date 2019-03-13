@@ -74,6 +74,7 @@ type
     property MaxSize : Int64 read fMaxSize write fMaxSize;
     property Password : string read fPassword write fPassword;
     property OutputAsJson : Boolean read fOutputAsJson write fOutputAsJson;
+    property JsonOutputOptions : TJsonOutputOptions read fJsonOutputOptions write fJsonOutputOptions;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -140,9 +141,13 @@ begin
   fTCPClient.Host := fHost;
   fTCPClient.Port := fPort;
   fTCPClient.ConnectTimeout := 5000;
-  fTCPClient.Connect; //first connection
-  //connect password and database
-  Connect;
+  try
+    fTCPClient.Connect; //first connection
+    //connect password and database
+    Connect;
+  except
+    on E : Exception do NotifyError(Format('Can''t connect to Redis service %s:%d (%s)',[Self.Host,Self.Port,e.Message]));
+  end;
   inherited;
 end;
 

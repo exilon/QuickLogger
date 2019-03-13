@@ -227,6 +227,13 @@ type
   TStatusChangedEvent = reference to procedure(aProviderName : string; status : TLogProviderStatus);
   {$ENDIF}
 
+  TJsonOutputOptions = class
+  private
+    fUseUTCTime : Boolean;
+  public
+    property UseUTCTime : Boolean read fUseUTCTime write fUseUTCTime;
+  end;
+
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
   protected
     fThreadLog : TThreadLog;
@@ -268,6 +275,7 @@ type
     function IsSendLimitReached(cEventType : TEventType): Boolean;
     procedure SetMaxFailsToRestart(const Value: Integer);
   protected
+    fJsonOutputOptions : TJsonOutputOptions;
     function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
     function LogItemToJson(cLogItem : TLogItem) : string; overload;
     function LogItemToHtml(cLogItem: TLogItem): string;
@@ -432,6 +440,8 @@ begin
   fPlatformInfo := '';
   fIncludedInfo := [iiAppName,iiHost];
   fSystemInfo := Quick.SysInfo.SystemInfo;
+  fJsonOutputOptions := TJsonOutputOptions.Create;
+  fJsonOutputOptions.UseUTCTime := False;
   fAppName := fSystemInfo.AppName;
 end;
 
@@ -442,7 +452,7 @@ begin
   {$ENDIF}
   if Assigned(fLogQueue) then fLogQueue.Free;
   if Assigned(fSendLimits) then fSendLimits.Free;
-
+  if Assigned(fJsonOutputOptions) then fJsonOutputOptions.Free;
   inherited;
 end;
 
@@ -561,9 +571,13 @@ begin
 end;
 
 function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
+var
+  ndate : string;
+  jdate : string;
 begin
   Result := TJSONObject.Create;
-  Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp', DateTimeToGMT(cLogItem.EventDate));
+  if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
+    else Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',DateTimeToJsonDate(cLogItem.EventDate));
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
   if iiHost in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
   if iiAppName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',fAppName);

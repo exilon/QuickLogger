@@ -45,7 +45,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="MultiLogger"/>
+      <Filename Value="bin\$(TargetCPU)-$(TargetOS)\MultiLogger"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

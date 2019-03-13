@@ -15,8 +15,17 @@ Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Andro
 - Slack
 - MSSQL, MSAcces, etc with ADODB.
 - SysLog
+- Logstash
+- ElasticSearch
+- InfluxDB
 
 ### Updates:
+
+**Feb 28,2019:** InfluxDB provider
+
+**Feb 26,2019:** ElasticSearch provider
+
+**Feb 25,2019:** Logstash provider
 
 **Feb 19,2019:** Delphi Linux compatilibity.
 
@@ -193,6 +202,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
     - **UserAgent:** Useragent string.
     - **URL:** URL to send post json.
+	- **JsonOutputOptions:** Json options to format output json.
     - **Enabled:** Enables/disables receive logging.
 
 - **Quick.Logger.Provider.Redis:** Sends Logging to Redis server.
@@ -276,6 +286,49 @@ There are some predefined providers, but you can make your own provider if neede
 	- **Host:** SysLog server host.
 	- **Port:** SysLog server port.
 	- **Facility:** Type of program is logging to syslog.
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.Logstash:** Sends Logging to Logstash service.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+	- **URL:** Host
+	- **JsonOutputOptions:** Json options to format output json.
+	- **IndexName:** ElasticSearch index name.
+	- **DocType:** Entry document type.
+	- **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.ElasticSearch:** Sends Logging to ElasticSearch server.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
+	- **URL:** Host
+	- **JsonOutputOptions:** Json options to format output json.
+	- **IndexName:** ElasticSearch index name.
+	- **DocType:** Entry document type.
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.InfluxDB:** Sends Logging to InfluxDB Database.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+	- **URL:** Host
+	- **Database:** Database name.
+	- **UserName:** Database username.
+	- **Password:** Database password.
+	- **CreateDatabaseIfNotExists:** Creates influxdb database if not exists on server.
+	- **IncludedTags:** Tags included to influxdb.
     - **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
