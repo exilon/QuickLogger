@@ -21,7 +21,7 @@ namespace QuickLogger.Sample
             provider.Error += (x => Console.WriteLine("Provider Error : " + x));
             provider.QueueError += (x => Console.WriteLine("Provider QueueError : " + x));
             provider.StatusChanged += (x => Console.WriteLine("Provider Status Changed : " + x));
-            provider.FailToLog += Provider_FailToLog;
+            provider.FailToLog += Provider_FailToLog;  // Another way to define callback references
             provider.Started += (x => Console.WriteLine("Provider Started : " + x));
         }
 
@@ -83,8 +83,6 @@ namespace QuickLogger.Sample
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
                 logger.TestCallbacks();
-
-                throw new Exception("Uncontrolled exception");
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
