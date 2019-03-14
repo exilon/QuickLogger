@@ -6,9 +6,11 @@ using Newtonsoft.Json;
 using NativeLibraryLoader;
 using System.IO;
 using System.Reflection;
+using System.Security.Permissions;
 
 namespace QuickLogger.NetStandard
 {
+    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
     public class QuickLoggerNative : ILogger
     {
         //Native Library native function types 
@@ -49,7 +51,11 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate void CustomNative(string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int GetLibVersionNative(out string str);
+        private delegate void EnableProviderNative(string providerName);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private delegate void DisableProviderNative(string providerName);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private delegate int GetLibVersionNative(out string str);        
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate int GetProviderNamesNative(out string str);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -77,27 +83,43 @@ namespace QuickLogger.NetStandard
         private static TraceNative traceNative;
         private static CustomNative customNative;
         private static SuccessNative successNative;
+        private static EnableProviderNative enableProviderNative;
+        private static DisableProviderNative disableProviderNative;
         private static GetLibVersionNative getLibVersion;
         private static GetProviderNamesNative getProviderNamesNative;
         private static GetLastErrorNative getLastErrorNative;
+        private static UnhandledExceptionEventHandler unhandledEventHandler;
         private NativeLibrary _quickloggerlib;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
-
-        public QuickLoggerNative(string rootPath)
+        
+        public QuickLoggerNative(string rootPath, bool handleExceptions = true )
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
             for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
             _quickloggerlib = new NativeLibrary(libNames);
             MapFunctionPointers();
+            if (handleExceptions) { setupCurrentDomainExceptionHandler(); }
         }
 
         ~QuickLoggerNative()
         {
+            unhandledEventHandler = null;
             if (_quickloggerlib != null) { _quickloggerlib.Dispose(); }
         }
 
+        private void setupCurrentDomainExceptionHandler()
+        {
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            unhandledEventHandler = new UnhandledExceptionEventHandler(OnUnhandledException);
+            currentDomain.UnhandledException += unhandledEventHandler;
+        }
+
+        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception) { Error((Exception)e.ExceptionObject); }
+        }
         private void MapFunctionPointers()
         {
             addProviderJSONNative = _quickloggerlib.LoadFunction<AddProviderJSONNative>("AddProviderJSONNative");
@@ -119,6 +141,8 @@ namespace QuickLogger.NetStandard
             traceNative = _quickloggerlib.LoadFunction<TraceNative>("TraceNative");
             customNative = _quickloggerlib.LoadFunction<CustomNative>("CustomNative");
             successNative = _quickloggerlib.LoadFunction<SuccessNative>("SuccessNative");
+            disableProviderNative = _quickloggerlib.LoadFunction<DisableProviderNative>("DisableProviderNative");
+            enableProviderNative = _quickloggerlib.LoadFunction<EnableProviderNative>("EnableProviderNative");            
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
             getProviderNamesNative = _quickloggerlib.LoadFunction<GetProviderNamesNative>("GetProviderNamesNative");
             getLastErrorNative = _quickloggerlib.LoadFunction<GetLastErrorNative>("GetLastError");
@@ -170,19 +194,19 @@ namespace QuickLogger.NetStandard
         }
         public void AddProvider(ILoggerProvider provider)
         {
-            if (GetLoggerProviderTypes().Where(x => x.ToLower() == provider.getProviderProperties().GetProviderType().ToLower()).Count() == 0) { throw new Exception("Invalid provider type."); }
+            if (GetLoggerProviderTypes().Where(x => x.ToLower() == provider.getProviderProperties().GetProviderType().ToLower()).Count() == 0) { throw new Exception("Invalid provider type." + GetLastError()); }
             if (!(provider is ILoggerProvider)) { throw new TypeLoadException("Invalid Provider"); }
-            if (!Convert.ToBoolean(addProviderJSONNative?.Invoke(provider.getProviderProperties().ToJSON()))) { throw new TypeLoadException("Error while adding a provider to native library"); }
+            if (!Convert.ToBoolean(addProviderJSONNative?.Invoke(provider.getProviderProperties().ToJSON()))) { throw new TypeLoadException("Error while adding a provider to native library " + GetLastError()); }
             AssignDelegatesToNative(provider);
         }
         public void RemoveProvider(ILoggerProvider provider)
         {
             if (!(provider is ILoggerProvider)) { throw new TypeLoadException("Invalid Provider"); }
-            if (!Convert.ToBoolean(removeProviderNative?.Invoke(provider.getProviderProperties().GetProviderName()))) { throw new TypeLoadException("Error while removing a provider to native library"); }
+            if (!Convert.ToBoolean(removeProviderNative?.Invoke(provider.getProviderProperties().GetProviderName()))) { throw new TypeLoadException("Error while removing a provider to native library " + GetLastError()); }
         }
         public void RemoveProvider(string name)
         {
-            if (!Convert.ToBoolean(removeProviderNative(name))) { throw new TypeLoadException("Error while removing a provider to native library"); }
+            if (!Convert.ToBoolean(removeProviderNative(name))) { throw new TypeLoadException("Error while removing a provider to native library " + GetLastError()); }
         }
         public void InitStandardConsoleProvider()
         {
@@ -217,16 +241,6 @@ namespace QuickLogger.NetStandard
             return version;
         }
 
-        public void EnableProvider(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void DisableProvider(string name)
-        {
-            throw new NotImplementedException();
-        }
-
         public void TestCallbacks()
         {
             testCallbacksNative?.Invoke();
@@ -237,6 +251,26 @@ namespace QuickLogger.NetStandard
             string lasterror = "";
             getLastErrorNative(out lasterror);
             return lasterror;
+        }
+
+        public void EnableProvider(ILoggerProvider provider)
+        {           
+            enableProviderNative?.Invoke(provider.getProviderProperties().GetProviderName()); 
+        }
+
+        public void EnableProvider(string name)
+        {
+            enableProviderNative?.Invoke(name);
+        }
+
+        public void DisableProvider(ILoggerProvider provider)
+        {
+            disableProviderNative?.Invoke(provider.getProviderProperties().GetProviderName());
+        }
+
+        public void DisableProvider(string name)
+        {
+            disableProviderNative?.Invoke(name);
         }
     }
 }

@@ -571,9 +571,6 @@ begin
 end;
 
 function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
-var
-  ndate : string;
-  jdate : string;
 begin
   Result := TJSONObject.Create;
   if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))

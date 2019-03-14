@@ -15,6 +15,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickLogger.Sample.NetCore.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickLogger.DefaultSettings.Generator", "QuickLogger.DefaultSettings.Generator\QuickLogger.DefaultSettings.Generator.csproj", "{4657DD2C-79C1-48D4-976E-063FE9DD3E44}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "native", "native", "{EBCF30E0-2486-4DD9-A5FF-957E36B0067D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x64", "x64", "{BB48CCCF-2451-48CD-BA74-4869C20A45C4}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\bin\Win64\Release\QuickLogger.dll = ..\..\..\bin\Win64\Release\QuickLogger.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{5E9AF9E1-D368-4A51-9B63-CD3F682EE97D}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\bin\Win32\Release\QuickLogger.dll = ..\..\..\bin\Win32\Release\QuickLogger.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86_64-linux", "x86_64-linux", "{DA6F95D3-64F0-428F-B92B-DEC806C36266}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\bin\x86_64-linux\libquicklogger.so = ..\..\..\bin\x86_64-linux\libquicklogger.so
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +117,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BB48CCCF-2451-48CD-BA74-4869C20A45C4} = {EBCF30E0-2486-4DD9-A5FF-957E36B0067D}
+		{5E9AF9E1-D368-4A51-9B63-CD3F682EE97D} = {EBCF30E0-2486-4DD9-A5FF-957E36B0067D}
+		{DA6F95D3-64F0-428F-B92B-DEC806C36266} = {EBCF30E0-2486-4DD9-A5FF-957E36B0067D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {939878F6-E47F-4B28-B1FE-3DBA9BD0434F}
