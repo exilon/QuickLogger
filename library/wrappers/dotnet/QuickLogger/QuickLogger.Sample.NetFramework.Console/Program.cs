@@ -35,7 +35,7 @@ namespace QuickLogger.Sample
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Dirty File Logger", "FileProvider");
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", true },
+                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", "False" },
                 { "DailyRotate", false }, { "ShowTimeStamp", true }
             });
             return new QuickLoggerProvider(providerProps);
@@ -76,13 +76,15 @@ namespace QuickLogger.Sample
                     configManager.GetSettings().addProvider(myConsoleDemoProvider);
                     //Write settings to disk
                     configManager.Write();
-                }
+                }                
 
                 //Create a new instance of NativeQuickLogger                
                 configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
                 logger.TestCallbacks();
+
+                throw new Exception("Uncontrolled exception");
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
@@ -99,6 +101,8 @@ namespace QuickLogger.Sample
                         }
                     }
                 }
+
+                logger.DisableProvider(myConsoleDemoProvider);
 
                 logger.Info("QuickLogger demo program finished.");
                 System.Console.ReadKey();

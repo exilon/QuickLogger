@@ -35,8 +35,9 @@ namespace QuickLogger.Sample
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Dirty File Logger", "FileProvider");
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", true },
-                { "DailyRotate", false }, { "ShowTimeStamp", true }
+
+                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", false },
+                { "DailyRotate", false }, { "ShowTimeStamp", true }             
             });
             return new QuickLoggerProvider(providerProps);
         }
@@ -64,7 +65,7 @@ namespace QuickLogger.Sample
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
                 ILoggerProvider myConsoleDemoProvider = CreateConsoleDemoProvider();
                 AssignProviderCallbacks(myFileDemoProvider);
-                AssignProviderCallbacks(myConsoleDemoProvider);
+                AssignProviderCallbacks(myConsoleDemoProvider);                
 
                 //Create new config instance, ADD Providers and Write to disk.
                 ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(CONFIGPATH);
@@ -83,6 +84,11 @@ namespace QuickLogger.Sample
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
 
+                logger.TestCallbacks();
+
+                System.Console.WriteLine(logger.GetLoggerNameAndVersion());
+                logger.TestCallbacks();                
+
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
 
@@ -99,11 +105,14 @@ namespace QuickLogger.Sample
                     }
                 }
 
-                logger.Info("QuickLogger demo program finished.");
+                logger.Info("QuickLogger demo program finished.");               
+                throw new Exception("Uncontrolled exception");
                 System.Console.ReadKey();
             }
             catch (Exception ex)
             {
+                //Quick Logger will catch uncontrolled exceptions.
+                throw new Exception("Uncontrolled exception");
                 System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
                 System.Console.ReadKey();
             }

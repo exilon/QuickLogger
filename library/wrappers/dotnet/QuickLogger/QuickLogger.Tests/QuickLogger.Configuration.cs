@@ -51,18 +51,13 @@ namespace QuickLogger.Tests.Unit
         public void Add_Logger_provider_into_a_new_configuration_manager()
         {
             ILoggerConfigManager configmanager = GetaTestConfigManager(_configPath);
-            ILoggerSettings settings = configmanager.Load();
-            settings.setEnvironment(_environmentName);
-            settings.addProvider(GetaTestProvider(_testprovidername));
-            Assert.That(settings.getProvider(_testprovidername), !Is.Null);
+            configmanager.GetSettings().addProvider(GetaTestProvider(_testprovidername));
+            Assert.That(configmanager.GetSettings().getProvider(_testprovidername), !Is.Null);
         }
         [Test]
         public void Make_default_settings_and_save_to_disk()
         {
             ILoggerConfigManager configmanager = GetaTestConfigManager(_configPath);
-            ILoggerSettings settings = configmanager.Load();
-            settings.setEnvironment(_environmentName);
-            settings.addProvider(GetaTestProvider(_testprovidername));
             configmanager.Write();
             Assert.That(File.Exists(_configPath), Is.True);
         }
@@ -71,15 +66,15 @@ namespace QuickLogger.Tests.Unit
         public void Create_Save_And_Load_logger_configuration_from_disk()
         {
             ILoggerConfigManager configmanager = GetaTestConfigManager(_configPath);
-            ILoggerSettings settings = configmanager.Load();
-            settings.setEnvironment(_environmentName);
-            settings.addProvider(GetaTestProvider(_testprovidername));
+            configmanager.GetSettings().addProvider(GetaTestProvider(_testprovidername));
+            configmanager.GetSettings().setEnvironment("Test");
             configmanager.Write();
             Assert.That(File.Exists(_configPath), Is.True);
-            Assert.That(configmanager.Reset(), Is.Null);
-            settings = configmanager.Load();
-            Assert.That(settings, !Is.Null);
-            Assert.That(settings.getProvider(_testprovidername), !Is.Null);
+            Assert.That(configmanager.Reset().getEnvironment(), Is.Null);
+            configmanager.Load();
+            Assert.That(configmanager.GetSettings(), !Is.Null);
+            Assert.That(configmanager.GetSettings().getEnvironment(), Is.EqualTo("Test"));
+            Assert.That(configmanager.GetSettings().getProvider(_testprovidername), !Is.Null);
         }
 
         [TearDown]

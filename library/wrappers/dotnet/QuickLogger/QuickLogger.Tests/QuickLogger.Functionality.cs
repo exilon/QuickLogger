@@ -14,10 +14,27 @@ namespace QuickLogger.Tests.Unit
         private static ILoggerConfigManager _configManager;
         private static ILoggerProviderProps _providerProps;
         private static string _configPath = String.Empty;
-        private static string _fileloggerName = "%desktop%\\testfilelog.log";
+        private static string _fileloggerName = "testfilelog.log";
         private static string _fileloggerPath = "";
-        private static string _configName = "%desktop%\\qloggerconfig.json";
+        private static string _configName = "qloggerconfig.json";
         private static string _environmentName = "Test Env";
+
+        static string _smtpconfig = "{" +
+                                    "\"Host\": \"mail.domain.com\"," +
+                                    "\"UserName\": \"email@domain.com\"," +
+                                    "\"Password\": \"jfs93as\"," +
+                                    "\"UseSSL\": false" +
+                                    "}";
+        static string _mailconfig = "{" +
+                                    "\"SenderName\": \"Quick.Logger Alert\"," +
+                                    "\"From\": \"email@domain.com\"," +
+                                    "\"Recipient\": \"alert@domain.com\"," +
+                                    "\"Subject\": \"\"," +
+                                    "\"Body\": \"\"," +
+                                    "\"CC\": \"myemail@domain.com\"," +
+                                    "\"BCC\": \"\"" +
+                                    "}";
+
         static Dictionary<string, object> _consoleProviderInfo = new Dictionary<string, object>()
         {
             { "LogLevel", LoggerEventTypes.LOG_ALL},
@@ -25,12 +42,12 @@ namespace QuickLogger.Tests.Unit
         };
         static Dictionary<string, object> _fileProviderInfo = new Dictionary<string, object>()
         {
-            { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", _fileloggerPath },
-            { "DailyRotate", false }, { "ShowTimeStamp", true }
+            { "LogLevel", LoggerEventTypes.LOG_ALL}, { "AutoFileNameByProcess", false },
+            { "DailyRotate", false }, { "ShowTimeStamp", true }, { "Enabled", false }
         };
         static Dictionary<string, object> _smtpProviderInfo = new Dictionary<string, object>()
         {
-            { "LogLevel", LoggerEventTypes.LOG_ALL}, { "UnderlineHeaderEventType", true } ,
+            { "LogLevel", LoggerEventTypes.LOG_ALL}, { "UnderlineHeaderEventType", true },
             { "DailyRotate", false }, { "ShowTimeStamp", true }, { "ShowEventColors", true }
         };
         static Dictionary<string, object> _eventsProviderInfo = new Dictionary<string, object>()
@@ -50,7 +67,7 @@ namespace QuickLogger.Tests.Unit
         }
         private Boolean FindStringInsideFile(string fileName, string line)
         {
-            using (StreamReader sr = new StreamReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader sr = new StreamReader(File.Open(fileName, FileMode.Open, FileAccess.Read)))
             {
                 while (!sr.EndOfStream)
                 {
@@ -64,10 +81,10 @@ namespace QuickLogger.Tests.Unit
         public void SetUp()
         {
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Configuration_Should)).Location).Parent.Parent.FullName;
-            _configPath += _configName;
-            _fileloggerPath = _configPath;
-            _fileloggerPath += _fileloggerName;
+            _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
+            _configPath = Path.Combine(_configPath, _configName);            
             if (File.Exists(_configPath)) { File.Delete(_configPath); }
+            if (File.Exists(_fileloggerPath)) { File.Delete(_fileloggerPath); }
             _configManager = new QuickLoggerFileConfigManager(_configPath);
         }
 
@@ -90,6 +107,37 @@ namespace QuickLogger.Tests.Unit
             logger.Custom("Works");
             logger.Error("Works");
             logger.Success("Works");
+            //Assert that words are shown on the console 
+            logger.RemoveProvider(loggerProvider);
+        }
+        [Test]
+        public void Add_Logger_Default_Console_Provider_To_New_Logger_Write_5_Lines_And_DisableIT()
+        {
+            ILogger logger = new QuickLoggerNative(".\\");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider", "ConsoleProvider");
+            providerProps.SetProviderInfo(_consoleProviderInfo);
+            ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);            
+            logger.AddProvider(loggerProvider);
+            var currentstatus = "";
+            loggerProvider.StatusChanged += (x => currentstatus = x); 
+            
+            for (var x = 0; x < 5; x++)
+            {
+                logger.Info("Works");
+                logger.Custom("Works");
+                logger.Error("Works");
+                logger.Success("Works");
+            }
+            //Assert that words are shown on the console 
+            logger.DisableProvider(loggerProvider);            
+            for (var x = 0; x < 5; x++)
+            {
+                logger.Info("Works");
+                logger.Custom("Works");
+                logger.Error("Works");
+                logger.Success("Works");
+            }
+            //Assert that words are not shown on the console 
             logger.RemoveProvider(loggerProvider);
         }
 
@@ -98,25 +146,35 @@ namespace QuickLogger.Tests.Unit
         {
             ILogger logger = new QuickLoggerNative(".\\");
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "FileProvider");
-            providerProps.SetProviderInfo(_fileProviderInfo);
+            _fileProviderInfo.Add("FileName", _fileloggerPath);
+            providerProps.SetProviderInfo(_fileProviderInfo);            
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             logger.AddProvider(loggerProvider);            
             logger.Info("Info line");
             logger.Custom("Custom line");
             logger.Error("Error line");
             logger.Success("Success line");
+            logger.RemoveProvider(loggerProvider);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Error line"), Is.True);
-            Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
-            logger.RemoveProvider(loggerProvider);
+            Assert.That(FindStringInsideFile(_fileloggerPath, "Success line"), Is.True);            
         }
+
+        [Test]
+        public void Init_Logger_And_Get_Logger_Version()
+        {        
+            ILogger logger = new QuickLoggerNative(".\\");
+            var loggerversion = logger.GetLoggerNameAndVersion();
+            Assert.That(loggerversion != "", Is.True);            
+        }
+
 
         [Test]
         public void Add_Logger_Default_SMTP_Provider_To_New_Logger()
         {
             ILogger logger = new QuickLoggerNative(".\\");
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "SMTPProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test SMTP Provider", "SMTPProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             logger.AddProvider(loggerProvider);
@@ -124,10 +182,7 @@ namespace QuickLogger.Tests.Unit
             logger.Custom("Custom line");
             logger.Error("Error line");
             logger.Success("Success line");
-            Assert.That(FindStringInsideFile(_configPath, "Info line"), Is.True);
-            Assert.That(FindStringInsideFile(_configPath, "Custom line"), Is.True);
-            Assert.That(FindStringInsideFile(_configPath, "Error line"), Is.True);
-            Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
+            //Assert that words are received by name 
             logger.RemoveProvider(loggerProvider);
         }
         [Test]
@@ -146,6 +201,7 @@ namespace QuickLogger.Tests.Unit
             Assert.That(FindStringInsideFile(_configPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Error line"), Is.True);
             Assert.That(FindStringInsideFile(_configPath, "Success line"), Is.True);
+            //Assert that words are received by name 
             logger.RemoveProvider(loggerProvider);
         }
     }

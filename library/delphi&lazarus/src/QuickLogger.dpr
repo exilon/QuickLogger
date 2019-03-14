@@ -751,7 +751,6 @@ procedure EnableProviderNative(const ProviderName : string); stdcall; export;
 var
   provider : ILogProvider;
 begin
-  Writeln('EnableProvider called : ' + ProviderName);
   for provider in Logger.Providers do
   begin
     if provider.GetName = ProviderName then
