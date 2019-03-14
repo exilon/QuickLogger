@@ -7,9 +7,9 @@
   Library     : QuickLogger
   Description : Dynamic library headers for external language wrappers
   Author      : Kike Fuentes (Turric4n)
-  Version     : 1.33
+  Version     : 1.34
   Created     : 15/10/2017
-  Modified    : 12/02/2019
+  Modified    : 13/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -53,6 +53,8 @@ uses
   Quick.Logger.Provider.SysLog,
   Quick.Logger.Provider.Telegram,
   Quick.Logger.Provider.Rest,
+  Quick.Logger.Provider.InfluxDB,
+  Quick.Logger.Provider.ElasticSearch,
   {$IFDEF FPC}
   Generics.Collections,
   jsonparser,
@@ -127,10 +129,10 @@ type
   end;
 
 const
-  QUICKLOGPROVIDERS : array [0..9] of string = ('ConsoleProvider',
+  QUICKLOGPROVIDERS : array [0..11] of string = ('ConsoleProvider',
   'FileProvider', 'RedisProvider', 'TelegramProvider', 'SlackProvider', 'RestProvider',
   'SysLogProvider', 'AdoProvider', 'WindowsEventLogProvider',
-  'EmailProvider');
+  'EmailProvider', 'InfluxDBProvider', 'ElasticSearchProvider');
   PROVIDERSTATUSTOPPED = 'Stopped';
   PROVIDERSTATUSNONE = 'None';
   PROVIDERSTATUSINITIALIZING = 'Init';
@@ -274,7 +276,9 @@ begin
     if provider = nil then raise Exception.Create('Provider ' + providerType + ' Not found');
     begin
       rtticontext.GetType(providerclass).GetMethod('FromJSON').Invoke(provider, [ProviderInfo]);
+      TLogProviderBase(provider).Name := providerName;
       Logger.Providers.Add(TLogProviderBase(provider));
+      //Writeln(Logger.Providers.ToJson);
       providerHandlers.Add(providername, TProviderEventHandler.Create(providerName, TLogProviderBase(provider)));
       TLogProviderBase(provider).Enabled := True;
       Result := Ord(True);
@@ -362,7 +366,22 @@ begin
   begin
     provdr := TLogRestProvider.Create;
     providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
-  end;
+  end
+  else if providerType = 'SysLogProvider' then
+  begin
+    provdr := TLogSysLogProvider.Create;
+    providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
+  end
+  else if providerType = 'InfluxDBProvider' then
+  begin
+    provdr := TLogInfluxDBProvider.Create;
+    providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
+  end
+  else if providerType = 'ElasticSearchProvider' then
+  begin
+    provdr := TLogElasticSearchProvider.Create;
+    providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
+  end
 end;
 
 function AddProviderJSONNative(const Provider : string) : Integer; stdcall; export;
@@ -513,7 +532,7 @@ var
 begin
   if providerHandlers.TryGetValue(providername, providerHandler) then
   begin
-    if Assigned(Callback) then providerhandler.WrapperStart := Callback;
+    providerhandler.WrapperStart := Callback;
   end;
 end;
 
@@ -728,7 +747,34 @@ begin
   if Assigned(fwrappercriticalerror) then fwrappercriticalerror(PChar(fproviderfriendlyname + ' Native on critical error callback called'));
 end;
 
+procedure EnableProviderNative(const ProviderName : string); stdcall; export;
+var
+  provider : ILogProvider;
+begin
+  Writeln('EnableProvider called : ' + ProviderName);
+  for provider in Logger.Providers do
+  begin
+    if provider.GetName = ProviderName then
+    begin
+      TLogProviderBase(provider).Enabled := True;
+      Exit;
+    end;
+  end;
+end;
 
+procedure DisableProviderNative(const ProviderName : string); stdcall; export;
+var
+  provider : ILogProvider;
+begin
+  for provider in Logger.Providers do
+  begin
+    if provider.GetName = ProviderName then
+    begin
+      TLogProviderBase(provider).Enabled := False;
+      Exit;
+    end;
+  end;
+end;
 
 exports
   AddProviderJSONNative,
@@ -752,6 +798,8 @@ exports
   AddWrapperStatusChangedDelegateNative,
   ResetProviderNative,
   GetProviderNamesNative,
+  EnableProviderNative,
+  DisableProviderNative,
   TestCallbacksNative,
   GetLastError,
   GetLibVersionNative;
@@ -766,5 +814,4 @@ begin
   eventTypeConversion.Add('LOG_TRACE', LOG_BASIC);
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
-
 end.
