@@ -21,7 +21,7 @@ namespace QuickLogger.Sample
             provider.Error += (x => Console.WriteLine("Provider Error : " + x));
             provider.QueueError += (x => Console.WriteLine("Provider QueueError : " + x));
             provider.StatusChanged += (x => Console.WriteLine("Provider Status Changed : " + x));
-            provider.FailToLog += Provider_FailToLog;
+            provider.FailToLog += Provider_FailToLog;  // Another way to define callback references
             provider.Started += (x => Console.WriteLine("Provider Started : " + x));
         }
 
@@ -35,7 +35,7 @@ namespace QuickLogger.Sample
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Dirty File Logger", "FileProvider");
             providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
             {
-                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", true },
+                { "LogLevel", LoggerEventTypes.LOG_ALL}, { "FileName", logPath }, { "AutoFileNameByProcess", "False" },
                 { "DailyRotate", false }, { "ShowTimeStamp", true }
             });
             return new QuickLoggerProvider(providerProps);
@@ -76,7 +76,7 @@ namespace QuickLogger.Sample
                     configManager.GetSettings().addProvider(myConsoleDemoProvider);
                     //Write settings to disk
                     configManager.Write();
-                }
+                }                
 
                 //Create a new instance of NativeQuickLogger                
                 configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));
@@ -99,6 +99,8 @@ namespace QuickLogger.Sample
                         }
                     }
                 }
+
+                logger.DisableProvider(myConsoleDemoProvider);
 
                 logger.Info("QuickLogger demo program finished.");
                 System.Console.ReadKey();

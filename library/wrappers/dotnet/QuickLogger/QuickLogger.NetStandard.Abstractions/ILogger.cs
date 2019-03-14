@@ -9,7 +9,9 @@ namespace QuickLogger.NetStandard.Abstractions
         void AddProvider(ILoggerProvider provider);               
         void RemoveProvider(ILoggerProvider provider);
         void RemoveProvider(string name);
+        void EnableProvider(ILoggerProvider provider);        
         void EnableProvider(string name);
+        void DisableProvider(ILoggerProvider provider);
         void DisableProvider(string name);
         string[] GetLoggerProviderTypes();
         string GetLoggerNameAndVersion();
