@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -18,8 +18,11 @@ Delphi(Delphi XE6 - Delphi 10.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Andro
 - Logstash
 - ElasticSearch
 - InfluxDB
+- GrayLog
 
 ### Updates:
+
+**Mar 16,2019:** GrayLog provider
 
 **Feb 28,2019:** InfluxDB provider
 
@@ -310,7 +313,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
-	- **URL:** Host
+	- **URL:** Host and port
 	- **JsonOutputOptions:** Json options to format output json.
 	- **IndexName:** ElasticSearch index name.
 	- **DocType:** Entry document type.
@@ -323,12 +326,24 @@ There are some predefined providers, but you can make your own provider if neede
     - **LogLevel:** Log level that your provider accepts.
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
-	- **URL:** Host
+	- **URL:** Host and port
 	- **Database:** Database name.
 	- **UserName:** Database username.
 	- **Password:** Database password.
 	- **CreateDatabaseIfNotExists:** Creates influxdb database if not exists on server.
 	- **IncludedTags:** Tags included to influxdb.
+    - **Enabled:** Enables/disables receive logging.
+	
+- **Quick.Logger.Provider.GrayLog:** Sends Logging to GrayLog service.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+	- **URL:** Host and port
+	- **GrayLogVersion:** GrayLog version to send to server.
+	- **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
     - **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
