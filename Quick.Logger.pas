@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.33
+  Version     : 1.34
   Created     : 12/10/2017
-  Modified    : 20/02/2019
+  Modified    : 16/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.33';
+  QLVERSION = '1.34';
 
 type
 
