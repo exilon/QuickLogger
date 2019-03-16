@@ -23,7 +23,8 @@ uses
   Quick.Logger.Provider.Slack,
   Quick.Logger.Provider.Logstash,
   Quick.Logger.Provider.ElasticSearch,
-  Quick.Logger.Provider.InfluxDB;
+  Quick.Logger.Provider.InfluxDB,
+  Quick.Logger.Provider.GrayLog;
 
 var
   a : Integer;
@@ -248,6 +249,20 @@ begin
     IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     Enabled := False; //enable when you have a InfluxDB server to connect
   end;
+
+  //configure GrayLog log provider
+  Logger.Providers.Add(GlobalLogGrayLogProvider);
+  with GlobalLogGrayLogProvider do
+    begin
+      URL := 'http://192.168.1.133:12201';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform];
+      Enabled := False; //enable when you have a GrayLog server to connect
+    end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
   Log('Hello world!',etInfo);
