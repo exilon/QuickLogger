@@ -430,8 +430,8 @@ begin
   fFails := 0;
   fRestartTimes := 0;
   fMaxFailsToRestart := 2;
-  fMaxFailsToStop := 10;
-  fFailsToRestart := fMaxFailsToRestart-1;
+  fMaxFailsToStop := 0;
+  fFailsToRestart := fMaxFailsToRestart - 1;
   fEnabled := False;
   fUsesQueue := True;
   fEventTypeNames := DEF_EVENTTYPENAMES;
