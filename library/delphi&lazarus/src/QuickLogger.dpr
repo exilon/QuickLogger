@@ -7,9 +7,9 @@
   Library     : QuickLogger
   Description : Dynamic library headers for external language wrappers
   Author      : Kike Fuentes (Turric4n)
-  Version     : 1.34
+  Version     : 1.35
   Created     : 15/10/2017
-  Modified    : 13/03/2019
+  Modified    : 18/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -55,6 +55,7 @@ uses
   Quick.Logger.Provider.Rest,
   Quick.Logger.Provider.InfluxDB,
   Quick.Logger.Provider.ElasticSearch,
+  Quick.Logger.Provider.GrayLog,
   {$IFDEF FPC}
   Generics.Collections,
   jsonparser,
@@ -129,10 +130,10 @@ type
   end;
 
 const
-  QUICKLOGPROVIDERS : array [0..11] of string = ('ConsoleProvider',
+  QUICKLOGPROVIDERS : array [0..12] of string = ('ConsoleProvider',
   'FileProvider', 'RedisProvider', 'TelegramProvider', 'SlackProvider', 'RestProvider',
   'SysLogProvider', 'AdoProvider', 'WindowsEventLogProvider',
-  'EmailProvider', 'InfluxDBProvider', 'ElasticSearchProvider');
+  'EmailProvider', 'InfluxDBProvider', 'ElasticSearchProvider', 'GraylogProvider');
   PROVIDERSTATUSTOPPED = 'Stopped';
   PROVIDERSTATUSNONE = 'None';
   PROVIDERSTATUSINITIALIZING = 'Init';
@@ -378,6 +379,11 @@ begin
     providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
   end
   else if providerType = 'ElasticSearchProvider' then
+  begin
+    provdr := TLogElasticSearchProvider.Create;
+    providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));
+  end
+    else if providerType = 'GraylogProvider' then
   begin
     provdr := TLogElasticSearchProvider.Create;
     providerHandlers.Add(Providername, TProviderEventHandler.Create(providerName, provdr));

@@ -1,10 +1,10 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pï¿½rez
 
   Unit        : Quick.Logger.Provider.GrayLog
   Description : Log GrayLog Provider
-  Author      : Kike Pérez
+  Author      : Kike Pï¿½rez
   Version     : 1.0
   Created     : 15/03/2019
   Modified    : 15/03/2019
@@ -154,8 +154,13 @@ begin
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('short_message',cLogItem.Msg);
     end;
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$IFDEF FPC}
+      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      json.Add('level',TJSONInt64Number.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$ELSE}
+      json.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$ENDIF}
 
     if iiAppName in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_application',AppName);
     if iiEnvironment in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_environment',Environment);
