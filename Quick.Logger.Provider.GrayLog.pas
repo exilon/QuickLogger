@@ -154,8 +154,13 @@ begin
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('short_message',cLogItem.Msg);
     end;
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
-    json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$IFDEF FPC}
+      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      json.Add('level',TJSONInt64Number.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$ELSE}
+      json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+      json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+    {$ENDIF}
 
     if iiAppName in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_application',AppName);
     if iiEnvironment in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_environment',Environment);
