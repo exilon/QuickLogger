@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace QuickLogger.Tests.Unit
+namespace QuickLogger.Tests.Integration
 {
     [TestFixture(Category = "Integration")]
-    public class QuickLogger_Functionality_Should
+    public class QuickLogger_Integration_Should
     {
         private static ILoggerConfigManager _configManager;
         private static ILoggerProviderProps _providerProps;
@@ -80,7 +80,7 @@ namespace QuickLogger.Tests.Unit
         [OneTimeSetUp]
         public void SetUp()
         {
-            _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Configuration_Should)).Location).Parent.Parent.FullName;
+            _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
             if (File.Exists(_configPath)) { File.Delete(_configPath); }
