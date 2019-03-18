@@ -1,10 +1,10 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pï¿½rez
 
   Unit        : Quick.Logger.Provider.GrayLog
   Description : Log GrayLog Provider
-  Author      : Kike Pérez
+  Author      : Kike Pï¿½rez
   Version     : 1.0
   Created     : 15/03/2019
   Modified    : 15/03/2019
@@ -158,7 +158,7 @@ begin
       json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
       json.Add('level',TJSONInt64Number.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
     {$ELSE}
-      json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
+      json.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
       json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
     {$ENDIF}
 
