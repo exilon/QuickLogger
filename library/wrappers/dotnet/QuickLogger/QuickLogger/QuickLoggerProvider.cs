@@ -68,6 +68,5 @@ namespace QuickLogger.NetStandard
         {
             FailToLog?.Invoke();
         }
-
     }
 }

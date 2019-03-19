@@ -279,7 +279,6 @@ begin
       rtticontext.GetType(providerclass).GetMethod('FromJSON').Invoke(provider, [ProviderInfo]);
       TLogProviderBase(provider).Name := providerName;
       Logger.Providers.Add(TLogProviderBase(provider));
-      //Writeln(Logger.Providers.ToJson);
       providerHandlers.Add(providername, TProviderEventHandler.Create(providerName, TLogProviderBase(provider)));
       TLogProviderBase(provider).Enabled := True;
       Result := Ord(True);
@@ -819,4 +818,4 @@ begin
   eventTypeConversion.Add('LOG_TRACE', LOG_BASIC);
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
-end.
+end;
