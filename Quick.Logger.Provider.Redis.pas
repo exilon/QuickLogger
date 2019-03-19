@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.24
   Created     : 15/10/2017
-  Modified    : 20/02/2019
+  Modified    : 18/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -158,7 +158,7 @@ end;
 
 function TLogRedisProvider.EscapeString(const json: string): string;
 begin
-  Result := StringReplace(json,'\','\\"',[rfReplaceAll]);
+  Result := StringReplace(json,'\','\\',[rfReplaceAll]);
   Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
   //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
 end;
