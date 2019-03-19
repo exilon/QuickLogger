@@ -11,16 +11,23 @@ namespace QuickLogger.Tests.Unit
     [TestFixture(Category = "Unit")]    
     public class QuickLogger_Configuration_Should
     {
-        static string _configPath = String.Empty;
-        static string _configName = "config.json";
-        static string _environmentName = "Test Env";
-        static string _testprovidername = "A dirty File provider";
-        static string _testprovidertype = "FileProvider";
-        static Dictionary<string, object> _testproviderinfo = 
+        private static string _configPath = String.Empty;
+        private static string _configName = "config.json";
+        private static string _testprovidername = "A dirty File provider";
+        private static string _testprovidertype = "FileProvider";
+        private static Dictionary<string, object> _testproviderinfo = 
         new Dictionary<string, object>() {
             { "LogLevel", "LOG_DEBUG" }, { "Filename", ".\\test.log" }, { "DailyRotate", false }, { "ShowTimeStamp", true }
         };
-
+        private string _lastcriticalerror;
+        private string _lasterror;
+        private void LoggerCallbackHandler(ILoggerProvider loggerProvider)
+        {
+            loggerProvider.CriticalError += (x =>
+                _lastcriticalerror = x);
+            loggerProvider.Error += (x =>
+                _lasterror = x);
+        }
         public ILoggerProvider GetaTestProvider(string providername)
         {
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps(_testprovidername, _testprovidertype);
@@ -36,7 +43,7 @@ namespace QuickLogger.Tests.Unit
         }
         public ILoggerConfigManager GetTestStringConfigManager()
         {
-            var conf = "{  \"environment\": \"Test\",  \"providers\": [    {      \"providerProps\": {        \"providerName\": \"A dirty File provider\",        \"providerType\": \"RedisProvider\",        \"providerInfo\": {          \"AppName\": \"Habitatsoft.SignIn.API\",          \"LogLevel\": \"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]\",          \"Host\": \"elksistemas.westeurope.cloudapp.azure.com\",          \"Port\": 6379,          \"Password\": \"\",	            \"LogKey\": \"sistemas-logstash-key\",          \"MaxSize\": 1000,                    \"MaxFailsToRestart\": 2,          \"MaxFailsToStop\": 0,         	        \"OutputAsJson\": true,	        \"Enable\": true        }      }    }  ]}";
+            var conf = "{  \"environment\": \"Test\",  \"providers\": [    {      \"providerProps\": {        \"providerName\": \"A dirty File provider\",        \"providerType\": \"RedisProvider\",        \"providerInfo\": {          \"AppName\": \"QuickLogger Redis Integration Tests\",          \"LogLevel\": \"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]\",          \"Host\": \"*host*\",          \"Port\": 6379,          \"Password\": \"\",	            \"LogKey\": \"a redis key\",          \"MaxSize\": 1000,                    \"MaxFailsToRestart\": 2,          \"MaxFailsToStop\": 0,         	        \"OutputAsJson\": true,	        \"Enable\": true        }      }    }  ]}";
             ILoggerConfigManager configmanager = new QuickLoggerStringConfigManager(conf);
             return configmanager;
         }
@@ -73,13 +80,10 @@ namespace QuickLogger.Tests.Unit
         {
             ILoggerConfigManager configmanager = GetaTestFileConfigManager(_configPath);
             configmanager.GetSettings().addProvider(GetaTestProvider(_testprovidername));
-            configmanager.GetSettings().setEnvironment("Test");
             configmanager.Write();
             Assert.That(File.Exists(_configPath), Is.True);
-            Assert.That(configmanager.Reset().getEnvironment(), Is.Null);
             configmanager.Load();
             Assert.That(configmanager.GetSettings(), !Is.Null);
-            Assert.That(configmanager.GetSettings().getEnvironment(), Is.EqualTo("Test"));
             Assert.That(configmanager.GetSettings().getProvider(_testprovidername), !Is.Null);
         }
         [Test]
@@ -88,7 +92,6 @@ namespace QuickLogger.Tests.Unit
             ILoggerConfigManager configmanager = GetTestStringConfigManager();
             configmanager.Load();
             Assert.That(configmanager.GetSettings(), !Is.Null);
-            Assert.That(configmanager.GetSettings().getEnvironment(), Is.EqualTo("Test"));
             Assert.That(configmanager.GetSettings().getProvider(_testprovidername), !Is.Null);
         }
         [TearDown]
