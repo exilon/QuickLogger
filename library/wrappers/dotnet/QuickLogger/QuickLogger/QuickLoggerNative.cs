@@ -11,7 +11,7 @@ using System.Security.Permissions;
 namespace QuickLogger.NetStandard
 {
     [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
-    public class QuickLoggerNative : ILogger
+    public class QuickLoggerNative : ILogger, IDisposable
     {
         //Native Library native function types 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -92,7 +92,7 @@ namespace QuickLogger.NetStandard
         private NativeLibrary _quickloggerlib;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
-        
+
         public QuickLoggerNative(string rootPath, bool handleExceptions = true )
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
@@ -103,11 +103,7 @@ namespace QuickLogger.NetStandard
             if (handleExceptions) { setupCurrentDomainExceptionHandler(); }
         }
 
-        ~QuickLoggerNative()
-        {
-            unhandledEventHandler = null;
-            if (_quickloggerlib != null) { _quickloggerlib.Dispose(); }
-        }
+        ~QuickLoggerNative() { Dispose(); }
 
         private void setupCurrentDomainExceptionHandler()
         {
@@ -271,6 +267,11 @@ namespace QuickLogger.NetStandard
         public void DisableProvider(string name)
         {
             disableProviderNative?.Invoke(name);
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
     }
 }

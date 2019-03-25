@@ -30,7 +30,7 @@ namespace QuickLogger.NetStandard.Abstractions
         event ProviderRestartEventHandler Restarted;
         void OnRestart(string msg);
         event ProviderFailToLog FailToLog;
-        void OnFaliToLog();
+        void OnFailToLog();
         ILoggerProviderProps getProviderProperties();
     }
 }
