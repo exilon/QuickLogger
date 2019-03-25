@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.24
+  Version     : 1.27
   Created     : 12/10/2017
-  Modified    : 21/02/2019
+  Modified    : 25/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -68,10 +68,11 @@ type
     procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
     function CheckNeedRotate : Boolean;
+    procedure SetFileName(const Value: string);
   public
     constructor Create; override;
     destructor Destroy; override;
-    property FileName : string read fFileName write fFileName;
+    property FileName : string read fFileName write SetFileName;
     {$IFDEF MSWINDOWS}
     property AutoFileNameByProcess : Boolean read fAutoFileName write fAutoFileName;
     {$ENDIF}
@@ -121,6 +122,7 @@ end;
 destructor TLogFileProvider.Destroy;
 begin
   if Assigned(fLogWriter) then fLogWriter.Free;
+  fLogWriter := nil;
   inherited;
 end;
 
@@ -143,6 +145,8 @@ var
   FileMode : Word;
   fs : TFileStream;
 begin
+  if Assigned(fLogWriter) then fLogWriter.Free;
+  fLogWriter := nil;
   if fFileName = '' then
   begin
     {$IFNDEF ANDROID}
@@ -281,7 +285,7 @@ end;
 procedure TLogFileProvider.Restart;
 begin
   Stop;
-  if Assigned(fLogWriter) then fLogWriter.Free;
+  //if Assigned(fLogWriter) then fLogWriter.Free;
   Init;
 end;
 
@@ -294,7 +298,11 @@ begin
   fIsRotating := True;
   try
     //frees stream file
-    if Assigned(fLogWriter) then fLogWriter.Free;
+    if Assigned(fLogWriter) then
+    begin
+      fLogWriter.Free;
+      fLogWriter := nil;
+    end;
     try
       //delete older log backup and zip
       RotateFile := GetLogFileBackup(fMaxRotateFiles,True);
@@ -331,6 +339,15 @@ begin
                                   end
                                   ).Start;
     {$ENDIF}
+  end;
+end;
+
+procedure TLogFileProvider.SetFileName(const Value: string);
+begin
+  if Value <> fFileName then
+  begin
+    fFileName := Value;
+    if IsEnabled then Restart;
   end;
 end;
 
