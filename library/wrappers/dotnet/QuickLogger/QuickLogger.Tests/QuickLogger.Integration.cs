@@ -102,8 +102,6 @@ namespace QuickLogger.Tests.Integration
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
-            if (File.Exists(_configPath)) { File.Delete(_configPath); }
-            if (File.Exists(_fileloggerPath)) { File.Delete(_fileloggerPath); }
             _configManager = new QuickLoggerFileConfigManager(_configPath);
             _logger = new QuickLoggerNative(".\\");
         }
@@ -113,6 +111,7 @@ namespace QuickLogger.Tests.Integration
         {
             // Manual Free of native resources
             ((IDisposable)_logger).Dispose();
+
             if (File.Exists(_configPath)) { File.Delete(_configPath); }
             if (File.Exists(_fileloggerPath)) { File.Delete(_fileloggerPath); }
         }
@@ -121,7 +120,7 @@ namespace QuickLogger.Tests.Integration
         public void Add_Logger_Default_Console_Provider_To_New_Logger()
         {
             
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider", "ConsoleProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider First test", "ConsoleProvider");
             providerProps.SetProviderInfo(_consoleProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             LoggerCallbackHandler(loggerProvider);
@@ -136,7 +135,7 @@ namespace QuickLogger.Tests.Integration
         [Test]
         public void Add_Logger_Default_Console_Provider_To_New_Logger_Write_5_Lines_And_DisableIT()
         {
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider", "ConsoleProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider Second test", "ConsoleProvider");
             providerProps.SetProviderInfo(_consoleProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             _logger.AddProvider(loggerProvider);
@@ -166,7 +165,7 @@ namespace QuickLogger.Tests.Integration
         [Test]
         public void Add_Logger_Default_File_Provider_To_New_Logger()
         {
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider", "FileProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider First test", "FileProvider");
             _fileProviderInfo.Add("FileName", _fileloggerPath);
             providerProps.SetProviderInfo(_fileProviderInfo);            
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -174,12 +173,12 @@ namespace QuickLogger.Tests.Integration
             _logger.Info("Info line");
             _logger.Custom("Custom line");
             _logger.Error("Error line");
-            _logger.Success("Success line");
-            _logger.RemoveProvider(loggerProvider);
+            _logger.Success("Success line");            
             Assert.That(FindStringInsideFile(_fileloggerPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Error line"), Is.True);
-            Assert.That(FindStringInsideFile(_fileloggerPath, "Success line"), Is.True);            
+            Assert.That(FindStringInsideFile(_fileloggerPath, "Success line"), Is.True);
+            _logger.RemoveProvider(loggerProvider);
         }
 
         [Test]
@@ -192,7 +191,7 @@ namespace QuickLogger.Tests.Integration
         [Test]
         public void Add_Logger_Default_SMTP_Provider_To_New_Logger()
         {
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test SMTP Provider", "SMTPProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test SMTP Provider First test", "SMTPProvider");
             providerProps.SetProviderInfo(_smtpProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             _logger.AddProvider(loggerProvider);
@@ -206,7 +205,7 @@ namespace QuickLogger.Tests.Integration
         [Test]
         public void Add_Logger_Default_Redis_Provider_To_New_Logger()
         {
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provider", "RedisProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provide First test", "RedisProvider");
             providerProps.SetProviderInfo(_redisProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             _logger.AddProvider(loggerProvider);
@@ -221,7 +220,7 @@ namespace QuickLogger.Tests.Integration
         [Test]
         public void Add_An_Invalid_Redis_Provider_To_New_Logger_Should_Fail()
         {
-            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provider", "RedisProvider");
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provider Second test", "RedisProvider");
             providerProps.SetProviderInfo(_fileProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
             LoggerCallbackHandler(loggerProvider);
