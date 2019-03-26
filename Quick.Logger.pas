@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.34
+  Version     : 1.35
   Created     : 12/10/2017
-  Modified    : 16/03/2019
+  Modified    : 25/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -290,7 +290,7 @@ type
     destructor Destroy; override;
     procedure Init; virtual;
     procedure Restart; virtual; abstract;
-    procedure Stop;
+    procedure Stop; virtual;
     procedure Drain;
     procedure WriteLog(cLogItem : TLogItem); virtual; abstract;
     function IsQueueable : Boolean;
@@ -666,9 +666,13 @@ begin
   SetStatus(TLogProviderStatus.psStopping);
   if Assigned(fThreadLog) then
   begin
-    fThreadLog.Terminate;
-    fThreadLog.WaitFor;
+    if not fThreadLog.Terminated then
+    begin
+      fThreadLog.Terminate;
+      fThreadLog.WaitFor;
+    end;
     fThreadLog.Free;
+    fThreadLog := nil;
   end;
   SetStatus(TLogProviderStatus.psStopped);
   {$IFDEF LOGGER_DEBUG}

@@ -1,13 +1,13 @@
-{ ***************************************************************************
+﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike P�rez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.Provider.GrayLog
   Description : Log GrayLog Provider
-  Author      : Kike P�rez
-  Version     : 1.0
+  Author      : Kike Pérez
+  Version     : 1.1
   Created     : 15/03/2019
-  Modified    : 15/03/2019
+  Modified    : 25/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -58,6 +58,8 @@ type
     fFullURL : string;
     fGrayLogVersion : string;
     fShortMessageAsEventType : Boolean;
+    fConnectionTimeout : Integer;
+    fResponseTimeout : Integer;
     fUserAgent : string;
     function LogToGELF(cLogItem: TLogItem): string;
     function EventTypeToSysLogLevel(aEventType : TEventType) : Integer;
@@ -79,6 +81,10 @@ var
 
 implementation
 
+const
+  DEF_HTTPCONNECTION_TIMEOUT = 60000;
+  DEF_HTTPRESPONSE_TIMEOUT = 60000;
+
 type
   TSyslogSeverity = (slEmergency, {0 - emergency - system unusable}
               slAlert, {1 - action must be taken immediately }
@@ -97,6 +103,8 @@ begin
   fGrayLogVersion := '2.1';
   fShortMessageAsEventType := False;
   fJsonOutputOptions.UseUTCTime := False;
+  fConnectionTimeout := DEF_HTTPCONNECTION_TIMEOUT;
+  fResponseTimeout := DEF_HTTPRESPONSE_TIMEOUT;
   fUserAgent := DEF_USER_AGENT;
   IncludedInfo := [iiAppName,iiHost,iiEnvironment];
 end;
@@ -112,6 +120,8 @@ procedure TLogGrayLogProvider.Init;
 begin
   fFullURL := Format('%s/gelf',[fURL]);
   fHTTPClient := TJsonHTTPClient.Create;
+  fHTTPClient.ConnectionTimeout := fConnectionTimeout;
+  fHTTPClient.ResponseTimeout := fResponseTimeout;
   fHTTPClient.ContentType := 'application/json';
   fHTTPClient.UserAgent := fUserAgent;
   fHTTPClient.HandleRedirects := True;
