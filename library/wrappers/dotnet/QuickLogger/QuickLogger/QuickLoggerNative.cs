@@ -15,95 +15,101 @@ namespace QuickLogger.NetStandard
     {
         //Native Library native function types 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int AddProviderJSONNative(string serializedProvider);
+        private unsafe delegate int AddProviderJSONNative([MarshalAs(UnmanagedType.LPWStr)] string serializedProvider);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int RemoveProviderNative(string name);
+        private unsafe delegate int RemoveProviderNative([MarshalAs(UnmanagedType.LPWStr)] string name);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperStatusChangedDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperStatusChangedDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperSendLimitsDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperSendLimitsDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperCriticalErrorDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperCriticalErrorDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperQueueErrorDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperQueueErrorDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperRestartDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperRestartDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperStartDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperStartDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperFailDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperFailDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddWrapperErrorDelegateNative(string providerName, IntPtr callback);
+        private unsafe delegate void AddWrapperErrorDelegateNative([MarshalAs(UnmanagedType.LPWStr)] string providerName, IntPtr callback);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int AddStandardConsoleProviderNative();
+        private unsafe delegate int AddStandardConsoleProviderNative();
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void AddStandardFileProviderNative(string FileName);
+        private unsafe delegate void AddStandardFileProviderNative([MarshalAs(UnmanagedType.LPWStr)] string FileName);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void InfoNative(string message);
+        private unsafe delegate void InfoNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void SuccessNative(string message);
+        private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void WarningNative(string message);
+        private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void ErrorNative(string message);
+        private unsafe delegate void ErrorNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void TraceNative(string message);
+        private unsafe delegate void TraceNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void CustomNative(string message);
+        private unsafe delegate void CustomNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void EnableProviderNative(string providerName);
+        private unsafe delegate void EnableProviderNative([MarshalAs(UnmanagedType.LPWStr)] string providerName);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void DisableProviderNative(string providerName);
+        private unsafe delegate void DisableProviderNative([MarshalAs(UnmanagedType.LPWStr)] string providerName);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int GetLibVersionNative(out string str);        
+        private unsafe delegate int GetLibVersionNative(out string str);        
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int GetProviderNamesNative(out string str);
+        private unsafe delegate int GetProviderNamesNative(out string str);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate void TestCallbacksNative();
+        private unsafe delegate void TestCallbacksNative();
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private delegate int GetLastErrorNative(out string str);
+        private unsafe delegate int GetLastErrorNative(out string str);
 
         //Native Library native function pointers 
-        private static AddProviderJSONNative addProviderJSONNative;
-        private static RemoveProviderNative removeProviderNative;
-        private static AddWrapperStatusChangedDelegateNative addWrapperStatusChangedDelegateNative;
-        private static AddWrapperSendLimitsDelegateNative addWrapperSendLimitsDelegateNative;
-        private static AddWrapperCriticalErrorDelegateNative addWrapperCriticalErrorDelegateNative;
-        private static AddWrapperQueueErrorDelegateNative addWrapperQueueErrorDelegateNative;
-        private static AddWrapperRestartDelegateNative addWrapperRestartDelegateNative;
-        private static AddWrapperStartDelegateNative addWrapperStartDelegateNative;
-        private static AddWrapperFailDelegateNative addWrapperFailDelegateNative;
-        private static AddWrapperErrorDelegateNative addWrapperErrorDelegateNative;
-        private static AddStandardConsoleProviderNative addStandardConsoleProviderNative;
-        private static AddStandardFileProviderNative addStandardFileProviderNative;
-        private static TestCallbacksNative testCallbacksNative;
-        private static InfoNative infoNative;
-        private static WarningNative warningNative;
-        private static ErrorNative errorNative;
-        private static TraceNative traceNative;
-        private static CustomNative customNative;
-        private static SuccessNative successNative;
-        private static EnableProviderNative enableProviderNative;
-        private static DisableProviderNative disableProviderNative;
-        private static GetLibVersionNative getLibVersion;
-        private static GetProviderNamesNative getProviderNamesNative;
-        private static GetLastErrorNative getLastErrorNative;
+        private static unsafe AddProviderJSONNative addProviderJSONNative;
+        private static unsafe RemoveProviderNative removeProviderNative;
+        private static unsafe AddWrapperStatusChangedDelegateNative addWrapperStatusChangedDelegateNative;
+        private static unsafe AddWrapperSendLimitsDelegateNative addWrapperSendLimitsDelegateNative;
+        private static unsafe AddWrapperCriticalErrorDelegateNative addWrapperCriticalErrorDelegateNative;
+        private static unsafe AddWrapperQueueErrorDelegateNative addWrapperQueueErrorDelegateNative;
+        private static unsafe AddWrapperRestartDelegateNative addWrapperRestartDelegateNative;
+        private static unsafe AddWrapperStartDelegateNative addWrapperStartDelegateNative;
+        private static unsafe AddWrapperFailDelegateNative addWrapperFailDelegateNative;
+        private static unsafe AddWrapperErrorDelegateNative addWrapperErrorDelegateNative;
+        private static unsafe AddStandardConsoleProviderNative addStandardConsoleProviderNative;
+        private static unsafe AddStandardFileProviderNative addStandardFileProviderNative;
+        private static unsafe TestCallbacksNative testCallbacksNative;
+        private static unsafe InfoNative infoNative;
+        private static unsafe WarningNative warningNative;
+        private static unsafe ErrorNative errorNative;
+        private static unsafe TraceNative traceNative;
+        private static unsafe CustomNative customNative;
+        private static unsafe SuccessNative successNative;
+        private static unsafe EnableProviderNative enableProviderNative;
+        private static unsafe DisableProviderNative disableProviderNative;
+        private static unsafe GetLibVersionNative getLibVersion;
+        private static unsafe GetProviderNamesNative getProviderNamesNative;
+        private static unsafe GetLastErrorNative getLastErrorNative;
+        private static unsafe NativeLibrary _quickloggerlib;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
-        private NativeLibrary _quickloggerlib;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
 
-        public QuickLoggerNative(string rootPath, bool handleExceptions = true )
+        public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
             for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
             _quickloggerlib = new NativeLibrary(libNames);
             MapFunctionPointers();
+            // Current domain (thread) exceptions only doesn't work on a webserver
             if (handleExceptions) { setupCurrentDomainExceptionHandler(); }
         }
 
         ~QuickLoggerNative() { Dispose(); }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
 
         private void setupCurrentDomainExceptionHandler()
         {
@@ -116,6 +122,7 @@ namespace QuickLogger.NetStandard
         {
             if (e.ExceptionObject is Exception) { Error((Exception)e.ExceptionObject); }
         }
+
         private void MapFunctionPointers()
         {
             addProviderJSONNative = _quickloggerlib.LoadFunction<AddProviderJSONNative>("AddProviderJSONNative");
@@ -180,7 +187,7 @@ namespace QuickLogger.NetStandard
         private void AssignDelegatesToNative(ILoggerProvider provider)
         {
             addWrapperErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderErrorEventHandler(provider.OnError)));
-            addWrapperFailDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderFailToLog(provider.OnFaliToLog)));
+            addWrapperFailDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderFailToLog(provider.OnFailToLog)));
             addWrapperCriticalErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderCriticalErrorEventHandler(provider.OnCriticalError)));
             addWrapperQueueErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderQueueErrorEventHandler(provider.OnQueueError)));
             addWrapperRestartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderRestartEventHandler(provider.OnRestart)));
@@ -267,11 +274,6 @@ namespace QuickLogger.NetStandard
         public void DisableProvider(string name)
         {
             disableProviderNative?.Invoke(name);
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
     }
 }
