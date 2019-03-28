@@ -11,10 +11,14 @@ namespace QuickLogger.NetStandard
             _config = configLines;
         }
 
+        public QuickLoggerStringConfigManager()
+        {
+            _settings = new QuickLoggerSettings();
+        }
+
         public override ILoggerSettings Load()
         {
-            _settings = null;
-
+            _settings = null;           
             _settings = (QuickLoggerSettings)JsonConvert.DeserializeObject(_config, typeof(QuickLoggerSettings), JsonSerializerSettings);
             return _settings;
         }

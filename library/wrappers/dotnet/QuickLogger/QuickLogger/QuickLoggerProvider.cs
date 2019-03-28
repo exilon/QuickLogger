@@ -64,7 +64,7 @@ namespace QuickLogger.NetStandard
             SendLimitsReached?.Invoke();
         }
 
-        public void OnFaliToLog()
+        public void OnFailToLog()
         {
             FailToLog?.Invoke();
         }

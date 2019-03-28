@@ -1,5 +1,5 @@
-﻿using QuickLogger.NetStandard;
-using QuickLogger.NetStandard.Abstractions;
+﻿using QuickLogger.NetStandard.Abstractions;
+using QuickLogger.NetStandard;
 using System;
 using System.IO;
 
@@ -7,8 +7,8 @@ namespace QuickLogger.Sample
 {
     class Program
     {
-        private const string CONFIGPATH = "d:\\config.json";
-        private const string FILELOGPATH = "d:\\logging.json";
+        private const string CONFIGPATH = ".\\config.json";
+        private const string FILELOGPATH = ".\\logging.json";
 
         static void DeleteDemoFiles()
         {
@@ -17,8 +17,8 @@ namespace QuickLogger.Sample
         }
         static void AssignProviderCallbacks(ILoggerProvider provider)
         {
-            provider.CriticalError += (x => Console.WriteLine("Provider Critical Error : " + x));
-            provider.Error += (x => Console.WriteLine("Provider Error : " + x));
+            provider.CriticalError += (x => Console.WriteLine(provider.getProviderProperties().GetProviderName() + " Provider Critical Error : " + x));
+            provider.Error += (x => Console.WriteLine(provider.getProviderProperties().GetProviderName() + " Provider Error : " + x));
             provider.QueueError += (x => Console.WriteLine("Provider QueueError : " + x));
             provider.StatusChanged += (x => Console.WriteLine("Provider Status Changed : " + x));
             provider.FailToLog += Provider_FailToLog;  // Another way to define callback references
@@ -54,7 +54,7 @@ namespace QuickLogger.Sample
 
         static void Main(string[] args)
         {
-            ILogger logger = new QuickLoggerNative(".\\");
+            ILogger logger = new QuickLoggerNative(".\\");                
             try
             {
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
@@ -63,10 +63,9 @@ namespace QuickLogger.Sample
 
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
                 ILoggerProvider myConsoleDemoProvider = CreateConsoleDemoProvider();
-                AssignProviderCallbacks(myFileDemoProvider);
-                AssignProviderCallbacks(myConsoleDemoProvider);
 
-                //Create new config instance, ADD Providers and Write to disk.
+                /* Optional config handler
+                Create new config instance, ADD Providers and Write to disk.
                 ILoggerConfigManager configManager = new QuickLoggerFileConfigManager(CONFIGPATH);
                 if (File.Exists(CONFIGPATH)) { configManager.Load(); }
                 else
@@ -76,10 +75,19 @@ namespace QuickLogger.Sample
                     configManager.GetSettings().addProvider(myConsoleDemoProvider);
                     //Write settings to disk
                     configManager.Write();
-                }                
+                }*/
 
-                //Create a new instance of NativeQuickLogger                
-                configManager.GetSettings().Providers().ForEach(x => logger.AddProvider(x));
+                QuickLoggerSettings quickLoggerSettings = new QuickLoggerSettings();
+
+
+                quickLoggerSettings.Providers().Add(myConsoleDemoProvider);
+                quickLoggerSettings.Providers().Add(myFileDemoProvider);
+
+                quickLoggerSettings.Providers().ForEach(x =>
+                {
+                    logger.AddProvider(x);
+                    AssignProviderCallbacks(x);
+                });
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
                 logger.TestCallbacks();
@@ -87,28 +95,30 @@ namespace QuickLogger.Sample
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
 
-                for (int x = 0; x < 100; x++)
+                for (int x = 1; x <= 100; x++)
                 {
-                    logger.Info("Info");
-                    for (int y = 0; y < 100; y++)
-                    {
-                        logger.Error("Error");
-                        for (int z = 0; z < 100; z++)
-                        {
-                            logger.Custom("Custom");
-                        }
-                    }
+                    logger.Info("QuickLogger demo program main loop iteration. Nº " + x.ToString());
                 }
-
-                logger.DisableProvider(myConsoleDemoProvider);
 
                 logger.Info("QuickLogger demo program finished.");
                 System.Console.ReadKey();
+
+                quickLoggerSettings.Providers().ForEach(x =>
+                {
+                    // We remove providers we created before (code sanity)
+                    logger.DisableProvider(x);
+                    logger.RemoveProvider(x);
+                });
             }
             catch (Exception ex)
             {
                 System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
                 System.Console.ReadKey();
+            }
+            finally
+            {
+                // Cast implementation as IDisposable to call dispose native resources
+                ((IDisposable)logger).Dispose();
             }
         }
 
