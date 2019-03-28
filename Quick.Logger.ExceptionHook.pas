@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger.ExceptionHook
-  Description : Log Exception hook
+  Description : Log raised Exceptions
   Author      : Kike Pérez
   Version     : 1.20
   Created     : 12/10/2017
-  Modified    : 23/11/2017
+  Modified    : 28/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -36,10 +36,11 @@ implementation
 
 uses
   SysUtils,
+  System.TypInfo,
   Quick.Logger;
 
 //var
-//  RealRaiseExceptObject: Pointer;
+  //RealRaiseExceptObject: Pointer;
 
 type
   EExceptionHack = class
@@ -57,12 +58,12 @@ type
 begin
   if TObject(pExRec^.ExceptObject) is Exception then EExceptionHack(pExRec^.ExceptObject).FAcquireInnerException := True;
   //throw event in Quick Logger to log it
-  if Assigned(GlobalLoggerHandleException) then
+  if Assigned(GlobalLoggerHandledException) then
   begin
     {$IFDEF DELPHILINUX}
-    GlobalLoggerHandleException(Pointer(pExRec^.ExceptObject));
+    GlobalLoggerHandledException(Pointer(pExRec^.ExceptObject));
     {$ELSE}
-    GlobalLoggerHandleException(pExRec^.ExceptObject);
+    GlobalLoggerHandledException(pExRec^.ExceptObject);
     {$ENDIF}
   end;
   //throw real exception
@@ -71,5 +72,6 @@ end;
 
 initialization
   //RealRaiseExceptObject := RaiseExceptObjProc;
-  RaiseExceptObjProc := @RaiseExceptObject;
+  RaiseExceptObjProc := @RaiseExceptObject; //raised exceptions
+
 end.
