@@ -19,8 +19,13 @@ Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 - ElasticSearch
 - InfluxDB
 - GrayLog
+- Controlled and unhandled exceptions hook
 
 ### Updates:
+
+**Mar 28,2019:** Unhandled exceptions hook
+
+**Mar 28,2019:** Improved exception info
 
 **Mar 16,2019:** GrayLog provider
 
@@ -102,6 +107,17 @@ end.
 QuickLogger manages Logger and Providers automatically. Logger and providers have a global class, auto created and released on close your app. You only need to add wanted providers to your uses clause. 
 > Note: You need to add almost one provider to send logging.
 
+	Properties:
+	
+	- **Providers:** List of providers to send logs.
+	- **OnProviderError:** Event to receive provider error notifications.
+	- **RedirectOwnErrorsToProvider:** Select provider to get all provider notification errors.
+	- **WaitForFlushBeforeExit:** Number of seconds logger allowed to flush queue before closed.
+	- **QueueCount:** Queued items in main queue.
+	- **ProvidersQueueCount:** Queued items in providers queue (all providers).
+	- **OnQueueError:** Event for receive queue errors.
+	- **IsQueueEmpty:** Check if main queue or any provider queue has items pending to process.
+
 ### EventTypes:
 
 There are a range of eventtypes you can define in your logs: etHeader, etInfo, etSuccess, etWarning, etError, etCritical, etException, etDebug, etTrace, etCustom1, etCustom2.
@@ -181,8 +197,6 @@ There are some predefined providers, but you can make your own provider if neede
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
     - **TimePrecission:** If true, shows date and time and milliseconds in log entries.
     - **Enabled:** Enables/disables receive logging. Provider begins to receive logs after enabled.
-	- **OnProviderError:** Event to receive provider error notifications.
-	- **RedirectOwnErrorsToProvider:** Select provider to get all provider notification errors.
 
 - **Quick.Logger.Provider.EventLog:** Sends Logging to Windows EventLog.
 	
@@ -334,31 +348,36 @@ There are some predefined providers, but you can make your own provider if neede
 	- **IncludedTags:** Tags included to influxdb.
     - **Enabled:** Enables/disables receive logging.
 	
+
 - **Quick.Logger.Provider.GrayLog:** Sends Logging to GrayLog service.
 	
-    Properties:
+Properties:
     
-    - **LogLevel:** Log level that your provider accepts.
-    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
-    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
-	- **URL:** Host and port
-	- **GrayLogVersion:** GrayLog version to send to server.
-	- **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
-    - **Enabled:** Enables/disables receive logging.
+- **LogLevel:** Log level that your provider accepts.
+- **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+- **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+- **URL:** Host and port
+- **GrayLogVersion:** GrayLog version to send to server.
+- **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
+- **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
 
 QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc) and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
-    Properties:
+ 
+ Properties:
     
-    - **Platform:** Define your log source (API, Destokp app or your own value).
-    - **Environment:** Define your environment (Production, Test, develop or your own value). 
-	- **AppName:** Uses default filename without extension, but can be customized.
-    - **IncludedInfo:** Define which fields do you want to include as part of your log info.
+- **Platform:** Define your log source (API, Destokp app or your own value).
+- **Environment:** Define your environment (Production, Test, develop or your own value). 
+- **AppName:** Uses default filename without extension, but can be customized.
+- **IncludedInfo:** Define which fields do you want to include as part of your log info.
+	
 ```delphi
 GlobalLogConsoleProvider.IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
 ```
-	- **CustomMsgOutput:** If enabled, LogItem.Msg field is only included as output. It ables to send customized json to redis, rest, etc. 
+
+- **CustomMsgOutput:** If enabled, LogItem.Msg field is only included as output. It ables to send customized json to redis, rest, etc. 
+
 ```delphi
 GlobalLogRedisProvider.CustomMsgOutput := True;
 Log('{"level":"warn","text":"my text"}',etInfo);
@@ -366,6 +385,7 @@ Log('{"level":"warn","text":"my text"}',etInfo);
 
 ### Load/Save Config:
 QuickLogger can import or export config from/to JSON format. This feature allows a easy way to preconfigure your providers.
+
 ```delphi
 	//Load single provider from json file
 	GlobalLogRedisProvider.LoadFromFile('C:\logfileprovider.json');
@@ -373,7 +393,7 @@ QuickLogger can import or export config from/to JSON format. This feature allows
 	Logger.Providers.SaveToFile('C:\loggerconfig.json');
 	//Load all providers from json string
 	Logger.Providers.FromJson(json);
-```	
+```
 	
 	Example multiprovider config file:
 	
@@ -436,6 +456,9 @@ QuickLogger can import or export config from/to JSON format. This feature allows
 
 ### Logging Exceptions:
 
-QuickLogger can capture your application exceptions. Add unit Quick.Logger.ExceptionHook to your uses clause to allow receiving any exception thown.
+QuickLogger can capture your application exceptions. There are 3 exception hooks. You need to add one or more units to your uses clause:
 
-> Note: QuickLogger receives even try..except exceptions.
+
+- **Quick.Logger.ExceptionHook:** Receive every raise exception. QuickLogger receives even try..except exceptions.
+- **Quick.Logger.RuntimeErrorHook:** Receive runtime errors.
+- **Quick.Logger.UnhandledExceptionHook:** Receive only unhandled exceptions (not in try..except block).

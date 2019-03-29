@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.35
+  Version     : 1.36
   Created     : 12/10/2017
-  Modified    : 25/03/2019
+  Modified    : 28/03/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -125,7 +125,7 @@ type
     {$ENDIF}
   {$ENDIF}
 
-  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion);
+  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo);
 
   TIncludedLogInfo = set of TLogInfoField;
 
@@ -142,7 +142,15 @@ type
     property Msg : string read fMsg write fMsg;
     property EventDate : TDateTime read fEventDate write fEventDate;
     function EventTypeName : string;
-    function Clone : TLogItem;
+    function Clone : TLogItem; virtual;
+  end;
+
+  TLogExceptionItem = class(TLogItem)
+  private
+    fException : string;
+  public
+    property Exception : string read fException write fException;
+    function Clone : TLogItem; override;
   end;
 
   TLogQueue = class(TThreadedQueueList<TLogItem>);
@@ -165,6 +173,7 @@ type
     function IsEnabled : Boolean;
     function GetVersion : string;
     function GetName : string;
+    function GetQueuedLogItems : Integer;
     {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
@@ -368,8 +377,12 @@ type
     fOwnErrorsProvider : TLogProviderBase;
     fOnProviderError : TProviderErrorEvent;
     function GetQueuedLogItems : Integer;
-    procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType);
-    procedure HandleException(E : Exception);
+    procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType); overload;
+    procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException : string; cEventType : TEventType); overload;
+    procedure EnQueueItem(cLogItem : TLogItem); overload;
+    procedure OnGetHandledException(E : Exception);
+    procedure OnGetRuntimeError(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer);
+    procedure OnGetUnhandledException(ExceptObject: TObject; ExceptAddr: Pointer);
     procedure NotifyProviderError(const aProviderName, aError : string);
     procedure SetOwnErrorsProvider(const Value: TLogProviderBase);
   public
@@ -381,8 +394,11 @@ type
     property OnProviderError : TProviderErrorEvent read fOnProviderError write fOnProviderError;
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
+    function ProvidersQueueCount : Integer;
+    function IsQueueEmpty : Boolean;
     class function GetVersion : string;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
+    procedure Add(const cMsg, cException : string; cEventType : TEventType); overload;
     procedure Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
   end;
 
@@ -391,7 +407,9 @@ type
 
 var
   Logger : TLogger;
-  GlobalLoggerHandleException : procedure(E : Exception) of object;
+  GlobalLoggerHandledException : procedure(E : Exception) of object;
+  GlobalLoggerRuntimeError : procedure(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer) of object;
+  GlobalLoggerUnhandledException : procedure(ExceptObject: TObject; ExceptAddr: Pointer) of object;
 
 implementation
 
@@ -582,6 +600,8 @@ begin
   if iiPlatform in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
   if iiOSVersion in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
   if iiUserName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
+  if (iiExceptionInfo in fIncludedInfo) and (cLogItem is TLogExceptionItem) then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogExceptionItem(cLogItem).Exception);
+
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
 end;
@@ -996,13 +1016,26 @@ begin
   Result.Msg := Self.Msg;
 end;
 
+{  TLogItemException  }
+
+function TLogExceptionItem.Clone : TLogItem;
+begin
+  Result := TLogExceptionItem.Create;
+  Result.EventType := Self.EventType;
+  Result.EventDate := Self.EventDate;
+  Result.Msg := Self.Msg;
+  TLogExceptionItem(Result).Exception := Self.Exception;
+end;
+
 
 { TLogger }
 
 constructor TLogger.Create;
 begin
   inherited;
-  GlobalLoggerHandleException := HandleException;
+  GlobalLoggerHandledException := OnGetHandledException;
+  GlobalLoggerRuntimeError := OnGetRuntimeError;
+  GlobalLoggerUnhandledException := OnGetUnhandledException;
   fWaitForFlushBeforeExit := DEF_WAIT_FLUSH_LOG;
   fLogQueue := TLogQueue.Create(DEF_QUEUE_SIZE,DEF_QUEUE_PUSH_TIMEOUT,DEF_QUEUE_POP_TIMEOUT);
   fProviders := TLogProviderList.Create;
@@ -1016,12 +1049,25 @@ destructor TLogger.Destroy;
 var
   FinishTime : TDateTime;
 begin
-  GlobalLoggerHandleException := nil;
-  //wait for log queue finalization
+  GlobalLoggerHandledException := nil;
+  GlobalLoggerRuntimeError := nil;
+  GlobalLoggerUnhandledException := nil;
   FinishTime := Now();
-  repeat
-    Sleep(0);
-  until (fThreadProviderLog.LogQueue.QueueSize = 0) or (SecondsBetween(Now(),FinishTime) > fWaitForFlushBeforeExit);
+  //wait for main queue and all providers queues finish to flush or max time reached
+  try
+    while (not Self.IsQueueEmpty) and (SecondsBetween(Now(),FinishTime) < fWaitForFlushBeforeExit) do
+    begin
+      {$IFNDEF LINUX}
+      ProcessMessages;
+      {$ELSE}
+      Sleep(250);
+      {$ENDIF}
+    end;
+  except
+    {$IFDEF LOGGER_DEBUG}
+    Writeln(Format('fail waiting for flush: %s',[provider.GetName]));
+    {$ENDIF}
+  end;
   //finalize queue thread
   fThreadProviderLog.Terminate;
   fThreadProviderLog.WaitFor;
@@ -1042,6 +1088,11 @@ begin
   Result := QLVERSION;
 end;
 
+function TLogger.IsQueueEmpty: Boolean;
+begin
+  Result := (QueueCount = 0) and (ProvidersQueueCount = 0);
+end;
+
 procedure TLogger.Add(const cMsg : string; cEventType : TEventType);
 var
   SystemTime : TSystemTime;
@@ -1052,6 +1103,18 @@ begin
   GetLocalTime(SystemTime);
   {$ENDIF}
   Self.EnQueueItem(SystemTime,cMsg,cEventType);
+end;
+
+procedure TLogger.Add(const cMsg, cException : string; cEventType : TEventType);
+var
+  SystemTime : TSystemTime;
+begin
+  {$IFDEF FPCLINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
+  GetLocalTime(SystemTime);
+  {$ENDIF}
+  Self.EnQueueItem(SystemTime,cMsg,cException,cEventType);
 end;
 
 procedure TLogger.Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType);
@@ -1078,10 +1141,30 @@ begin
   {$ELSE}
   logitem.EventDate := SystemTimeToDateTime(cEventDate);
   {$ENDIF}
+  Self.EnQueueItem(logitem);
+end;
 
-  if fLogQueue.PushItem(logitem) <> TWaitResult.wrSignaled then
+procedure TLogger.EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException : string; cEventType : TEventType);
+var
+  logitem : TLogExceptionItem;
+begin
+  logitem := TLogExceptionItem.Create;
+  logitem.EventType := cEventType;
+  logitem.Msg := cMsg;
+  logitem.Exception := cException;
+  {$IF DEFINED(NEXTGEN) OR DEFINED(OSX) OR DEFINED(DELPHILINUX)}
+  logitem.EventDate := cEventDate;
+  {$ELSE}
+  logitem.EventDate := SystemTimeToDateTime(cEventDate);
+  {$ENDIF}
+  Self.EnQueueItem(logitem);
+end;
+
+procedure TLogger.EnQueueItem(cLogItem : TLogItem);
+begin
+  if fLogQueue.PushItem(cLogItem) <> TWaitResult.wrSignaled then
   begin
-    FreeAndNil(logitem);
+    FreeAndNil(cLogItem);
     if Assigned(fOnQueueError) then fOnQueueError('Logger insertion timeout!');
     //raise ELogger.Create('Logger insertion timeout!');
     {$IFDEF LOGGER_DEBUG}
@@ -1094,7 +1177,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TLogger.HandleException(E : Exception);
+procedure TLogger.OnGetHandledException(E : Exception);
 var
   SystemTime : TSystemTime;
 begin
@@ -1103,7 +1186,46 @@ begin
   {$ELSE}
   GetLocalTime(SystemTime);
   {$ENDIF}
-  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
+  //Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
+  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,etException);
+end;
+
+procedure TLogger.OnGetRuntimeError(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer);
+var
+  SystemTime : TSystemTime;
+begin
+  {$IFDEF FPCLINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
+  GetLocalTime(SystemTime);
+  {$ENDIF}
+  Self.EnQueueItem(SystemTime,Format('Runtime error %d (%s) risen at $%X',[Errorcode,errorname,Integer(ErrorPtr)]),'RuntimeError',etException);
+end;
+
+procedure TLogger.OnGetUnhandledException(ExceptObject: TObject; ExceptAddr: Pointer);
+var
+  SystemTime : TSystemTime;
+  cname : string;
+  msg : String;
+begin
+  {$IFDEF FPCLINUX}
+  DateTimeToSystemTime(Now(),SystemTime);
+  {$ELSE}
+  GetLocalTime(SystemTime);
+  {$ENDIF}
+  if ExceptObject is Exception then Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) : %s',[Exception(ExceptObject).ClassName,Exception(ExceptObject).Message]),Exception(ExceptObject).ClassName,etException)
+    else Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) at $%X',[ExceptObject.ClassName,Integer(ExceptAddr)]),'Exception',etException);
+end;
+
+function TLogger.ProvidersQueueCount: Integer;
+var
+  provider : ILogProvider;
+begin
+  Result := 0;
+  for provider in fProviders do
+  begin
+    Result := Result + provider.GetQueuedLogItems;
+  end;
 end;
 
 procedure TLogger.NotifyProviderError(const aProviderName, aError: string);
