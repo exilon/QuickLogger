@@ -145,7 +145,7 @@ type
     function Clone : TLogItem; virtual;
   end;
 
-  TLogItemException = class(TLogItem)
+  TLogExceptionItem = class(TLogItem)
   private
     fException : string;
   public
@@ -600,7 +600,7 @@ begin
   if iiPlatform in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
   if iiOSVersion in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
   if iiUserName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
-  if (iiExceptionInfo in fIncludedInfo) and (cLogItem is TLogItemException) then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogItemException(cLogItem).Exception);
+  if (iiExceptionInfo in fIncludedInfo) and (cLogItem is TLogExceptionItem) then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogExceptionItem(cLogItem).Exception);
 
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
@@ -1018,13 +1018,13 @@ end;
 
 {  TLogItemException  }
 
-function TLogItemException.Clone : TLogItem;
+function TLogExceptionItem.Clone : TLogItem;
 begin
-  Result := TLogItemException.Create;
+  Result := TLogExceptionItem.Create;
   Result.EventType := Self.EventType;
   Result.EventDate := Self.EventDate;
   Result.Msg := Self.Msg;
-  TLogItemException(Result).Exception := Self.Exception;
+  TLogExceptionItem(Result).Exception := Self.Exception;
 end;
 
 
@@ -1146,9 +1146,9 @@ end;
 
 procedure TLogger.EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException : string; cEventType : TEventType);
 var
-  logitem : TLogItemException;
+  logitem : TLogExceptionItem;
 begin
-  logitem := TLogItemException.Create;
+  logitem := TLogExceptionItem.Create;
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
   logitem.Exception := cException;
