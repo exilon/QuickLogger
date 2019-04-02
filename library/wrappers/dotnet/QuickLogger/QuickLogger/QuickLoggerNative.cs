@@ -7,13 +7,14 @@ using NativeLibraryLoader;
 using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
+using System.Collections.Generic;
 
 namespace QuickLogger.NetStandard
 {
     [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
     public class QuickLoggerNative : ILogger, IDisposable
     {
-        //Native Library native function types 
+        //Native Library function types and marshalling (Native to safe)
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate int AddProviderJSONNative([MarshalAs(UnmanagedType.LPWStr)] string serializedProvider);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -41,7 +42,11 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void InfoNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate void CriticalNative([MarshalAs(UnmanagedType.LPWStr)] string message);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, string exceptionname);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -59,9 +64,21 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate int GetProviderNamesNative(out string str);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int GetCurrentProvidersNative(out string providers);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void TestCallbacksNative();
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate int GetLastErrorNative(out string str);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int WaitSecondsForFlushBeforeExitNative(int seconds);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int GetQueueCountNative(out int queuecount);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int GetProvidersQueueCountNative(out int queueprovidercount);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int IsQueueEmptyNative(out bool queueprovidercount);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate int ResetProviderNative([MarshalAs(UnmanagedType.LPWStr)] string providerName);
 
         //Native Library native function pointers 
         private static unsafe AddProviderJSONNative addProviderJSONNative;
@@ -78,17 +95,26 @@ namespace QuickLogger.NetStandard
         private static unsafe AddStandardFileProviderNative addStandardFileProviderNative;
         private static unsafe TestCallbacksNative testCallbacksNative;
         private static unsafe InfoNative infoNative;
+        private static unsafe CriticalNative criticalNative;
         private static unsafe WarningNative warningNative;
         private static unsafe ErrorNative errorNative;
         private static unsafe TraceNative traceNative;
         private static unsafe CustomNative customNative;
         private static unsafe SuccessNative successNative;
+        private static unsafe ExceptionNative exceptionNative;
         private static unsafe EnableProviderNative enableProviderNative;
         private static unsafe DisableProviderNative disableProviderNative;
         private static unsafe GetLibVersionNative getLibVersion;
         private static unsafe GetProviderNamesNative getProviderNamesNative;
         private static unsafe GetLastErrorNative getLastErrorNative;
         private static unsafe NativeLibrary _quickloggerlib;
+        private static unsafe WaitSecondsForFlushBeforeExitNative waitSecondsForFlushBeforeExitNative;
+        private static unsafe GetQueueCountNative getQueueCountNative;
+        private static unsafe GetProvidersQueueCountNative getProvidersQueueCountNative;
+        private static unsafe IsQueueEmptyNative isQueueEmptyNative;
+        private static unsafe ResetProviderNative resetProviderNative;
+        private static unsafe GetCurrentProvidersNative getCurrentProvidersNative;
+
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
@@ -120,7 +146,7 @@ namespace QuickLogger.NetStandard
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            if (e.ExceptionObject is Exception) { Error((Exception)e.ExceptionObject); }
+            if (e.ExceptionObject is Exception) { Exception((Exception)e.ExceptionObject); }
         }
 
         private void MapFunctionPointers()
@@ -140,6 +166,8 @@ namespace QuickLogger.NetStandard
             testCallbacksNative = _quickloggerlib.LoadFunction<TestCallbacksNative>("TestCallbacksNative");
             infoNative = _quickloggerlib.LoadFunction<InfoNative>("InfoNative");
             warningNative = _quickloggerlib.LoadFunction<WarningNative>("WarningNative");
+            criticalNative = _quickloggerlib.LoadFunction<CriticalNative>("CriticalNative");
+            exceptionNative = _quickloggerlib.LoadFunction<ExceptionNative>("ExceptionNative");
             errorNative = _quickloggerlib.LoadFunction<ErrorNative>("ErrorNative");
             traceNative = _quickloggerlib.LoadFunction<TraceNative>("TraceNative");
             customNative = _quickloggerlib.LoadFunction<CustomNative>("CustomNative");
@@ -149,7 +177,13 @@ namespace QuickLogger.NetStandard
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
             getProviderNamesNative = _quickloggerlib.LoadFunction<GetProviderNamesNative>("GetProviderNamesNative");
             getLastErrorNative = _quickloggerlib.LoadFunction<GetLastErrorNative>("GetLastError");
-        }
+            waitSecondsForFlushBeforeExitNative = _quickloggerlib.LoadFunction<WaitSecondsForFlushBeforeExitNative>("WaitSecondsForFlushBeforeExitNative");
+            getQueueCountNative = _quickloggerlib.LoadFunction<GetQueueCountNative>("GetQueueCountNative");
+            getProvidersQueueCountNative = _quickloggerlib.LoadFunction<GetProvidersQueueCountNative>("GetProvidersQueueCountNative");
+            isQueueEmptyNative = _quickloggerlib.LoadFunction<IsQueueEmptyNative>("IsQueueEmptyNative");        
+            resetProviderNative = _quickloggerlib.LoadFunction<ResetProviderNative>("ResetProviderNative");
+            getCurrentProvidersNative = _quickloggerlib.LoadFunction<GetCurrentProvidersNative>("GetCurrentProvidersNative");
+    }
 
         public void Custom(string message)
         {
@@ -175,15 +209,10 @@ namespace QuickLogger.NetStandard
         {
             warningNative?.Invoke(message);            
         }
-        public void Error(Exception exception)
+        public void Critical(string message)
         {
-            errorNative?.Invoke(exception.Message);            
+            criticalNative?.Invoke(message);
         }
-        public void KPI(string name, string value)
-        {
-            throw new NotImplementedException();
-        }
-
         private void AssignDelegatesToNative(ILoggerProvider provider)
         {
             addWrapperErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderErrorEventHandler(provider.OnError)));
@@ -274,6 +303,37 @@ namespace QuickLogger.NetStandard
         public void DisableProvider(string name)
         {
             disableProviderNative?.Invoke(name);
+        }
+
+        public string GetCurrentProviders()
+        {
+            string providers = "";
+            getCurrentProvidersNative(out providers);
+            return providers;
+        }
+
+        public void Exception(Exception exception)
+        {
+            exceptionNative?.Invoke(exception.Message, exception.GetType().Name);
+        }
+
+        public void WaitSecondsForFlushBeforeExit(int seconds)
+        {
+            waitSecondsForFlushBeforeExitNative?.Invoke(seconds);
+        }
+
+        public int GetQueueCount()
+        {
+            var queue = 0;
+            getQueueCountNative(out queue);
+            return queue;
+        }
+
+        public bool IsQueueEmpty()
+        {
+            var isempty = false;
+            isQueueEmptyNative(out isempty);
+            return isempty;
         }
     }
 }

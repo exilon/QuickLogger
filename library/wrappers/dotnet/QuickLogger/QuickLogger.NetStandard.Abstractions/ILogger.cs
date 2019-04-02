@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace QuickLogger.NetStandard.Abstractions
 {
@@ -14,16 +15,20 @@ namespace QuickLogger.NetStandard.Abstractions
         void DisableProvider(ILoggerProvider provider);
         void DisableProvider(string name);
         string[] GetLoggerProviderTypes();
+        string GetCurrentProviders();
         string GetLoggerNameAndVersion();
         void Info(string message);
         void Success(string message);
         void Warning(string message);
         void Error(string message);
-        void Error(Exception exception);
+        void Exception(Exception exception);
         void Trace(string message);
-        void KPI(string name, string value);        
         void Custom(string message);
+        void Critical(string message);
         void TestCallbacks();
         string GetLastError();
+        int GetQueueCount();
+        bool IsQueueEmpty();
+        void WaitSecondsForFlushBeforeExit(int seconds);
     }
 }
