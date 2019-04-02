@@ -1057,7 +1057,7 @@ begin
   try
     while (not Self.IsQueueEmpty) and (SecondsBetween(Now(),FinishTime) < fWaitForFlushBeforeExit) do
     begin
-      {$IFNDEF LINUX}
+      {$IFDEF MSWINDOWS}
       ProcessMessages;
       {$ELSE}
       Sleep(250);
