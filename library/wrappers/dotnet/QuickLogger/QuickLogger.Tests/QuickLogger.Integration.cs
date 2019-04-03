@@ -99,7 +99,6 @@ namespace QuickLogger.Tests.Integration
         [OneTimeSetUp]
         public void SetUp()
         {
-
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
@@ -111,8 +110,6 @@ namespace QuickLogger.Tests.Integration
         public void TearDown()
         {
             // Manual Free of native resources
-            ((IDisposable)_logger).Dispose();
-
             if (File.Exists(_configPath)) { File.Delete(_configPath); }
         }
 
@@ -178,6 +175,7 @@ namespace QuickLogger.Tests.Integration
             _logger.Success("Success line");
             _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
+            System.Threading.Thread.Sleep(0);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Error line"), Is.True);

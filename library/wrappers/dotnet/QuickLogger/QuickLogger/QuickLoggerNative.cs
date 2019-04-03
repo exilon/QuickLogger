@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace QuickLogger.NetStandard
 {
     [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
-    public class QuickLoggerNative : ILogger, IDisposable
+    public class QuickLoggerNative : ILogger
     {
         //Native Library function types and marshalling (Native to safe)
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -114,27 +114,21 @@ namespace QuickLogger.NetStandard
         private static unsafe IsQueueEmptyNative isQueueEmptyNative;
         private static unsafe ResetProviderNative resetProviderNative;
         private static unsafe GetCurrentProvidersNative getCurrentProvidersNative;
-
+        private static IntPtr nativeHwnd;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
         private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
-
+        private static List<System.Delegate> delegates = new List<System.Delegate>();
         public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
             for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
             _quickloggerlib = new NativeLibrary(libNames);
+            nativeHwnd = _quickloggerlib.Handle;
             MapFunctionPointers();
             // Current domain (thread) exceptions only doesn't work on a webserver
             if (handleExceptions) { setupCurrentDomainExceptionHandler(); }
-        }
-
-        ~QuickLoggerNative() { Dispose(); }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
 
         private void setupCurrentDomainExceptionHandler()
@@ -215,14 +209,32 @@ namespace QuickLogger.NetStandard
         }
         private void AssignDelegatesToNative(ILoggerProvider provider)
         {
-            addWrapperErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderErrorEventHandler(provider.OnError)));
-            addWrapperFailDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderFailToLog(provider.OnFailToLog)));
-            addWrapperCriticalErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderCriticalErrorEventHandler(provider.OnCriticalError)));
-            addWrapperQueueErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderQueueErrorEventHandler(provider.OnQueueError)));
-            addWrapperRestartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderRestartEventHandler(provider.OnRestart)));
-            addWrapperSendLimitsDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderSendLimits(provider.OnSendLimitsReached)));
-            addWrapperStartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderStartEventHandler(provider.OnStarted)));
-            addWrapperStatusChangedDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(new ProviderStatusChangedEventHandler(provider.OnStatusChanged)));
+            var providererroreventhandler = new ProviderErrorEventHandler(provider.OnError) ;
+            var providerfailtolog = new ProviderFailToLog(provider.OnFailToLog);
+            var providercriticalerroreventhandler = new ProviderCriticalErrorEventHandler(provider.OnCriticalError);
+            var providerQueueError = new ProviderQueueErrorEventHandler(provider.OnQueueError);
+            var providerRestartEvent = new ProviderRestartEventHandler(provider.OnRestart);
+            var providerSendLimits = new ProviderSendLimits(provider.OnSendLimitsReached);
+            var providerStartEventHandler = new ProviderStartEventHandler(provider.OnStarted);
+            var providerStatusChanged = new ProviderStatusChangedEventHandler(provider.OnStatusChanged);
+
+            delegates.Add(providererroreventhandler);
+            delegates.Add(providerfailtolog);
+            delegates.Add(providercriticalerroreventhandler);
+            delegates.Add(providerQueueError);
+            delegates.Add(providerRestartEvent);
+            delegates.Add(providerSendLimits);
+            delegates.Add(providerStartEventHandler);
+            delegates.Add(providerStatusChanged);
+
+            addWrapperErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providererroreventhandler));
+            addWrapperFailDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerfailtolog));
+            addWrapperCriticalErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providercriticalerroreventhandler));
+            addWrapperQueueErrorDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerQueueError));
+            addWrapperRestartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerRestartEvent));
+            addWrapperSendLimitsDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerSendLimits));
+            addWrapperStartDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerStartEventHandler));
+            addWrapperStatusChangedDelegateNative?.Invoke(provider.getProviderProperties().GetProviderName(), Marshal.GetFunctionPointerForDelegate(providerStatusChanged));
         }
         public void AddProvider(ILoggerProvider provider)
         {
