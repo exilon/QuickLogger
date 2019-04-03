@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{46236C72-4DAE-4D45-853F-1B44E7CEB347}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="QuickLogger.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="QuickLogger.Lib.Tester.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="QuickLogger">
+        <MSBuild Projects="QuickLogger.dproj"/>
+    </Target>
+    <Target Name="QuickLogger:Clean">
+        <MSBuild Projects="QuickLogger.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="QuickLogger:Make">
+        <MSBuild Projects="QuickLogger.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="QuickLogger_Lib_Tester">
+        <MSBuild Projects="QuickLogger.Lib.Tester.dproj"/>
+    </Target>
+    <Target Name="QuickLogger_Lib_Tester:Clean">
+        <MSBuild Projects="QuickLogger.Lib.Tester.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="QuickLogger_Lib_Tester:Make">
+        <MSBuild Projects="QuickLogger.Lib.Tester.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="QuickLogger;QuickLogger_Lib_Tester"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="QuickLogger:Clean;QuickLogger_Lib_Tester:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="QuickLogger:Make;QuickLogger_Lib_Tester:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

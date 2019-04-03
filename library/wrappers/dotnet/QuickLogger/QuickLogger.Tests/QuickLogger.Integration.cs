@@ -98,7 +98,7 @@ namespace QuickLogger.Tests.Integration
 
         [OneTimeSetUp]
         public void SetUp()
-        {            
+        {
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
@@ -110,10 +110,7 @@ namespace QuickLogger.Tests.Integration
         public void TearDown()
         {
             // Manual Free of native resources
-            ((IDisposable)_logger).Dispose();
-
             if (File.Exists(_configPath)) { File.Delete(_configPath); }
-            if (File.Exists(_fileloggerPath)) { File.Delete(_fileloggerPath); }
         }
 
         [Test]
@@ -130,6 +127,7 @@ namespace QuickLogger.Tests.Integration
             _logger.Error("Works");
             _logger.Success("Works");
             //Assert that words are shown on the console 
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }
         [Test]
@@ -159,6 +157,7 @@ namespace QuickLogger.Tests.Integration
                 _logger.Success("Works");
             }
             //Assert that words are not shown on the console 
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }
 
@@ -173,12 +172,29 @@ namespace QuickLogger.Tests.Integration
             _logger.Info("Info line");
             _logger.Custom("Custom line");
             _logger.Error("Error line");
-            _logger.Success("Success line");            
+            _logger.Success("Success line");
+            _logger.DisableProvider(loggerProvider);
+            _logger.RemoveProvider(loggerProvider);
+            System.Threading.Thread.Sleep(0);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Info line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Custom line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Error line"), Is.True);
             Assert.That(FindStringInsideFile(_fileloggerPath, "Success line"), Is.True);
+        }
+
+        [Test] 
+        public void Add_Logger_Provider_And_Assert_That_Is_Really_Added()
+        {
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test File Provider Really added test", "FileProvider");
+            _fileProviderInfo.Add("FileName", _fileloggerPath);
+            providerProps.SetProviderInfo(_fileProviderInfo);
+            ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
+            _logger.AddProvider(loggerProvider);
+
+            var providers = _logger.GetCurrentProviders();            
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
+            Assert.That(providers.Contains("Test File Provider Really added test"), Is.True);
         }
 
         [Test]
@@ -200,6 +216,7 @@ namespace QuickLogger.Tests.Integration
             _logger.Error("Error line");
             _logger.Success("Success line");
             //Assert that words are received by name 
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }
         [Test]
@@ -214,6 +231,7 @@ namespace QuickLogger.Tests.Integration
             _logger.Error("Error line");
             _logger.Success("Succes line");
             //Assert that words are received by name 
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }
 
@@ -229,9 +247,10 @@ namespace QuickLogger.Tests.Integration
             _logger.Custom("Custom line");
             _logger.Error("Error line");
             _logger.Success("Succes line");
-            System.Threading.Thread.Sleep(5000);
-            //Assert that words are received by name 
+            System.Threading.Thread.Sleep(3000);
+            //Assert that callbacks are ignited
             Assert.That(string.IsNullOrEmpty(_lastfailtolog), Is.False);
+            _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }
     }
