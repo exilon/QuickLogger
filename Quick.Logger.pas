@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.36
+  Version     : 1.37
   Created     : 12/10/2017
-  Modified    : 28/03/2019
+  Modified    : 05/04/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -125,7 +125,7 @@ type
     {$ENDIF}
   {$ENDIF}
 
-  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo);
+  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace);
 
   TIncludedLogInfo = set of TLogInfoField;
 
@@ -148,8 +148,10 @@ type
   TLogExceptionItem = class(TLogItem)
   private
     fException : string;
+    fStackTrace : string;
   public
     property Exception : string read fException write fException;
+    property StackTrace : string read fStackTrace write fStackTrace;
     function Clone : TLogItem; override;
   end;
 
@@ -378,7 +380,7 @@ type
     fOnProviderError : TProviderErrorEvent;
     function GetQueuedLogItems : Integer;
     procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; cEventType : TEventType); overload;
-    procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException : string; cEventType : TEventType); overload;
+    procedure EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException, cStackTrace : string; cEventType : TEventType); overload;
     procedure EnQueueItem(cLogItem : TLogItem); overload;
     procedure OnGetHandledException(E : Exception);
     procedure OnGetRuntimeError(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer);
@@ -398,7 +400,7 @@ type
     function IsQueueEmpty : Boolean;
     class function GetVersion : string;
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
-    procedure Add(const cMsg, cException : string; cEventType : TEventType); overload;
+    procedure Add(const cMsg, cException, cStackTrace : string; cEventType : TEventType); overload;
     procedure Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
   end;
 
@@ -600,8 +602,11 @@ begin
   if iiPlatform in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
   if iiOSVersion in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
   if iiUserName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
-  if (iiExceptionInfo in fIncludedInfo) and (cLogItem is TLogExceptionItem) then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogExceptionItem(cLogItem).Exception);
-
+  if cLogItem is TLogExceptionItem then
+  begin
+    if iiExceptionInfo in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogExceptionItem(cLogItem).Exception);
+    if iiExceptionStackTrace in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('stacktrace',TLogExceptionItem(cLogItem).StackTrace);
+  end;
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
 end;
@@ -1105,7 +1110,7 @@ begin
   Self.EnQueueItem(SystemTime,cMsg,cEventType);
 end;
 
-procedure TLogger.Add(const cMsg, cException : string; cEventType : TEventType);
+procedure TLogger.Add(const cMsg, cException, cStackTrace : string; cEventType : TEventType);
 var
   SystemTime : TSystemTime;
 begin
@@ -1114,7 +1119,7 @@ begin
   {$ELSE}
   GetLocalTime(SystemTime);
   {$ENDIF}
-  Self.EnQueueItem(SystemTime,cMsg,cException,cEventType);
+  Self.EnQueueItem(SystemTime,cMsg,cException,cStackTrace,cEventType);
 end;
 
 procedure TLogger.Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType);
@@ -1144,7 +1149,7 @@ begin
   Self.EnQueueItem(logitem);
 end;
 
-procedure TLogger.EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException : string; cEventType : TEventType);
+procedure TLogger.EnQueueItem(cEventDate : TSystemTime; const cMsg : string; const cException, cStackTrace : string; cEventType : TEventType);
 var
   logitem : TLogExceptionItem;
 begin
@@ -1152,6 +1157,7 @@ begin
   logitem.EventType := cEventType;
   logitem.Msg := cMsg;
   logitem.Exception := cException;
+  logitem.StackTrace := cStackTrace;
   {$IF DEFINED(NEXTGEN) OR DEFINED(OSX) OR DEFINED(DELPHILINUX)}
   logitem.EventDate := cEventDate;
   {$ELSE}
@@ -1187,7 +1193,7 @@ begin
   GetLocalTime(SystemTime);
   {$ENDIF}
   //Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
-  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,etException);
+  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,E.StackTrace,etException);
 end;
 
 procedure TLogger.OnGetRuntimeError(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer);
@@ -1199,10 +1205,10 @@ begin
   {$ELSE}
   GetLocalTime(SystemTime);
   {$ENDIF}
-  Self.EnQueueItem(SystemTime,Format('Runtime error %d (%s) risen at $%X',[Errorcode,errorname,Integer(ErrorPtr)]),'RuntimeError',etException);
+  Self.EnQueueItem(SystemTime,Format('Runtime error %d (%s) risen at $%X',[Errorcode,errorname,Integer(ErrorPtr)]),'RuntimeError','',etException);
 end;
 
-procedure TLogger.OnGetUnhandledException(ExceptObject: TObject; ExceptAddr: Pointer);
+procedure TLogger.OnGetUnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
 var
   SystemTime : TSystemTime;
   cname : string;
@@ -1213,8 +1219,11 @@ begin
   {$ELSE}
   GetLocalTime(SystemTime);
   {$ENDIF}
-  if ExceptObject is Exception then Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) : %s',[Exception(ExceptObject).ClassName,Exception(ExceptObject).Message]),Exception(ExceptObject).ClassName,etException)
-    else Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) at $%X',[ExceptObject.ClassName,Integer(ExceptAddr)]),'Exception',etException);
+  if ExceptObject is Exception then Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) : %s',[Exception(ExceptObject).ClassName,Exception(ExceptObject).Message]),
+                                                     Exception(ExceptObject).ClassName,
+                                                     Exception(ExceptObject).StackTrace,
+                                                     etException)
+    else Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) at $%X',[ExceptObject.ClassName,Integer(ExceptAddr)]),'Exception','',etException);
 end;
 
 function TLogger.ProvidersQueueCount: Integer;
