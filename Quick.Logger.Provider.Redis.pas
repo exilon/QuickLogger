@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.24
+  Version     : 1.27
   Created     : 15/10/2017
-  Modified    : 18/03/2019
+  Modified    : 05/04/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -39,10 +39,6 @@ uses
   Quick.Commons,
   Quick.Logger;
 
-const
-  DEF_REDIS_PORT = 6379;
-  CRLF = #10#13;
-
 type
 
   TLogRedisProvider = class (TLogProviderBase)
@@ -55,6 +51,8 @@ type
     fMaxSize : Int64;
     fPassword : string;
     fOutputAsJson : Boolean;
+    fConnectionTimeout : Integer;
+    fReadTimeout : Integer;
     function EscapeString(const json: string) : string;
     function IsIntegerResult(const aValue : string) : Boolean;
     function RedisSELECT(dbIndex : Integer) : Boolean;
@@ -62,8 +60,11 @@ type
     function RedisLPUSH(const aKey, Msg : string) : Boolean;
     function RedisLTRIM(const aKey : string; aFirstElement, aMaxSize : Int64) : Boolean;
     function RedisAUTH(const aPassword : string) : Boolean;
+    function RedisPING : Boolean;
     function RedisQUIT : Boolean;
     procedure Connect;
+    procedure SetConnectionTimeout(const Value: Integer);
+    procedure SetReadTimeout(const Value: Integer);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -75,6 +76,8 @@ type
     property Password : string read fPassword write fPassword;
     property OutputAsJson : Boolean read fOutputAsJson write fOutputAsJson;
     property JsonOutputOptions : TJsonOutputOptions read fJsonOutputOptions write fJsonOutputOptions;
+    property ConnectionTimeout : Integer read fConnectionTimeout write SetConnectionTimeout;
+    property ReadTimeout : Integer read fReadTimeout write SetReadTimeout;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -85,6 +88,12 @@ var
 
 implementation
 
+const
+  DEF_REDIS_PORT = 6379;
+  CRLF = #10#13;
+  DEF_CONNECTIONTIMEOUT = 30000;
+  DEF_READTIMETOUT = 10000;
+
 procedure TLogRedisProvider.Connect;
 begin
   if not fTCPClient.Connected then
@@ -93,6 +102,7 @@ begin
     if not fTCPClient.Connected then raise ELogger.Create('Can''t connect to Redis Server!');
     NotifyError('Reconnected to Redis server');
   end;
+  fTCPClient.Socket.Binding.SetKeepAliveValues(True,5000,1000);
   if fPassword <> '' then
   begin
     if not RedisAUTH(fPassword) then raise  ELogger.Create('Redis authentication error!');
@@ -114,6 +124,8 @@ begin
   fMaxSize := 0;
   fPassword := '';
   IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+  fConnectionTimeout := DEF_CONNECTIONTIMEOUT;
+  fReadTimeout := DEF_READTIMETOUT;
   fOutputAsJson := True;
 end;
 
@@ -140,7 +152,8 @@ begin
   fTCPClient := TIdTCPClient.Create;
   fTCPClient.Host := fHost;
   fTCPClient.Port := fPort;
-  fTCPClient.ConnectTimeout := 5000;
+  fTCPClient.ConnectTimeout := fConnectionTimeout;
+  fTCPClient.ReadTimeout := fConnectionTimeout;
   try
     fTCPClient.Connect; //first connection
     //connect password and database
@@ -195,7 +208,7 @@ var
 begin
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     res := fTCPClient.IOHandler.ReadLn;
     if IsIntegerResult(res) then Result := True
@@ -210,7 +223,7 @@ begin
   Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('SELECT %d%s',[dbIndex,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     res := fTCPClient.IOHandler.ReadLn;
     if res.Contains('+OK') then Result := True
@@ -225,7 +238,7 @@ begin
   Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('LPUSH %s "%s"%s',[aKey,msg,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     res := fTCPClient.IOHandler.ReadLn;
     if IsIntegerResult(res) then Result := True
@@ -248,12 +261,30 @@ begin
   Init;
 end;
 
+procedure TLogRedisProvider.SetConnectionTimeout(const Value: Integer);
+begin
+  if fConnectionTimeout <> Value then
+  begin
+    fConnectionTimeout := Value;
+    if Assigned(fTCPClient) then fTCPClient.ConnectTimeout := fConnectionTimeout;
+  end;
+end;
+
+procedure TLogRedisProvider.SetReadTimeout(const Value: Integer);
+begin
+  if fReadTimeout <> Value then
+  begin
+    fReadTimeout := Value;
+    if Assigned(fTCPClient) then fTCPClient.ConnectTimeout := fReadTimeout;
+  end;
+end;
+
 function TLogRedisProvider.RedisLTRIM(const aKey : string; aFirstElement, aMaxSize : Int64) : Boolean;
 begin
   Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('LTRIM %s %d %d%s',[aKey,aFirstElement,fMaxSize,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     Result := fTCPClient.IOHandler.ReadLn = '+OK';
   end;
@@ -264,9 +295,20 @@ begin
   Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('AUTH %s%s',[aPassword,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     Result := fTCPClient.IOHandler.ReadLn = '+OK';
+  end;
+end;
+
+function TLogRedisProvider.RedisPING : Boolean;
+begin
+  Result := False;
+  if not fTCPClient.Connected then Connect;
+  fTCPClient.IOHandler.Write(Format('PING%s',[CRLF]));
+  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
+  begin
+    Result := fTCPClient.IOHandler.ReadLn = 'PONG';
   end;
 end;
 
@@ -276,7 +318,7 @@ begin
   try
     if not fTCPClient.Connected then Connect;
     fTCPClient.IOHandler.Write(Format('QUIT%s',[CRLF]));
-    if fTCPClient.IOHandler.CheckForDataOnSource(1000) then
+    if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
     begin
       Result := fTCPClient.IOHandler.ReadLn = '+OK';
     end;
