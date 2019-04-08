@@ -1193,7 +1193,11 @@ begin
   GetLocalTime(SystemTime);
   {$ENDIF}
   //Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
+  {$IFDEF FPC}
+  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,{$IFDEF FPC}'',{$ELSE}Exception(ExceptObject).StackTrace,{$ENDIF}etException);
+  {$ELSE}
   Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,E.StackTrace,etException);
+  {$ENDIF}
 end;
 
 procedure TLogger.OnGetRuntimeError(const ErrorName : string; ErrorCode : Byte; ErrorPtr : Pointer);
@@ -1221,7 +1225,7 @@ begin
   {$ENDIF}
   if ExceptObject is Exception then Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) : %s',[Exception(ExceptObject).ClassName,Exception(ExceptObject).Message]),
                                                      Exception(ExceptObject).ClassName,
-                                                     Exception(ExceptObject).StackTrace,
+                                                     {$IFDEF FPC}'',{$ELSE}Exception(ExceptObject).StackTrace,{$ENDIF}
                                                      etException)
     else Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) at $%X',[ExceptObject.ClassName,Integer(ExceptAddr)]),'Exception','',etException);
 end;
