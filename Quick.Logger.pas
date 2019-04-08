@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.37
   Created     : 12/10/2017
-  Modified    : 05/04/2019
+  Modified    : 08/04/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -1192,9 +1192,8 @@ begin
   {$ELSE}
   GetLocalTime(SystemTime);
   {$ENDIF}
-  //Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),etException);
   {$IFDEF FPC}
-  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,{$IFDEF FPC}'',{$ELSE}Exception(ExceptObject).StackTrace,{$ENDIF}etException);
+  Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,'',etException);
   {$ELSE}
   Self.EnQueueItem(SystemTime,Format('(%s) : %s',[E.ClassName,E.Message]),E.ClassName,E.StackTrace,etException);
   {$ENDIF}
