@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2019 Kike Pï¿½rez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
-  Author      : Kike Pérez
-  Version     : 1.37
+  Author      : Kike Pï¿½rez
+  Version     : 1.38
   Created     : 12/10/2017
-  Modified    : 08/04/2019
+  Modified    : 09/04/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -402,6 +402,27 @@ type
     procedure Add(const cMsg : string; cEventType : TEventType); overload;
     procedure Add(const cMsg, cException, cStackTrace : string; cEventType : TEventType); overload;
     procedure Add(const cMsg : string; cValues : array of {$IFDEF FPC}const{$ELSE}TVarRec{$ENDIF}; cEventType : TEventType); overload;
+    //simplify logging add
+    procedure Info(const cMsg : string); overload;
+    procedure Info(const cMsg : string; cValues : array of const); overload;
+    procedure Warn(const cMsg : string); overload;
+    procedure Warn(const cMsg : string; cValues : array of const); overload;
+    procedure Error(const cMsg : string); overload;
+    procedure Error(const cMsg : string; cValues : array of const); overload;
+    procedure Critical(const cMsg : string); overload;
+    procedure Critical(const cMsg : string; cValues : array of const); overload;
+    procedure Succ(const cMsg : string); overload;
+    procedure Succ(const cMsg : string; cValues : array of const); overload;
+    procedure Done(const cMsg : string); overload;
+    procedure Done(const cMsg : string; cValues : array of const); overload;
+    procedure Debug(const cMsg : string); overload;
+    procedure Debug(const cMsg : string; cValues : array of const); overload;
+    procedure Trace(const cMsg : string); overload;
+    procedure Trace(const cMsg : string; cValues : array of const); overload;
+    procedure &Except(const cMsg : string); overload;
+    procedure &Except(const cMsg : string; cValues : array of const); overload;
+    procedure &Except(const cMsg, cException, cStackTrace : string); overload;
+    procedure &Except(const cMsg : string; cValues: array of const; const cException, cStackTrace: string); overload;
   end;
 
   procedure Log(const cMsg : string; cEventType : TEventType); overload;
@@ -1181,6 +1202,106 @@ begin
   {$ELSE}
   end;
   {$ENDIF}
+end;
+
+procedure TLogger.Info(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etInfo);
+end;
+
+procedure TLogger.Info(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etInfo);
+end;
+
+procedure TLogger.Critical(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etCritical);
+end;
+
+procedure TLogger.Critical(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etCritical);
+end;
+
+procedure TLogger.Succ(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etSuccess);
+end;
+
+procedure TLogger.Succ(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etSuccess);
+end;
+
+procedure TLogger.Warn(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etWarning);
+end;
+
+procedure TLogger.Warn(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etWarning);
+end;
+
+procedure TLogger.Debug(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etDebug);
+end;
+
+procedure TLogger.Debug(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etDebug);
+end;
+
+procedure TLogger.Trace(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etDebug);
+end;
+
+procedure TLogger.Trace(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etDebug);
+end;
+
+procedure TLogger.Done(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etDone);
+end;
+
+procedure TLogger.Done(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etDone);
+end;
+
+procedure TLogger.Error(const cMsg: string);
+begin
+  Self.Add(cMsg,TEventType.etError);
+end;
+
+procedure TLogger.Error(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etError);
+end;
+
+procedure TLogger.&Except(const cMsg : string);
+begin
+  Self.Add(cMsg,TEventType.etException);
+end;
+
+procedure TLogger.&Except(const cMsg: string; cValues: array of const);
+begin
+  Self.Add(cMsg,cValues,TEventType.etException);
+end;
+
+procedure TLogger.&Except(const cMsg, cException, cStackTrace: string);
+begin
+  Self.Add(cMsg,cException,cStackTrace,TEventType.etException);
+end;
+
+procedure TLogger.&Except(const cMsg : string; cValues: array of const; const cException, cStackTrace: string);
+begin
+  Self.Add(Format(cMsg,cValues),cException,cStackTrace,TEventType.etException);
 end;
 
 procedure TLogger.OnGetHandledException(E : Exception);
