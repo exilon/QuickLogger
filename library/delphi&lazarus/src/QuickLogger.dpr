@@ -1,4 +1,4 @@
-library QuickLogger;
+﻿library QuickLogger;
 
 { ***************************************************************************
 
@@ -884,7 +884,11 @@ exports
   GetLastError,
   GetLibVersionNative;
 
+
+
 begin
+  //Maybe (if default value) makes ASP.net to crash
+  Logger.WaitForFlushBeforeExit := 1;
   providerHandlers := TDictionary<string,TProviderEventHandler>.Create;
   eventTypeConversion := TDictionary<string,TLogLevel>.Create;
   eventTypeConversion.Add('LOG_ONLYERRORS', LOG_ONLYERRORS);

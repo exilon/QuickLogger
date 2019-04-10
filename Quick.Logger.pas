@@ -1402,6 +1402,7 @@ initialization
 
 
 finalization
-  Logger.Free;
+  //Makes ASP.NET to crash
+  //Logger.Free;
 
 end.
