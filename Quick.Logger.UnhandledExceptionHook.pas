@@ -36,7 +36,7 @@ implementation
 
 uses
   SysUtils,
-  System.TypInfo,
+  TypInfo,
   Quick.Logger;
 
 procedure UnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
