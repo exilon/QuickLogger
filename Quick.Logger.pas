@@ -1,4 +1,4 @@
-{ ***************************************************************************
+﻿{ ***************************************************************************
 
   Copyright (c) 2016-2019 Kike P�rez
 
@@ -241,8 +241,10 @@ type
   TJsonOutputOptions = class
   private
     fUseUTCTime : Boolean;
+    fTimeStampName : string;
   public
     property UseUTCTime : Boolean read fUseUTCTime write fUseUTCTime;
+    property TimeStampName : string read fTimeStampName write fTimeStampName;
   end;
 
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
@@ -483,6 +485,7 @@ begin
   fSystemInfo := Quick.SysInfo.SystemInfo;
   fJsonOutputOptions := TJsonOutputOptions.Create;
   fJsonOutputOptions.UseUTCTime := False;
+  fJsonOutputOptions.TimeStampName := 'timestamp';
   fAppName := fSystemInfo.AppName;
 end;
 
@@ -614,8 +617,8 @@ end;
 function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
 begin
   Result := TJSONObject.Create;
-  if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
-    else Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('timestamp',DateTimeToJsonDate(cLogItem.EventDate));
+  if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(fJsonOutputOptions.TimeStampName,DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
+    else Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(fJsonOutputOptions.TimeStampName,DateTimeToJsonDate(cLogItem.EventDate));
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
   if iiHost in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
   if iiAppName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',fAppName);
