@@ -1,4 +1,4 @@
-﻿library QuickLogger;
+library QuickLogger;
 
 { ***************************************************************************
 
@@ -166,6 +166,7 @@ begin
   MessageBox(0, PChar(msg), 'Test from native library', MB_OK +
     MB_ICONINFORMATION);
   {$ELSE}
+  Writeln('Test from native library');
   {$ENDIF}
 end;
 
@@ -648,9 +649,9 @@ begin
   end;
 end;
 
-procedure ExceptionNative(const Line, Excp : PChar); stdcall; export;
+procedure ExceptionNative(const Line, Excp, Stack : PChar); stdcall; export;
 begin
-  Logger.Add(Line, Excp, etException);
+  Logger.Add(Line, Excp, stack, etException);
 end;
 
 function GetLastError(out str: PChar): Integer; stdcall; export;
@@ -894,3 +895,5 @@ begin
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
 end.
+
+
