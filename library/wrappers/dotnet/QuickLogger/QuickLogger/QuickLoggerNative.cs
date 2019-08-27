@@ -46,7 +46,7 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, string exceptionname);
+        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, string exceptionname, string stacktrace);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -326,7 +326,12 @@ namespace QuickLogger.NetStandard
 
         public void Exception(Exception exception)
         {
-            exceptionNative?.Invoke(exception.Message, exception.GetType().Name);
+            exceptionNative?.Invoke(exception.Message + " " + exception.InnerException, exception.GetType().Name, exception.StackTrace);
+        }
+
+        public void Exception(string message, string exceptionType, string stackTrace)
+        {
+            exceptionNative?.Invoke(message, exceptionType, stackTrace);
         }
 
         public void WaitSecondsForFlushBeforeExit(int seconds)

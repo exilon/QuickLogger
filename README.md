@@ -279,7 +279,7 @@ There are some predefined providers, but you can make your own provider if neede
     - **WebHookURL:** Webhook with permissions to send to the channel. https://api.slack.com/incoming-webhooks
     - **Enabled:** Enables/disables receive logging.
 	
-- **Quick.Logger.Provider.ADODB:** Saves log to ADO database (MSSQL, MSAccess, etc..).
+- **Quick.Logger.Provider.ADODB:** Saves log to ADO database (MSSQL, MSAccess, etc..)
 	
     Properties:
     
@@ -340,32 +340,32 @@ There are some predefined providers, but you can make your own provider if neede
     - **LogLevel:** Log level that your provider accepts.
     - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
-	- **URL:** Host and port
-	- **Database:** Database name.
-	- **UserName:** Database username.
-	- **Password:** Database password.
-	- **CreateDatabaseIfNotExists:** Creates influxdb database if not exists on server.
-	- **IncludedTags:** Tags included to influxdb.
+    - **URL:** Host and port
+    - **Database:** Database name.
+    - **UserName:** Database username.
+    - **Password:** Database password.
+    - **CreateDatabaseIfNotExists:** Creates influxdb database if not exists on server.
+    - **IncludedTags:** Tags included to influxdb.
     - **Enabled:** Enables/disables receive logging.
 	
 
 - **Quick.Logger.Provider.GrayLog:** Sends Logging to GrayLog service.
 	
-Properties:
+    Properties:
     
-- **LogLevel:** Log level that your provider accepts.
-- **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
-- **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
-- **URL:** Host and port
-- **GrayLogVersion:** GrayLog version to send to server.
-- **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
-- **Enabled:** Enables/disables receive logging.
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **URL:** Host and port
+    - **GrayLogVersion:** GrayLog version to send to server.
+    - **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
+    - **Enabled:** Enables/disables receive logging.
 
 ### Optional output:
 
 QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc) and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
  
- Properties:
+Properties:
     
 - **Platform:** Define your log source (API, Destokp app or your own value).
 - **Environment:** Define your environment (Production, Test, develop or your own value). 

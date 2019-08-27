@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike P�rez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
-  Author      : Kike P�rez
-  Version     : 1.38
+  Author      : Kike Pérez
+  Version     : 1.39
   Created     : 12/10/2017
-  Modified    : 09/04/2019
+  Modified    : 28/08/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -79,7 +79,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.34';
+  QLVERSION = '1.39';
 
 type
 
