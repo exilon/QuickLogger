@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.39
+  Version     : 1.40
   Created     : 12/10/2017
-  Modified    : 28/08/2019
+  Modified    : 31/08/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -50,6 +50,7 @@ uses
     SyncObjs,
     {$ENDIF}
   {$ENDIF}
+  Quick.Logger.Intf,
   Quick.JSON.Utils,
   //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
@@ -79,7 +80,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.39';
+  QLVERSION = '1.40';
 
 type
 
@@ -371,7 +372,7 @@ type
     procedure Execute; override;
   end;
 
-  TLogger = class
+  TLogger = class(TInterfacedObject,ILogger)
   private
     fThreadProviderLog : TThreadProviderLog;
     fLogQueue : TLogQueue;
