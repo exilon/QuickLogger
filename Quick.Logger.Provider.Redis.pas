@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.27
   Created     : 15/10/2017
-  Modified    : 05/04/2019
+  Modified    : 11/06/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -126,6 +126,7 @@ begin
   IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
   fConnectionTimeout := DEF_CONNECTIONTIMEOUT;
   fReadTimeout := DEF_READTIMETOUT;
+  fJsonOutputOptions.UseUTCTime := True;
   fOutputAsJson := True;
 end;
 
