@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike P�rez
+  Copyright (c) 2016-2019 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
-  Author      : Kike P�rez
-  Version     : 1.38
+  Author      : Kike Pérez
+  Version     : 1.41
   Created     : 12/10/2017
-  Modified    : 09/04/2019
+  Modified    : 11/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -50,6 +50,7 @@ uses
     SyncObjs,
     {$ENDIF}
   {$ENDIF}
+  Quick.Logger.Intf,
   Quick.JSON.Utils,
   //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
@@ -79,7 +80,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.34';
+  QLVERSION = '1.41';
 
 type
 
@@ -92,6 +93,7 @@ type
   {$ENDIF}
 
   ELogger = class(Exception);
+  ELoggerInitializationError = class(Exception);
   ELoggerLoadProviderError = class(Exception);
   ELoggerSaveProviderError = class(Exception);
 
@@ -371,7 +373,7 @@ type
     procedure Execute; override;
   end;
 
-  TLogger = class
+  TLogger = class(TInterfacedObject,ILogger)
   private
     fThreadProviderLog : TThreadProviderLog;
     fLogQueue : TLogQueue;
@@ -827,11 +829,26 @@ begin
 end;
 
 procedure TLogProviderBase.SetEnabled(aValue: Boolean);
+var
+  errormsg : string;
 begin
   if (aValue <> fEnabled) then
   begin
-    if aValue then Init
-      else Stop;
+    if aValue then
+    begin
+      try
+        Init;
+      except
+        on E : Exception do
+        begin
+          errormsg := Format('LoggerProvider "%s" initialization error (%s)',[Self.Name,e.Message]);
+          NotifyError(errormsg);
+          if Assigned(fOnCriticalError) then fOnCriticalError(Self.Name,errormsg);
+          //  else raise ELoggerInitializationError.Create(errormsg);
+        end;
+      end;
+    end
+    else Stop;
   end;
 end;
 
@@ -1338,7 +1355,6 @@ end;
 procedure TLogger.OnGetUnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
 var
   SystemTime : TSystemTime;
-  cname : string;
   msg : String;
 begin
   {$IFDEF FPCLINUX}

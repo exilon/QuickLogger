@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.27
+  Version     : 1.28
   Created     : 12/10/2017
-  Modified    : 25/03/2019
+  Modified    : 11/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -144,20 +144,26 @@ procedure TLogFileProvider.Init;
 var
   FileMode : Word;
   fs : TFileStream;
+  exepath : string;
 begin
   if Assigned(fLogWriter) then fLogWriter.Free;
   fLogWriter := nil;
+
+  //get exepath only if not running as dll
+  if IsLibrary then exepath := SystemInfo.AppPath
+    else exepath := ParamStr(0);
+
   if fFileName = '' then
   begin
     {$IFNDEF ANDROID}
-    fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + TPath.GetFileNameWithoutExtension(ParamStr(0)) + '.log';
+    fFileName := TPath.GetDirectoryName(exepath) + PathDelim + TPath.GetFileNameWithoutExtension(exepath) + '.log';
     {$ELSE}
     fFileName := TPath.GetDocumentsPath + PathDelim + 'logger.log';
     {$ENDIF}
   end;
 
-  if fFileName.StartsWith('.'+PathDelim) then fFileName := StringReplace(fFileName,'.'+PathDelim,TPath.GetDirectoryName(ParamStr(0)) + PathDelim,[])
-    else if ExtractFilePath(fFileName) = '' then fFileName := TPath.GetDirectoryName(ParamStr(0)) + PathDelim + fFileName;
+  if fFileName.StartsWith('.'+PathDelim) then fFileName := StringReplace(fFileName,'.'+PathDelim,TPath.GetDirectoryName(exepath) + PathDelim,[])
+    else if ExtractFilePath(fFileName) = '' then fFileName := TPath.GetDirectoryName(exepath) + PathDelim + fFileName;
 
   {$IFDEF MSWINDOWS}
   if fAutoFileName then fFileName := Format('%s\%s_%d.log',[TPath.GetDirectoryName(fFileName),TPath.GetFileNameWithoutExtension(fFileName),GetCurrentProcessId]);
@@ -197,18 +203,14 @@ begin
       WriteToStream(FillStr('-',70));
       if iiAppName in IncludedInfo then
       begin
-        {$IFDEF MSWINDOWS}
         WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
-        {$ELSE}
-        WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
-        {$ENDIF}
       end;
       WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
       WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
       if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
       //{$IFDEF MSWINDOWS}
       if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
-      if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[SystemInfo.UserName]));
+      if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[Trim(SystemInfo.UserName)]));
       //{$ENDIF}
       WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
       {$IFDEF MSWINDOWS}

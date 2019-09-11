@@ -1,4 +1,4 @@
-library QuickLogger;
+﻿library QuickLogger;
 
 { ***************************************************************************
 
@@ -7,9 +7,9 @@ library QuickLogger;
   Library     : QuickLogger
   Description : Dynamic library headers for external language wrappers
   Author      : Kike Fuentes (Turric4n)
-  Version     : 1.36
+  Version     : 1.37
   Created     : 15/10/2017
-  Modified    : 26/03/2019
+  Modified    : 11/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -31,12 +31,14 @@ library QuickLogger;
 
 uses
   Rtti,
-  {$IFNDEF UNIX}
+  {$IFDEF MSWINDOWS}}
   Windows,
   ActiveX,
   {$ELSE}
-  Unix,
-  Memory,
+    {$IFDEF FPC}}
+    Unix,
+    Memory,
+    {$ENDIF}
   {$ENDIF}
   Quick.Logger,
   {$IFDEF MSWINDOWS}
@@ -162,7 +164,7 @@ end;
 
 procedure msgdbg(const msg : string);
 begin
-  {$IFNDEF  UNIX}
+  {$IFDEF MSWINDOWS}
   MessageBox(0, PChar(msg), 'Test from native library', MB_OK +
     MB_ICONINFORMATION);
   {$ELSE}
@@ -172,15 +174,19 @@ end;
 
 function GetPChar(const str : string) : PChar;
 begin
-  {$IFNDEF  UNIX}
+  {$IFDEF MSWINDOWS}}
     Result := CoTaskMemAlloc(SizeOf(Char)*(Length(str)+1));
   {$ELSE}
+    {$IFDEF FPC}
     Result := Memory.MemAlloc(SizeOf(Char)*(Length(str)+1));
+    {$ELSE}
+    GetMem(Result,SizeOf(Char)*(Length(str)+1));
+    {$ENDIF}
   {$ENDIF}
   {$IFNDEF FPC}
-    strcopy(Result, PWideChar(str));
+    StrCopy(Result, PWideChar(str));
   {$ELSE}
-    strcopy(Result, PChar(str));
+    StrCopy(Result, PChar(str));
   {$ENDIF}
 end;
 
