@@ -5,7 +5,7 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.40
+  Version     : 1.41
   Created     : 12/10/2017
   Modified    : 11/09/2019
 
@@ -80,7 +80,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.40';
+  QLVERSION = '1.41';
 
 type
 
