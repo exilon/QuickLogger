@@ -42,6 +42,9 @@ uses
     {$IFDEF FPC}
     fpjson,
     {$ELSE}
+      {$IFDEF DELPHIXE7_UP}
+      System.JSON,
+      {$ENDIF}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
