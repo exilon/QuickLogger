@@ -23,6 +23,8 @@ Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 
 ### Updates:
 
+**Sep 11,2019:** Now included on RAD Studio GetIt package manager.
+
 **Mar 28,2019:** Unhandled exceptions hook
 
 **Mar 28,2019:** Improved exception info
@@ -69,6 +71,17 @@ Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 
 **May 02,2018:** FreePascal Windows compatibility.
 
+**Installation:**
+----------
+* **From package managers:**
+1. Search "QuickLogger" on Delphinus or GetIt package managers and click *Install*
+* **From Github:**
+1. Clone this Github repository or download zip file and extract it.
+2. Add QuickLogger folder to your path libraries on Delphi IDE.
+3. Clone QuickLib Github repository https://github/exilon/QuickLib or download zip file and extract it.
+4. Add QuickLib folder to your path libraries on Delphi IDE.
+
+**Documentation:**
 ----------
 Quick Logger is asynchronous. All logs are sent to a queue and don't compromises your application flow. You can define many providers to sent every log entry and decide what level accepts every one.
 
