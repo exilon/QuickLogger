@@ -5,6 +5,8 @@ program QuickLogger.Lib.Tester;
 {$R *.res}
 
 uses
+  Quick.Commons,
+  Quick.Console,
   {$IFDEF MSWINDOWS}
   Winapi.ActiveX,
   {$ENDIF}
@@ -18,12 +20,15 @@ const
   {$ENDIF}
 
 function AddProviderJSONNative(Provider : Pchar) : Integer; stdcall; external LIBPATH;
+function AddStandardConsoleProviderNative: Integer; stdcall; external LIBPATH;
 function AddStandardFileProviderNative(const LogFilename : PChar) : Integer; stdcall; external LIBPATH;
 procedure ResetProviderNative(ProviderName : PChar); stdcall; external LIBPATH;
 function GetProviderNamesNative(out str: PChar): Integer; external LIBPATH;
 function GetLibVersionNative(out str: PChar): Integer; stdcall; external LIBPATH;
 function GetLastError(out str: PChar): Integer; stdcall; external LIBPATH;
 procedure InfoNative(Line : PChar); stdcall; external LIBPATH;
+procedure ErrorNative(Line : PChar); stdcall; external LIBPATH;
+procedure SuccessNative(Line : PChar); stdcall; external LIBPATH;
 
 function GetPChar(const str : string) : PChar;
 begin
@@ -45,8 +50,13 @@ end;
 
 begin
   try
-    AddStandardFileProviderNative('Logger.log');
-    InfoNative(GetPChar('Test'));
+    AddStandardConsoleProviderNative;
+    AddStandardFileProviderNative('./Logger.log');
+    InfoNative('Info test');
+    ErrorNative('Error test');
+    SuccessNative('Success test');
+    cout('press <ENTER> to Exit',ccYellow);
+    ConsoleWaitForEnterKey;
   except
     on E: Exception do
       Writeln(E.ClassName, ': ', E.Message);

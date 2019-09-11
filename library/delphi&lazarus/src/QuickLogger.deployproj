@@ -1,0 +1,43 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Condition="Exists('$(BDS)\bin\CodeGear.Deployment.targets')" Project="$(BDS)\bin\CodeGear.Deployment.targets"/>
+    <ProjectExtensions>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <PropertyGroup/>
+    <ItemGroup Condition="'$(Platform)'=='Win32'">
+        <DeployFile Include="Win32\Release\QuickLogger.dll" Condition="'$(Config)'=='Release'">
+            <RemoteDir>QuickLogger\</RemoteDir>
+            <RemoteName>QuickLogger.dll</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Platform)'=='Win64'">
+        <DeployFile Include="Win64\Release\QuickLogger.dll" Condition="'$(Config)'=='Release'">
+            <RemoteDir>QuickLogger\</RemoteDir>
+            <RemoteName>QuickLogger.dll</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>0</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Platform)'=='Linux64'">
+        <DeployFile Include="..\..\bin\Linux64\Release\libQuickLogger.so" Condition="'$(Config)'=='Release'">
+            <RemoteDir>QuickLogger\</RemoteDir>
+            <RemoteName>libQuickLogger.so</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
+    </ItemGroup>
+</Project>
