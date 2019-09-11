@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.40
   Created     : 12/10/2017
-  Modified    : 31/08/2019
+  Modified    : 11/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -93,6 +93,7 @@ type
   {$ENDIF}
 
   ELogger = class(Exception);
+  ELoggerInitializationError = class(Exception);
   ELoggerLoadProviderError = class(Exception);
   ELoggerSaveProviderError = class(Exception);
 
@@ -828,11 +829,26 @@ begin
 end;
 
 procedure TLogProviderBase.SetEnabled(aValue: Boolean);
+var
+  errormsg : string;
 begin
   if (aValue <> fEnabled) then
   begin
-    if aValue then Init
-      else Stop;
+    if aValue then
+    begin
+      try
+        Init;
+      except
+        on E : Exception do
+        begin
+          errormsg := Format('LoggerProvider "%s" initialization error (%s)',[Self.Name,e.Message]);
+          NotifyError(errormsg);
+          if Assigned(fOnCriticalError) then fOnCriticalError(Self.Name,errormsg);
+          //  else raise ELoggerInitializationError.Create(errormsg);
+        end;
+      end;
+    end
+    else Stop;
   end;
 end;
 
