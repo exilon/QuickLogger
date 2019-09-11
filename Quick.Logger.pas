@@ -1339,7 +1339,6 @@ end;
 procedure TLogger.OnGetUnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
 var
   SystemTime : TSystemTime;
-  cname : string;
   msg : String;
 begin
   {$IFDEF FPCLINUX}

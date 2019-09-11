@@ -5,11 +5,17 @@ program QuickLogger.Lib.Tester;
 {$R *.res}
 
 uses
-  System.SysUtils,
-  Winapi.ActiveX;
+  {$IFDEF MSWINDOWS}
+  Winapi.ActiveX,
+  {$ENDIF}
+  System.SysUtils;
 
 const
+  {$IFDEF MSWINDOWS}
   LIBPATH = '.\QuickLogger.dll';
+  {$ELSE}
+  LIBPATH = './libQuickLogger.so';
+  {$ENDIF}
 
 function AddProviderJSONNative(Provider : Pchar) : Integer; stdcall; external LIBPATH;
 function AddStandardFileProviderNative(const LogFilename : PChar) : Integer; stdcall; external LIBPATH;
@@ -21,21 +27,25 @@ procedure InfoNative(Line : PChar); stdcall; external LIBPATH;
 
 function GetPChar(const str : string) : PChar;
 begin
-  {$IFNDEF  UNIX}
+  {$IFDEF MSWINDOWS}
     Result := CoTaskMemAlloc(SizeOf(Char)*(Length(str)+1));
   {$ELSE}
+    {$IFDEF FPC}
     Result := Memory.MemAlloc(SizeOf(Char)*(Length(str)+1));
+    {$ELSE}
+    GetMem(Result,SizeOf(Char)*(Length(str)+1));
+    {$ENDIF}
   {$ENDIF}
   {$IFNDEF FPC}
-    strcopy(Result, PWideChar(str));
+    StrCopy(Result, PWideChar(str));
   {$ELSE}
-    strcopy(Result, PChar(str));
+    StrCopy(Result, PChar(str));
   {$ENDIF}
 end;
 
 begin
   try
-    AddStandardFileProviderNative('.\Logger.log');
+    AddStandardFileProviderNative('Logger.log');
     InfoNative(GetPChar('Test'));
   except
     on E: Exception do
