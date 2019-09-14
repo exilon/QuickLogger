@@ -5,9 +5,9 @@
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
-  Version     : 1.41
+  Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 11/09/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -80,7 +80,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.41';
+  QLVERSION = '1.42';
 
 type
 
@@ -127,7 +127,7 @@ type
     {$ENDIF}
   {$ENDIF}
 
-  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace);
+  TLogInfoField = (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace, iiThreadId, iiProcessId);
 
   TIncludedLogInfo = set of TLogInfoField;
 
@@ -138,11 +138,13 @@ type
     fEventType : TEventType;
     fMsg : string;
     fEventDate : TDateTime;
+    fThreadId : DWORD;
   public
     constructor Create;
     property EventType : TEventType read fEventType write fEventType;
     property Msg : string read fMsg write fMsg;
     property EventDate : TDateTime read fEventDate write fEventDate;
+    property ThreadId : DWORD read fThreadId write fThreadId;
     function EventTypeName : string;
     function Clone : TLogItem; virtual;
   end;
@@ -291,6 +293,7 @@ type
     procedure SetMaxFailsToRestart(const Value: Integer);
   protected
     fJsonOutputOptions : TJsonOutputOptions;
+    function LogItemToLine(cLogItem : TLogItem; aShowTimeStamp, aShowEventTypes : Boolean) : string; overload;
     function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
     function LogItemToJson(cLogItem : TLogItem) : string; overload;
     function LogItemToHtml(cLogItem: TLogItem): string;
@@ -628,6 +631,9 @@ begin
   if iiPlatform in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platform',fPlatformInfo);
   if iiOSVersion in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
   if iiUserName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',SystemInfo.UserName);
+  if iiThreadId in IncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('threadid',cLogItem.ThreadId.ToString);
+  if iiProcessId in IncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('pid',SystemInfo.ProcessId.ToString);
+
   if cLogItem is TLogExceptionItem then
   begin
     if iiExceptionInfo in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('exception',TLogExceptionItem(cLogItem).Exception);
@@ -635,6 +641,16 @@ begin
   end;
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
+end;
+
+function TLogProviderBase.LogItemToLine(cLogItem : TLogItem; aShowTimeStamp, aShowEventTypes : Boolean) : string;
+begin
+  Result := '';
+  if aShowTimeStamp then Result := DateTimeToStr(cLogItem.EventDate,FormatSettings);
+  if aShowEventTypes then Result := Format('%s [%s]',[Result,EventTypeName[cLogItem.EventType]]);
+  Result := Result + ' ' + cLogItem.Msg;
+  if iiThreadId in IncludedInfo then Result := Format('%s [ThreadId: %d]',[Result,cLogItem.ThreadId]);
+  if iiProcessId in IncludedInfo then Result := Format('%s [PID: %d]',[Result,SystemInfo.ProcessId]);
 end;
 
 function TLogProviderBase.LogItemToJson(cLogItem: TLogItem): string;
@@ -672,6 +688,8 @@ begin
     if iiOSVersion in IncludedInfo then msg.Add(Format('<B>OS:</B> %s%s',[SystemInfo.OsVersion,HTMBR]));
     if iiEnvironment in IncludedInfo then msg.Add(Format('<B>Environment:</B> %s%s',[Environment,HTMBR]));
     if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,HTMBR]));
+    if iiThreadId in IncludedInfo then msg.Add(Format('<B>ThreadId:</B> %d',[cLogItem.ThreadId]));
+    if iiProcessId in IncludedInfo then msg.Add(Format('<B>PID:</B> %d',[SystemInfo.ProcessId]));
     msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,HTMBR]));
     msg.Add('</body></html>');
     Result := msg.Text;
@@ -694,6 +712,8 @@ begin
     if iiOSVersion in IncludedInfo then msg.Add(Format('OS: %s',[SystemInfo.OsVersion]));
     if iiEnvironment in IncludedInfo then msg.Add(Format('Environment: %s',[Environment]));
     if iiPlatform in IncludedInfo then msg.Add(Format('Platform: %s',[PlatformInfo]));
+    if iiThreadId in IncludedInfo then msg.Add(Format('ThreadId: %d',[cLogItem.ThreadId]));
+    if iiProcessId in IncludedInfo then msg.Add(Format('PID: %d',[SystemInfo.ProcessId]));
     msg.Add(Format('Message: %s',[cLogItem.Msg]));
     Result := msg.Text;
   finally
@@ -1059,6 +1079,7 @@ begin
   Result := TLogItem.Create;
   Result.EventType := Self.EventType;
   Result.EventDate := Self.EventDate;
+  Result.ThreadId := Self.ThreadId;
   Result.Msg := Self.Msg;
 end;
 
@@ -1209,6 +1230,11 @@ end;
 
 procedure TLogger.EnQueueItem(cLogItem : TLogItem);
 begin
+  {$IFDEF MSWINDOWS}
+  cLogItem.ThreadId := GetCurrentThreadId;
+  {$ELSE}
+  cLogItem.ThreadId := TThread.CurrentThread.ThreadID;
+  {$ENDIF}
   if fLogQueue.PushItem(cLogItem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(cLogItem);

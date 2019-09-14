@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Console
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 12/10/2017
-  Modified    : 24/05/2018
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -93,6 +93,7 @@ type
     fShowEventColors : Boolean;
     fShowTimeStamp : Boolean;
     fEventTypeColors : TEventTypeColors;
+    fShowEventTypes : Boolean;
     fUnderlineHeaderEventType : Boolean;
     function GetEventTypeColor(cEventType : TEventType) : TConsoleColor;
     procedure SetEventTypeColor(cEventType: TEventType; cValue : TConsoleColor);
@@ -101,6 +102,7 @@ type
     destructor Destroy; override;
     property ShowEventColors : Boolean read fShowEventColors write fShowEventColors;
     property ShowTimeStamp : Boolean read fShowTimeStamp write fShowTimeStamp;
+    property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property UnderlineHeaderEventType : Boolean read fUnderlineHeaderEventType write fUnderlineHeaderEventType;
     property EventTypeColor[cEventType : TEventType] : TConsoleColor read GetEventTypeColor write SetEventTypeColor;
     procedure Init; override;
@@ -117,6 +119,7 @@ constructor TLogConsoleProvider.Create;
 begin
   inherited;
   LogLevel := LOG_ALL;
+  fShowEventTypes := False;
   fShowEventColors := True;
   fShowTimeStamp := False;
   fUnderlineHeaderEventType := False;
@@ -191,8 +194,9 @@ begin
     end
     else
     begin
-      if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF}]))
-        else Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
+      //if fShowTimeStamp then Writeln(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF}]))
+      //  else Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
+      writeln(LogItemToLine(cLogItem,fShowTimeStamp,fShowEventTypes){$IFDEF LINUX}+CR{$ENDIF});
     end;
 
     ResetColors;

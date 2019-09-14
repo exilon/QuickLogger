@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3.2 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -22,6 +22,8 @@ Delphi(Delphi XE6 - Delphi 10.3.1 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 - Controlled and unhandled exceptions hook
 
 ### Updates:
+
+**Sep 14,2019:** New optional Included log info: ThreadId.
 
 **Sep 11,2019:** Now included on RAD Studio GetIt package manager.
 
@@ -376,14 +378,14 @@ There are some predefined providers, but you can make your own provider if neede
 
 ### Optional output:
 
-QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc) and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
+QuickLogger allows to select with info to log. You can include HOSTNAME, OS Version, AppName, Platform or Environment(production, test, etc), ThreadId, ProcessId and other fields (to be compatible with multienvironments or multidevices). It's more evident for a remote logging like redis or rest, but File provider can be write a header with this fields if you like.
  
 Properties:
     
 - **Platform:** Define your log source (API, Destokp app or your own value).
 - **Environment:** Define your environment (Production, Test, develop or your own value). 
 - **AppName:** Uses default filename without extension, but can be customized.
-- **IncludedInfo:** Define which fields do you want to include as part of your log info.
+- **IncludedInfo:** Define which fields do you want to include as part of your log info (iiAppName, iiHost, iiUserName, iiEnvironment, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace, iiThreadId, iiProcessId)
 	
 ```delphi
 GlobalLogConsoleProvider.IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];

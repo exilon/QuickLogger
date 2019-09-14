@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.GrayLog
   Description : Log GrayLog Provider
   Author      : Kike Pérez
-  Version     : 1.1
+  Version     : 1.2
   Created     : 15/03/2019
-  Modified    : 25/03/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -143,7 +143,8 @@ begin
     etDone: Result := Integer(TSyslogSeverity.slNotice);
     etCustom1: Result := Integer(TSyslogSeverity.slEmergency);
     etCustom2: Result := Integer(TSyslogSeverity.slInformational);
-    end;
+    else Result := Integer(TSyslogSeverity.slInformational);
+  end;
 end;
 
 function TLogGrayLogProvider.LogToGELF(cLogItem: TLogItem): string;
@@ -177,6 +178,8 @@ begin
     if iiPlatform in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_platform',PlatformInfo);
     if iiOSVersion in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_OS',SystemInfo.OSVersion);
     if iiUserName in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_user',SystemInfo.UserName);
+    if iiThreadId in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_treadid',cLogItem.ThreadId.ToString);
+    if iiProcessId in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_pid',SystemInfo.ProcessId.ToString);
 
     {$IFDEF DELPHIXE8_UP}
     Result := json.ToJSON
