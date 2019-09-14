@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
-  Version     : 1.24
+  Version     : 1.25
   Created     : 02/10/2017
-  Modified    : 18/02/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -87,14 +87,14 @@ end;
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then OutputDebugString(PChar(cLogItem.Msg))
-    else OutputDebugString(PChar(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg])));
+    else OutputDebugString(PChar(LogItemToLine(cLogItem,False,True)));
 end;
 {$ELSE}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
   {$IFNDEF DELPHILINUX}
   if CustomMsgOutput then FMX.Types.Log.d(cLogItem.Msg)
-    else FMX.Types.Log.d(Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg]));
+    else FMX.Types.Log.d(LogItemToLine(cLogItem,False,True));
   {$ENDIF}
 end;
 {$ENDIF}

@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.28
+  Version     : 1.29
   Created     : 12/10/2017
-  Modified    : 11/09/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -69,6 +69,7 @@ type
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
     function CheckNeedRotate : Boolean;
     procedure SetFileName(const Value: string);
+    procedure WriteHeaderInfo;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -198,35 +199,38 @@ begin
       Exit;
     end;
     //writes header info
-    if fShowHeaderInfo then
-    begin
-      WriteToStream(FillStr('-',70));
-      if iiAppName in IncludedInfo then
-      begin
-        WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
-      end;
-      WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
-      WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
-      if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
-      //{$IFDEF MSWINDOWS}
-      if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
-      if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[Trim(SystemInfo.UserName)]));
-      //{$ENDIF}
-      WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
-      {$IFDEF MSWINDOWS}
-      if IsService then WriteToStream('AppType     : Service')
-        else if System.IsConsole then WriteToStream('AppType     : Console');
-
-      if IsDebug then WriteToStream('Debug mode  : On');
-      {$ENDIF}
-      WriteToStream(FillStr('-',70));
-    end;
+    if fShowHeaderInfo then WriteHeaderInfo;
   except
     fs.Free;
     raise;
   end;
   //creates the threadlog
   inherited;
+end;
+
+procedure TLogFileProvider.WriteHeaderInfo;
+begin
+  WriteToStream(FillStr('-',70));
+  if iiAppName in IncludedInfo then
+  begin
+    WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
+  end;
+  if iiProcessId in IncludedInfo then WriteToStream(Format('PID         : %d',[SystemInfo.ProcessId]));
+  WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
+  WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
+  if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
+  //{$IFDEF MSWINDOWS}
+  if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
+  if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[Trim(SystemInfo.UserName)]));
+  //{$ENDIF}
+  WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
+  {$IFDEF MSWINDOWS}
+  if IsService then WriteToStream('AppType     : Service')
+    else if System.IsConsole then WriteToStream('AppType     : Console');
+
+  if IsDebug then WriteToStream('Debug mode  : On');
+  {$ENDIF}
+  WriteToStream(FillStr('-',70));
 end;
 
 procedure TLogFileProvider.WriteToStream(const cMsg : string);
@@ -244,6 +248,8 @@ begin
 end;
 
 procedure TLogFileProvider.WriteLog(cLogItem : TLogItem);
+var
+  line : string;
 begin
   if CustomMsgOutput then
   begin
@@ -258,8 +264,9 @@ begin
   end
   else
   begin
-    if fShowEventTypes then WriteToStream(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]))
-      else WriteToStream(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]));
+    //if fShowEventTypes then WriteToStream(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],LogItemToLine(cLogItem.Msg)]))
+    //  else WriteToStream(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]));
+    WriteToStream(LogItemToLine(cLogItem,True,fShowEventTypes));
   end;
 end;
 

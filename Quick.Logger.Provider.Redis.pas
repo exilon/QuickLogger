@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.27
+  Version     : 1.28
   Created     : 15/10/2017
-  Modified    : 11/06/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -190,7 +190,7 @@ begin
     end
     else
     begin
-      log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+      log := LogItemToLine(cLogItem,True,True);
     end;
   end;
 
