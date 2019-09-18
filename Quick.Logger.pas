@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 14/09/2019
+  Modified    : 18/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,9 +42,6 @@ interface
 uses
   {$IFDEF MSWINDOWS}
   Windows,
-    //{$IFDEF DELPHIXE8_UP}
-    //Quick.Json.Serializer,
-    //{$ENDIF}
     {$IFDEF DELPHIXE7_UP}
     {$ELSE}
     SyncObjs,
@@ -52,9 +49,7 @@ uses
   {$ENDIF}
   Quick.Logger.Intf,
   Quick.JSON.Utils,
-  //{$IF Defined(DELPHITOKYO_UP) AND Defined(LINUX)}
   Quick.Json.Serializer,
-  //{$ENDIF}
   Classes,
   Types,
   SysUtils,
@@ -180,7 +175,7 @@ type
     function GetVersion : string;
     function GetName : string;
     function GetQueuedLogItems : Integer;
-    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
+    {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -344,7 +339,7 @@ type
     function GetVersion : string;
     function IsEnabled : Boolean;
     function GetName : string;
-    {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
+    {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -352,7 +347,7 @@ type
     {$ENDIF}
   end;
 
-  {$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
+  {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
   TLogProviderList = class(TList<ILogProvider>)
   public
     function ToJson(aIndent : Boolean = True) : string;
@@ -659,7 +654,7 @@ var
 begin
   json := LogItemToJsonObject(cLogItem);
   try
-    {$IFDEF DELPHIXE8_UP}
+    {$IFDEF DELPHIXE7_UP}
     Result := json.ToJSON
     {$ELSE}
       {$IFDEF FPC}
@@ -751,7 +746,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
+{$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
   function TLogProviderBase.ToJson(aIndent : Boolean = True) : string;
   var
     serializer : TJsonSerializer;
@@ -1492,7 +1487,7 @@ end;
 
 { TLogProviderList }
 
-{$IF DEFINED(DELPHIXE8_UP) AND NOT DEFINED(NEXTGEN)}
+{$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
 function TLogProviderList.ToJson(aIndent : Boolean = True) : string;
 var
   iprovider : ILogProvider;
