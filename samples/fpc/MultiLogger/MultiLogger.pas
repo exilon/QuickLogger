@@ -28,7 +28,8 @@ uses
   {$ENDIF}
   Quick.Logger.Provider.Memory,
   Quick.Logger.Provider.Telegram,
-  Quick.Logger.Provider.Slack;
+  Quick.Logger.Provider.Slack,
+  Quick.Logger.UnhandledExceptionHook;
 
 var
   a : Integer;
@@ -179,7 +180,7 @@ begin
     PlatformInfo := 'App';
     IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
     LogLevel := [etError,etCritical,etException];
-    Enabled := True;
+    Enabled := False;
   end;
 
   //configure Slack log provider
@@ -190,7 +191,7 @@ begin
     UserName := 'yourbot';
     WebHookURL := 'https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX';
     LogLevel := [etError,etCritical,etException];
-    Enabled := True;
+    Enabled := False;
   end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
