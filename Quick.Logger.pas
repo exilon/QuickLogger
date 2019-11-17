@@ -1376,7 +1376,6 @@ end;
 procedure TLogger.OnGetUnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
 var
   SystemTime : TSystemTime;
-  msg : String;
 begin
   {$IFDEF FPCLINUX}
   DateTimeToSystemTime(Now(),SystemTime);
