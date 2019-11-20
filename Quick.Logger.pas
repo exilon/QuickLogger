@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 18/09/2019
+  Modified    : 20/11/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -1297,12 +1297,12 @@ end;
 
 procedure TLogger.Trace(const cMsg: string);
 begin
-  Self.Add(cMsg,TEventType.etDebug);
+  Self.Add(cMsg,TEventType.etTrace);
 end;
 
 procedure TLogger.Trace(const cMsg: string; cValues: array of const);
 begin
-  Self.Add(cMsg,cValues,TEventType.etDebug);
+  Self.Add(cMsg,cValues,TEventType.etTrace);
 end;
 
 procedure TLogger.Done(const cMsg: string);
