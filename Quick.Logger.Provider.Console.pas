@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.22
   Created     : 12/10/2017
-  Modified    : 14/09/2019
+  Modified    : 23/11/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -171,8 +171,8 @@ begin
   if fShowEventColors then
   begin
     //changes color for event
-    TextColor(EventTypeColor[cLogItem.EventType]);
-    if cLogItem.EventType = etCritical then TextBackground(ccRed);
+    if cLogItem.EventType = etCritical then TextBackground(ccRed)
+      else TextColor(EventTypeColor[cLogItem.EventType]);
 
     {case cLogItem.EventType of
       etHeader : TextColor(ccLightGray);
