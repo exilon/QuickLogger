@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.29
+  Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 14/09/2019
+  Modified    : 11/01/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -35,6 +35,7 @@ interface
 uses
   Classes,
   SysUtils,
+  System.DateUtils,
   {$IFDEF FPC}
   Quick.Files,
   zipper,
@@ -70,6 +71,7 @@ type
     function CheckNeedRotate : Boolean;
     procedure SetFileName(const Value: string);
     procedure WriteHeaderInfo;
+    procedure SetRotatedFilesPath(const Value: string);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -80,7 +82,7 @@ type
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
-    property RotatedFilesPath : string read fRotatedFilesPath write fRotatedFilesPath;
+    property RotatedFilesPath : string read fRotatedFilesPath write SetRotatedFilesPath;
     property CompressRotatedFiles : Boolean read fCompressRotatedFiles write fCompressRotatedFiles;
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property ShowHeaderInfo : Boolean read fShowHeaderInfo write fShowHeaderInfo;
@@ -195,7 +197,11 @@ begin
     //check if need to rotate
     if CheckNeedRotate then
     begin
-      RotateLog;
+      try
+        RotateLog;
+      except
+        on E : Exception do NotifyError(Format('Can''t rotate log file: %s',[e.message]));
+      end;
       Exit;
     end;
     //writes header info
@@ -237,7 +243,14 @@ procedure TLogFileProvider.WriteToStream(const cMsg : string);
 begin
   try
     //check if need to rotate
-    if CheckNeedRotate then RotateLog;
+    if CheckNeedRotate then
+    begin
+      try
+        RotateLog;
+      except
+        on E : Exception do NotifyError(Format('Can''t rotate log file: %s',[e.message]));
+      end;
+    end;
     //writes to stream file
     fLogWriter.WriteLine(cMsg);
     //needs to flush if autoflush??
@@ -281,6 +294,7 @@ begin
   if fRotatedFilesPath = '' then
   begin
     LogName := TPath.GetFileNameWithoutExtension(fFileName);
+    LogName := TPath.GetDirectoryName(fFileName) + PathDelim + LogName;
   end
   else
   begin
@@ -358,6 +372,17 @@ begin
     fFileName := Value;
     if IsEnabled then Restart;
   end;
+end;
+
+procedure TLogFileProvider.SetRotatedFilesPath(const Value: string);
+var
+  exepath : string;
+begin
+  if IsLibrary then exepath := SystemInfo.AppPath
+    else exepath := ParamStr(0);
+
+  if Value.StartsWith('.' + PathDelim) then fRotatedFilesPath := StringReplace(Value,'.' + PathDelim,TPath.GetDirectoryName(exepath) + PathDelim,[])
+    else fRotatedFilesPath := Value;
 end;
 
 function TLogFileProvider.CheckNeedRotate: Boolean;
