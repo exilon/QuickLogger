@@ -80,7 +80,7 @@ Delphi(Delphi XE6 - Delphi 10.3.2 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 * **From Github:**
 1. Clone this Github repository or download zip file and extract it.
 2. Add QuickLogger folder to your path libraries on Delphi IDE.
-3. Clone QuickLib Github repository https://github/exilon/QuickLib or download zip file and extract it.
+3. Clone QuickLib Github repository https://github.com/exilon/QuickLib or download zip file and extract it.
 4. Add QuickLib folder to your path libraries on Delphi IDE.
 
 **Documentation:**
