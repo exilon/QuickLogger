@@ -83,7 +83,7 @@ type
     fTable : string;
     fUserName : string;
     fPassword : string;
-  public
+  published
     property Provider : TDBProvider read fDBProvider write fDBProvider;
     property Server : string read fServer write fServer;
     property Database : string read fDatabase write fDatabase;
