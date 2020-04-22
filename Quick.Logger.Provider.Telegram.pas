@@ -93,7 +93,6 @@ function TLogTelegramProvider.GetPrivateChatId: Boolean;
 var
   telegramgetid : string;
   resp : IHttpRequestResponse;
-  id : Integer;
   reg : string;
 begin
   Result := False;

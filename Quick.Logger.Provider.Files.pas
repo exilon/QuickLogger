@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 11/01/2020
+  Modified    : 21/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -65,13 +65,14 @@ type
     fUnderlineHeaderEventType: Boolean;
     fAutoFlush : Boolean;
     fAutoFileName : Boolean;
-    procedure WriteToStream(const cMsg : string);
-    procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
     function CheckNeedRotate : Boolean;
     procedure SetFileName(const Value: string);
-    procedure WriteHeaderInfo;
     procedure SetRotatedFilesPath(const Value: string);
+  protected
+    procedure CompressLogFile(const cFileName : string); virtual;
+    procedure WriteHeaderInfo; virtual;
+    procedure WriteToStream(const cMsg : string); virtual;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -91,7 +92,7 @@ type
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
-    procedure RotateLog;
+    procedure RotateLog; virtual;
   end;
 
   {$IFDEF MSWINDOWS}
@@ -261,8 +262,6 @@ begin
 end;
 
 procedure TLogFileProvider.WriteLog(cLogItem : TLogItem);
-var
-  line : string;
 begin
   if CustomMsgOutput then
   begin
