@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3.2 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.3.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -20,8 +20,11 @@ Delphi(Delphi XE6 - Delphi 10.3.2 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 - InfluxDB
 - GrayLog
 - Controlled and unhandled exceptions hook
+- Sentry
 
 ### Updates:
+
+**Apr 24,2020:** Sentry provider
 
 **Sep 14,2019:** New optional Included log info: ThreadId.
 
@@ -373,6 +376,22 @@ There are some predefined providers, but you can make your own provider if neede
     - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
     - **URL:** Host and port
     - **GrayLogVersion:** GrayLog version to send to server.
+    - **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
+    - **Enabled:** Enables/disables receive logging.
+
+- **Quick.Logger.Provider.Sentry:** Sends Logging to Sentry service.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **DSNKey:** Uses DSN provided by Sentry to configure api server access.
+    - **SentryVersion:** Sentry version to send to server.
+    - **Secured:** Enable to use https.
+    - **Host:** : Defines Sentry host endpoint.
+    - **ProjectId:** Set your Sentry Project Id.
+    - **PublicKey:** Set your Sentry Public Key.
     - **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
     - **Enabled:** Enables/disables receive logging.
 
