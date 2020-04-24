@@ -25,7 +25,8 @@ uses
   Quick.Logger.Provider.Logstash,
   Quick.Logger.Provider.ElasticSearch,
   Quick.Logger.Provider.InfluxDB,
-  Quick.Logger.Provider.GrayLog;
+  Quick.Logger.Provider.GrayLog,
+  Quick.Logger.Provider.Sentry;
 
 type
 
@@ -262,6 +263,20 @@ begin
       PlatformInfo := 'Desktop';
       IncludedInfo := [iiAppName,iiEnvironment,iiPlatform];
       Enabled := False; //enable when you have a GrayLog server to connect
+    end;
+
+  //configure Sentry log provider
+  Logger.Providers.Add(GlobalLogSentryProvider);
+  with GlobalLogSentryProvider do
+    begin
+      DSNKey := 'https://xxxxxxxxxxx@999999.ingest.sentry.io/999999';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Sentry server to connect
     end;
 
   Logger.RedirectOwnErrorsToProvider := GlobalLogConsoleProvider;
