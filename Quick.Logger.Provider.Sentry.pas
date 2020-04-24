@@ -63,7 +63,6 @@ type
     fConnectionTimeout : Integer;
     fResponseTimeout : Integer;
     fUserAgent : string;
-    fJsonOutputOptions: TJsonOutputOptions;
     function LogToSentry(cLogItem: TLogItem): string;
     function EventTypeToSentryLevel(aEventType : TEventType) : string;
     procedure SetDSNEntry(const Value: string);
