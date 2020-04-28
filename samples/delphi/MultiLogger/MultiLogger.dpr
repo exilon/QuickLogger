@@ -73,6 +73,7 @@ var
 begin
   //wait for 60 seconds to flush pending logs in queue on program finishes
   Logger.WaitForFlushBeforeExit := 60;
+  Logger.CustomTags.Add('MyTag','MyText');
 
   //configure Console Log provider
   Logger.Providers.Add(GlobalLogConsoleProvider);
@@ -82,6 +83,9 @@ begin
     ShowEventColors := True;
     ShowTimeStamp := True;
     TimePrecission := True;
+    {$IFDEF DELPHIXE7_UP}
+    IncludedTags := ['MYTAG'];
+    {$ENDIF}
     Enabled := True;
   end;
 
