@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Email
   Description : Log Email Provider
   Author      : Kike Pérez
   Version     : 1.24
   Created     : 15/10/2017
-  Modified    : 02/07/2018
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -68,7 +68,6 @@ type
     fBody : string;
     fCC : string;
     fBCC : string;
-    fBodyFromFile : Boolean;
   public
     property SenderName : string read fSenderName write fSenderName;
     property From : string read fFrom write fFrom;
@@ -144,12 +143,10 @@ begin
 end;
 
 procedure TLogEmailProvider.WriteLog(cLogItem : TLogItem);
-var
-  subject : string;
 begin
   if fSMTP.Mail.Subject = '' then fSMTP.Mail.Subject := Format('%s [%s] %s',[SystemInfo.AppName,EventTypeName[cLogItem.EventType],Copy(cLogItem.Msg,1,50)]);
 
-  if CustomMsgOutput then fSMTP.Mail.Body := cLogItem.Msg
+  if CustomMsgOutput then fSMTP.Mail.Body := LogItemToFormat(cLogItem)
     else fSMTP.Mail.Body := LogItemToHtml(cLogItem);
 
   fSMTP.SendMail;
