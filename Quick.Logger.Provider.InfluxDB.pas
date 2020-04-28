@@ -186,7 +186,11 @@ begin
     incinfo.Add(Format('message="%s"',[cLogItem.Msg]));
     fields := CommaText(incinfo);
 
+    {$IFDEF DELPHIXE7_UP}
     Result := Format('logger,%s %s %d',[tags,fields,DateTimeToUnix(LocalTimeToUTC(cLogItem.EventDate),True)*1000]);
+    {$ELSE}
+    Result := Format('logger,%s %s %d',[tags,fields,DateTimeToUnix(LocalTimeToUTC(cLogItem.EventDate))*1000]);
+    {$ENDIF}
   finally
     incinfo.Free;
   end;
