@@ -86,7 +86,7 @@ end;
 {$IFDEF MSWINDOWS}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
-  if CustomMsgOutput then OutputDebugString(PChar(cLogItem.Msg))
+  if CustomMsgOutput then OutputDebugString(PChar(LogItemToFormat(cLogItem)))
     else OutputDebugString(PChar(LogItemToLine(cLogItem,False,True)));
 end;
 {$ELSE}
