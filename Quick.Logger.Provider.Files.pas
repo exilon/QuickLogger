@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 21/04/2020
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -35,7 +35,7 @@ interface
 uses
   Classes,
   SysUtils,
-  System.DateUtils,
+  DateUtils,
   {$IFDEF FPC}
   Quick.Files,
   zipper,
@@ -265,7 +265,7 @@ procedure TLogFileProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then
   begin
-    WriteToStream(cLogItem.Msg);
+    WriteToStream(LogItemToFormat(cLogItem));
     Exit;
   end;
 

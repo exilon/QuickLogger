@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 20/11/2019
+  Modified    : 25/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -65,8 +65,9 @@ uses
   {$ELSE}
   System.IOUtils,
   System.Generics.Collections,
-  System.JSON,
-    {$IFNDEF DELPHIXE8_UP}
+    {$IFDEF DELPHIXE8_UP}
+    System.JSON,
+    {$ELSE}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
@@ -156,6 +157,15 @@ type
 
   TLogQueue = class(TThreadedQueueList<TLogItem>);
 
+  ILogTags = interface
+  ['{046ED03D-9EE0-49BC-BBD7-FA108EA1E0AA}']
+    function GetTag(const aKey : string) : string;
+    procedure SetTag(const aKey : string; const aValue : string);
+    function TryGetValue(const aKey : string; out oValue : string) : Boolean;
+    procedure Add(const aKey, aValue : string);
+    property Items[const Key: string]: string read GetTag write SetTag; default;
+  end;
+
   ILogProvider = interface
   ['{0E50EA1E-6B69-483F-986D-5128DA917ED8}']
     procedure Init;
@@ -169,6 +179,7 @@ type
     procedure IncAndCheckErrors;
     function Status : TLogProviderStatus;
     procedure SetStatus(cStatus : TLogProviderStatus);
+    procedure SetLogTags(cLogTags : ILogTags);
     function IsSendLimitReached(cEventType : TEventType): Boolean;
     function GetLogLevel : TLogLevel;
     function IsEnabled : Boolean;
@@ -246,6 +257,19 @@ type
     property TimeStampName : string read fTimeStampName write fTimeStampName;
   end;
 
+  TLogTags = class(TInterfacedObject,ILogTags)
+  private
+    fTags : TDictionary<string,string>;
+    function GetTag(const aKey : string) : string;
+    procedure SetTag(const aKey : string; const aValue : string);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property Items[const Key: string]: string read GetTag write SetTag; default;
+    function TryGetValue(const aKey : string; out oValue : string) : Boolean;
+    procedure Add(const aKey, aValue : string);
+  end;
+
   TLogProviderBase = class(TInterfacedObject,ILogProvider)
   protected
     fThreadLog : TThreadLog;
@@ -275,6 +299,7 @@ type
     fOnQueueError: TQueueErrorEvent;
     fOnSendLimits: TSendLimitsEvent;
     fIncludedInfo : TIncludedLogInfo;
+    fIncludedTags : TArray<string>;
     fSystemInfo : TSystemInfo;
     fCustomMsgOutput : Boolean;
     fOnNotifyError : TProviderErrorEvent;
@@ -288,13 +313,21 @@ type
     procedure SetMaxFailsToRestart(const Value: Integer);
   protected
     fJsonOutputOptions : TJsonOutputOptions;
+    fCustomTags : ILogTags;
+    fCustomFormatOutput : string;
     function LogItemToLine(cLogItem : TLogItem; aShowTimeStamp, aShowEventTypes : Boolean) : string; overload;
     function LogItemToJsonObject(cLogItem: TLogItem): TJSONObject; overload;
     function LogItemToJson(cLogItem : TLogItem) : string; overload;
     function LogItemToHtml(cLogItem: TLogItem): string;
     function LogItemToText(cLogItem: TLogItem): string;
+    function LogItemToFormat(cLogItem : TLogItem) : string;
+    {$IFDEF DELPHIXE8_UP}
+    function LogItemToFormat2(cLogItem : TLogItem) : string;
+    {$ENDIF}
+    function ResolveFormatVariable(const cToken : string; cLogItem: TLogItem) : string;
     procedure IncAndCheckErrors;
     procedure SetStatus(cStatus : TLogProviderStatus);
+    procedure SetLogTags(cLogTags : ILogTags);
     function GetLogLevel : TLogLevel;
     property SystemInfo : TSystemInfo read fSystemInfo;
     procedure NotifyError(const aError : string);
@@ -317,6 +350,7 @@ type
     property MaxFailsToRestart : Integer read fMaxFailsToRestart write SetMaxFailsToRestart;
     property MaxFailsToStop : Integer read fMaxFailsToStop write fMaxFailsToStop;
     property CustomMsgOutput : Boolean read fCustomMsgOutput write fCustomMsgOutput;
+    property CustomFormatOutput : string read fCustomFormatOutput write fCustomFormatOutput;
     property OnFailToLog : TFailToLogEvent read fOnFailToLog write fOnFailToLog;
     property OnRestart : TRestartEvent read fOnRestart write fOnRestart;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
@@ -333,6 +367,7 @@ type
     property Environment : string read fEnvironment write fEnvironment;
     property PlatformInfo : string read fPlatformInfo write fPlatformInfo;
     property IncludedInfo : TIncludedLogInfo read fIncludedInfo write fIncludedInfo;
+    property IncludedTags : TArray<string> read fIncludedTags write fIncludedTags;
     function Status : TLogProviderStatus;
     function StatusAsString : string; overload;
     class function StatusAsString(cStatus : TLogProviderStatus) : string; overload;
@@ -376,6 +411,7 @@ type
     fThreadProviderLog : TThreadProviderLog;
     fLogQueue : TLogQueue;
     fProviders : TLogProviderList;
+    fCustomTags : ILogTags;
     fWaitForFlushBeforeExit : Integer;
     fOnQueueError: TQueueErrorEvent;
     fOwnErrorsProvider : TLogProviderBase;
@@ -389,6 +425,11 @@ type
     procedure OnGetUnhandledException(ExceptObject: TObject; ExceptAddr: Pointer);
     procedure NotifyProviderError(const aProviderName, aError : string);
     procedure SetOwnErrorsProvider(const Value: TLogProviderBase);
+    {$IFNDEF FPC}
+    procedure OnProviderListNotify(Sender: TObject; const Item: ILogProvider; Action: TCollectionNotification);
+    {$ELSE}
+    procedure OnProviderListNotify(ASender: TObject; constref AItem: ILogProvider; AAction: TCollectionNotification);
+    {$ENDIF}
   public
     constructor Create;
     destructor Destroy; override;
@@ -398,6 +439,7 @@ type
     property OnProviderError : TProviderErrorEvent read fOnProviderError write fOnProviderError;
     property QueueCount : Integer read GetQueuedLogItems;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
+    property CustomTags : ILogTags read fCustomTags;
     function ProvidersQueueCount : Integer;
     function IsQueueEmpty : Boolean;
     class function GetVersion : string;
@@ -470,6 +512,11 @@ begin
   fStatus := psNone;
   fTimePrecission := False;
   fSendLimits := TLogSendLimit.Create;
+  {$IFDEF DELPHIXE7_UP}
+  fIncludedTags := [];
+  {$ELSE}
+  fIncludedTags := nil;
+  {$ENDIF}
   fFails := 0;
   fRestartTimes := 0;
   fMaxFailsToRestart := 2;
@@ -615,6 +662,9 @@ begin
 end;
 
 function TLogProviderBase.LogItemToJsonObject(cLogItem: TLogItem): TJSONObject;
+var
+  tagName : string;
+  tagValue : string;
 begin
   Result := TJSONObject.Create;
   if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(fJsonOutputOptions.TimeStampName,DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
@@ -636,9 +686,17 @@ begin
   end;
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',cLogItem.Msg);
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',Integer(cLogItem.EventType).ToString);
+
+  for tagName in IncludedTags do
+  begin
+    if fCustomTags.TryGetValue(tagName,tagValue) then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(tagName,tagValue);
+  end;
 end;
 
 function TLogProviderBase.LogItemToLine(cLogItem : TLogItem; aShowTimeStamp, aShowEventTypes : Boolean) : string;
+var
+  tagName : string;
+  tagValue : string;
 begin
   Result := '';
   if aShowTimeStamp then Result := DateTimeToStr(cLogItem.EventDate,FormatSettings);
@@ -646,6 +704,11 @@ begin
   Result := Result + ' ' + cLogItem.Msg;
   if iiThreadId in IncludedInfo then Result := Format('%s [ThreadId: %d]',[Result,cLogItem.ThreadId]);
   if iiProcessId in IncludedInfo then Result := Format('%s [PID: %d]',[Result,SystemInfo.ProcessId]);
+
+  for tagName in IncludedTags do
+  begin
+    if fCustomTags.TryGetValue(tagName,tagValue) then Result := Format('%s [%s: %s]',[Result,tagName,tagValue]);
+  end;
 end;
 
 function TLogProviderBase.LogItemToJson(cLogItem: TLogItem): string;
@@ -668,9 +731,102 @@ begin
   end;
 end;
 
+function TLogProviderBase.ResolveFormatVariable(const cToken : string; cLogItem: TLogItem) : string;
+begin
+  //try process token as tag
+  if not fCustomTags.TryGetValue(cToken,Result) then
+  begin
+    //try process token as variable
+    if cToken = 'DATETIME' then Result := DateTimeToStr(cLogItem.EventDate,FormatSettings)
+    else if cToken = 'DATE' then Result := DateToStr(cLogItem.EventDate)
+    else if cToken = 'TIME' then Result := TimeToStr(cLogItem.EventDate)
+    else if cToken = 'LEVEL' then Result := cLogItem.EventTypeName
+    else if cToken = 'LEVELINT' then Result := Integer(cLogItem.EventType).ToString
+    else if cToken = 'MESSAGE' then Result := cLogItem.Msg
+    else if cToken = 'ENVIRONMENT' then Result := Self.Environment
+    else if cToken = 'PLATFORM' then Result := Self.PlatformInfo
+    else if cToken = 'APPNAME' then Result := Self.AppName
+    else if cToken = 'APPVERSION' then Result := Self.SystemInfo.AppVersion
+    else if cToken = 'APPPATH' then Result := Self.SystemInfo.AppPath
+    else if cToken = 'HOSTNAME' then Result := Self.SystemInfo.HostName
+    else if cToken = 'USERNAME' then Result := Self.SystemInfo.UserName
+    else if cToken = 'OSVERSION' then Result := Self.SystemInfo.OsVersion
+    else if cToken = 'CPUCORES' then Result := Self.SystemInfo.CPUCores.ToString
+    else if cToken = 'THREADID' then Result := cLogItem.ThreadId.ToString
+    else Result := '%error%';
+  end;
+end;
+
+{$IFDEF DELPHIXE8_UP}
+function TLogProviderBase.LogItemToFormat2(cLogItem: TLogItem): string;
+var
+  line : string;
+  newline : string;
+  token : string;
+  tokrep : string;
+begin
+  if CustomFormatOutput.IsEmpty then Exit(cLogItem.Msg);
+  //resolve log format
+  Result := '';
+  for line in fCustomFormatOutput.Split([sLineBreak]) do
+  begin
+    newline := line;
+    repeat
+      token := GetSubString(newline,'%{','}');
+      if not token.IsEmpty then
+      begin
+        tokrep := ResolveFormatVariable(token.ToUpper,cLogItem);
+        //replace token
+        newline := StringReplace(newline,'%{'+token+'}',tokrep,[rfReplaceAll]);
+      end;
+    until token.IsEmpty;
+    Result := Result + newline;
+  end;
+end;
+{$ENDIF}
+
+function TLogProviderBase.LogItemToFormat(cLogItem: TLogItem): string;
+var
+  idx : Integer;
+  st : Integer;
+  et : Integer;
+  token : string;
+  tokrep : string;
+begin
+  if CustomFormatOutput.IsEmpty then Exit(cLogItem.Msg);
+  //resolve log format
+  Result := '';
+  idx := 1;
+  st := 0;
+  while st < fCustomFormatOutput.Length - 1 do
+  begin
+    if (fCustomFormatOutput[st] = '%') and (fCustomFormatOutput[st+1] = '{') then
+    begin
+      et := st + 2;
+      while et < fCustomFormatOutput.Length do
+      begin
+        Inc(et);
+        if fCustomFormatOutput[et] = '}' then
+        begin
+          Result := Result + Copy(fCustomFormatOutput,idx,st-idx);
+          token := Copy(fCustomFormatOutput,st + 2,et-st-2);
+          Result := Result + ResolveFormatVariable(token,cLogItem);
+          idx := et + 1;
+          st := idx;
+          Break;
+        end;
+      end;
+    end
+    else Inc(st);
+  end;
+  if et < st then Result := Result + Copy(fCustomFormatOutput,et+1,st-et + 1);
+end;
+
 function TLogProviderBase.LogItemToHtml(cLogItem: TLogItem): string;
 var
   msg : TStringList;
+  tagName : string;
+  tagValue : string;
 begin
   msg := TStringList.Create;
   try
@@ -685,6 +841,10 @@ begin
     if iiPlatform in IncludedInfo then msg.Add(Format('<B>Platform:</B> %s%s',[PlatformInfo,HTMBR]));
     if iiThreadId in IncludedInfo then msg.Add(Format('<B>ThreadId:</B> %d',[cLogItem.ThreadId]));
     if iiProcessId in IncludedInfo then msg.Add(Format('<B>PID:</B> %d',[SystemInfo.ProcessId]));
+    for tagName in IncludedTags do
+    begin
+      if fCustomTags.TryGetValue(tagName,tagValue) then msg.Add(Format('<B>%s</B> %s',[tagName,tagValue]));
+    end;
     msg.Add(Format('<B>Message:</B> %s%s',[cLogItem.Msg,HTMBR]));
     msg.Add('</body></html>');
     Result := msg.Text;
@@ -696,6 +856,8 @@ end;
 function TLogProviderBase.LogItemToText(cLogItem: TLogItem): string;
 var
   msg : TStringList;
+  tagName : string;
+  tagValue : string;
 begin
   msg := TStringList.Create;
   try
@@ -709,6 +871,10 @@ begin
     if iiPlatform in IncludedInfo then msg.Add(Format('Platform: %s',[PlatformInfo]));
     if iiThreadId in IncludedInfo then msg.Add(Format('ThreadId: %d',[cLogItem.ThreadId]));
     if iiProcessId in IncludedInfo then msg.Add(Format('PID: %d',[SystemInfo.ProcessId]));
+    for tagName in IncludedTags do
+    begin
+      if fCustomTags.TryGetValue(tagName,tagValue) then msg.Add(Format('%s: %s',[tagName,tagValue]));
+    end;
     msg.Add(Format('Message: %s',[cLogItem.Msg]));
     Result := msg.Text;
   finally
@@ -824,6 +990,11 @@ end;
 procedure TLogProviderBase.SetEventTypeName(cEventType: TEventType; const cValue : string);
 begin
   fEventTypeNames[Integer(cEventType)] := cValue;
+end;
+
+procedure TLogProviderBase.SetLogTags(cLogTags: ILogTags);
+begin
+  fCustomTags := cLogTags;
 end;
 
 procedure TLogProviderBase.SetMaxFailsToRestart(const Value: Integer);
@@ -1100,7 +1271,9 @@ begin
   GlobalLoggerUnhandledException := OnGetUnhandledException;
   fWaitForFlushBeforeExit := DEF_WAIT_FLUSH_LOG;
   fLogQueue := TLogQueue.Create(DEF_QUEUE_SIZE,DEF_QUEUE_PUSH_TIMEOUT,DEF_QUEUE_POP_TIMEOUT);
+  fCustomTags := TLogTags.Create;
   fProviders := TLogProviderList.Create;
+  fProviders.OnNotify := OnProviderListNotify;
   fThreadProviderLog := TThreadProviderLog.Create;
   fThreadProviderLog.LogQueue := fLogQueue;
   fThreadProviderLog.Providers := fProviders;
@@ -1389,6 +1562,18 @@ begin
     else Self.EnQueueItem(SystemTime,Format('Unhandled Exception (%s) at $%X',[ExceptObject.ClassName,Integer(ExceptAddr)]),'Exception','',etException);
 end;
 
+{$IFNDEF FPC}
+procedure TLogger.OnProviderListNotify(Sender: TObject; const Item: ILogProvider; Action: TCollectionNotification);
+begin
+  if Action = TCollectionNotification.cnAdded then Item.SetLogTags(fCustomTags);
+end;
+{$ELSE}
+procedure TLogger.OnProviderListNotify(ASender: TObject; constref AItem: ILogProvider; AAction: TCollectionNotification);
+begin
+  if AAction = TCollectionNotification.cnAdded then AItem.SetLogTags(fCustomTags);
+end;
+{$ENDIF}
+
 function TLogger.ProvidersQueueCount: Integer;
 var
   provider : ILogProvider;
@@ -1555,6 +1740,39 @@ begin
   end;
 end;
 {$ENDIF}
+
+{ TLogTags }
+
+constructor TLogTags.Create;
+begin
+  fTags := TDictionary<string,string>.Create;
+end;
+
+destructor TLogTags.Destroy;
+begin
+  fTags.Free;
+  inherited;
+end;
+
+procedure TLogTags.Add(const aKey, aValue: string);
+begin
+  fTags.Add(aKey.ToUpper,aValue);
+end;
+
+function TLogTags.GetTag(const aKey: string): string;
+begin
+  if not fTags.TryGetValue(aKey,Result) then raise Exception.CreateFmt('Log Tag "%s" not found!',[aKey]);
+end;
+
+procedure TLogTags.SetTag(const aKey, aValue: string);
+begin
+  fTags.AddOrSetValue(aKey.ToUpper,aValue);
+end;
+
+function TLogTags.TryGetValue(const aKey : string; out oValue : string) : Boolean;
+begin
+  Result := fTags.TryGetValue(aKey.ToUpper,oValue);
+end;
 
 initialization
   Logger := TLogger.Create;

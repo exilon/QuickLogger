@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Console
   Description : Log Console Provider
   Author      : Kike Pérez
   Version     : 1.22
   Created     : 12/10/2017
-  Modified    : 23/11/2019
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -164,7 +164,7 @@ procedure TLogConsoleProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then
   begin
-    Writeln(cLogItem.Msg{$IFDEF LINUX}+CR{$ENDIF});
+    Writeln(LogItemToFormat(cLogItem){$IFDEF LINUX}+CR{$ENDIF});
     Exit;
   end;
 

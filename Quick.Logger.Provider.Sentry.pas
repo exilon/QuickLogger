@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.0
   Created     : 22/04/2020
-  Modified    : 24/04/2020
+  Modified    : 25/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -40,8 +40,9 @@ uses
   fpjson,
   fpjsonrtti,
   {$ELSE}
-  System.JSON,
-    {$IFNDEF DELPHIXE8_UP}
+    {$IFDEF DELPHIXE8_UP}
+    System.JSON,
+    {$ELSE}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
@@ -165,13 +166,19 @@ var
   jsException : TJSONObject;
   jsUser : TJSONObject;
   jsTags : TJSONObject;
+  tagName : string;
+  tagValue : string;
 begin
   jsEvent := TJSONObject.Create;
   try
     {$IFDEF FPC}
       jsEvent.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
     {$ELSE}
+      {$IFDEF DELPHIXE7_UP}
       jsEvent.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      {$ELSE}
+      jsEvent.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate)));
+      {$ENDIF}
     {$ENDIF}
     jsEvent.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('level',EventTypeToSentryLevel(cLogItem.EventType));
     jsEvent.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('logger','QuickLogger');
@@ -199,6 +206,10 @@ begin
     if iiPlatform in IncludedInfo then jsTags.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('platformtype',PlatformInfo);
     if iiOSVersion in IncludedInfo then jsTags.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('OS',SystemInfo.OSVersion);
     if iiProcessId in IncludedInfo then jsTags.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('pid',SystemInfo.ProcessId.ToString);
+    for tagName in IncludedTags do
+    begin
+      if fCustomTags.TryGetValue(tagName,tagValue) then jsTags.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(tagName,tagValue);
+    end;
     jsEvent.AddPair('tags',jsTags);
 
     if iiUserName in IncludedInfo then
@@ -249,7 +260,7 @@ procedure TLogSentryProvider.WriteLog(cLogItem : TLogItem);
 var
   resp : IHttpRequestResponse;
 begin
-  if CustomMsgOutput then resp := fHTTPClient.Post(fFullURL,cLogItem.Msg)
+  if CustomMsgOutput then resp := fHTTPClient.Post(fFullURL,LogItemToFormat(cLogItem))
     else resp := fHTTPClient.Post(fFullURL,LogToSentry(cLogItem));
 
   if not (resp.StatusCode in [200,201,202]) then

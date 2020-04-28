@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Telegram
   Description : Log Telegram Bot Channel Provider
   Author      : Kike Pérez
   Version     : 1.22
   Created     : 21/05/2018
-  Modified    : 24/05/2018
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -149,7 +149,7 @@ begin
   if fChannelType = tcPublic then chatid := '@' + fChannelName
       else chatid := fChannelName;
 
-  if CustomMsgOutput then telegramsg := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG,[fBotToken,chatid,cLogItem.Msg]))
+  if CustomMsgOutput then telegramsg := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG,[fBotToken,chatid,LogItemToFormat(cLogItem)]))
     else telegramsg := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG,[fBotToken,chatid,LogItemToText(cLogItem)]));
 
   resp := fHttpClient.Get(telegramsg);
