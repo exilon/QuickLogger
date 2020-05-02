@@ -26,7 +26,8 @@ uses
   Quick.Logger.Provider.ElasticSearch,
   Quick.Logger.Provider.InfluxDB,
   Quick.Logger.Provider.GrayLog,
-  Quick.Logger.Provider.Sentry;
+  Quick.Logger.Provider.Sentry,
+  Quick.Logger.Provider.Twilio;
 
 type
 
@@ -281,6 +282,23 @@ begin
       PlatformInfo := 'Desktop';
       IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
       Enabled := False; //enable when you have a Sentry server to connect
+    end;
+
+  //configure Twilio log provider
+  Logger.Providers.Add(GlobalLogTwilioProvider);
+  with GlobalLogTwilioProvider do
+    begin
+      AccountSID := 'ACxxxxxxxxx';
+      AuthToken := 'xxxx';
+      SendFrom := '+123123123';
+      SendTo := '+123123123';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Twilio account to connect
     end;
 
   Logger.RedirectOwnErrorsToProvider := GlobalLogConsoleProvider;

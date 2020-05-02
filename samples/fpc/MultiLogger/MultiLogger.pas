@@ -29,7 +29,13 @@ uses
   Quick.Logger.Provider.Memory,
   Quick.Logger.Provider.Telegram,
   Quick.Logger.Provider.Slack,
-  Quick.Logger.UnhandledExceptionHook;
+  Quick.Logger.UnhandledExceptionHook,
+  Quick.Logger.Provider.InfluxDB,
+  Quick.Logger.Provider.Logstash,
+  Quick.Logger.Provider.ElasticSearch,
+  Quick.Logger.Provider.GrayLog,
+  Quick.Logger.Provider.Sentry,
+  Quick.Logger.Provider.Twilio;
 
 var
   a : Integer;
@@ -193,6 +199,95 @@ begin
     LogLevel := [etError,etCritical,etException];
     Enabled := False;
   end;
+
+
+  //configure Logstash log provider
+  Logger.Providers.Add(GlobalLogLogstashProvider);
+  with GlobalLogLogstashProvider do
+ begin
+    URL := 'http://192.168.1.133:5011';
+    IndexName := 'logger';
+    LogLevel := [etError,etCritical,etException];
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a logstash service to connect
+  end;
+
+  //configure ElasticSearch log provider
+  Logger.Providers.Add(GlobalLogElasticSearchProvider);
+  with GlobalLogElasticSearchProvider do
+  begin
+    URL := 'http://192.168.1.133:9200';
+    IndexName := 'logger';
+    LogLevel := [etError,etCritical,etException];
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a ElasticSearch service to connect
+  end;
+
+  //configure InfluxDB log provider
+  Logger.Providers.Add(GlobalLogInfluxDBProvider);
+  with GlobalLogInfluxDBProvider do
+  begin
+    URL := 'http://192.168.1.133:8086';
+    DataBase := 'logger';
+    CreateDataBaseIfNotExists := True;
+    LogLevel := LOG_DEBUG;
+    MaxFailsToRestart := 5;
+    MaxFailsToStop := 0;
+    Environment := 'Production';
+    PlatformInfo := 'Desktop';
+    IncludedTags := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    IncludedInfo := [iiAppName,iiHost,iiEnvironment,iiPlatform];
+    Enabled := False; //enable when you have a InfluxDB server to connect
+  end;
+
+  //configure GrayLog log provider
+  Logger.Providers.Add(GlobalLogGrayLogProvider);
+  with GlobalLogGrayLogProvider do
+    begin
+      URL := 'http://192.168.1.133:12201';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform];
+      Enabled := False; //enable when you have a GrayLog server to connect
+    end;
+
+  //configure Sentry log provider
+  Logger.Providers.Add(GlobalLogSentryProvider);
+  with GlobalLogSentryProvider do
+    begin
+      DSNKey := 'https://xxxxxxxxxxx@999999.ingest.sentry.io/999999';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Sentry server to connect
+    end;
+
+  //configure Twilio log provider
+  Logger.Providers.Add(GlobalLogTwilioProvider);
+  with GlobalLogTwilioProvider do
+    begin
+      AccountSID := 'ACxxxxxxxxx';
+      AuthToken := 'xxxx';
+      SendFrom := '+123123123';
+      SendTo := '+123123123';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Twilio account to connect
+    end;
 
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
   Log('Hello world!',etInfo);
