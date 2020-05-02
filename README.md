@@ -21,8 +21,11 @@ Delphi(Delphi XE6 - Delphi 10.3.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 - GrayLog
 - Controlled and unhandled exceptions hook
 - Sentry
+- Twilio
 
 ### Updates:
+
+**May 02,2020:** Twilio provider
 
 **Apr 25,2020:** Custom Output Format & custom Tags support
 
@@ -410,7 +413,20 @@ There are some predefined providers, but you can make your own provider if neede
     - **Host:** : Defines Sentry host endpoint.
     - **ProjectId:** Set your Sentry Project Id.
     - **PublicKey:** Set your Sentry Public Key.
-    - **ShortMessageAsEventType:** If enabled, shortmessage will be eventype as string and fullmessage will be the log message.
+    - **Enabled:** Enables/disables receive logging.
+
+**TWILIO PROVIDER:**
+- **Quick.Logger.Provider.Twilio:** Sends Logging to Twilio service.
+	
+    Properties:
+    
+    - **LogLevel:** Log level that your provider accepts.
+    - **EventTypeNames:** Every eventtype has a customizable text you can change to be reflected in your logs. 
+    - **SendLimits:** Defines max number of emails sent by day, hour, minute or second.
+    - **AccountSID:** Account SID provided by Twilio.
+    - **AuthToken:** Token of your Twilio account.
+    - **SendFrom:** Phone from you are sending sms/whastup.
+    - **SendTo:** Phone you are sending to sms/whatsup.
     - **Enabled:** Enables/disables receive logging.
 
 ## Optional output:

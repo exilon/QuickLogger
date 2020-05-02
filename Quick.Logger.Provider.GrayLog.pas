@@ -169,7 +169,7 @@ begin
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('short_message',cLogItem.Msg);
     end;
     {$IFDEF FPC}
-      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate)));
       json.Add('level',TJSONInt64Number.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
     {$ELSE}
       {$IFDEF DELPHIXE7_UP}

@@ -39,6 +39,7 @@ uses
   {$IFDEF FPC}
   fpjson,
   fpjsonrtti,
+  Quick.Json.fpc.Compatibility,
   {$ELSE}
     {$IFDEF DELPHIXE8_UP}
     System.JSON,
@@ -168,11 +169,15 @@ var
   jsTags : TJSONObject;
   tagName : string;
   tagValue : string;
+  {$IFDEF FPC}
+  json : TJSONObject;
+  jarray : TJSONArray;
+  {$ENDIF}
 begin
   jsEvent := TJSONObject.Create;
   try
     {$IFDEF FPC}
-      jsEvent.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      jsEvent.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate)));
     {$ELSE}
       {$IFDEF DELPHIXE7_UP}
       jsEvent.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
@@ -192,13 +197,21 @@ begin
       jsException.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
       jsException.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('value',cLogItem.Msg);
       if iiThreadId in IncludedInfo then jsException.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('thread_id',cLogItem.ThreadId.ToString);
+      {$IFNDEF FPC}
       jsEvent.AddPair('exception',TJSONObject.Create(TJSONPair.Create('values',TJSONArray.Create(jsException))));
+      {$ELSE}
+      jarray := TJSONArray.Create;
+      jarray.AddElement(jsException);
+      json := TJSONObject.Create;
+      json.AddPair(TJSONPair.Create('values',jarray));
+      jsEvent.Add('exception',json);
+      {$ENDIF}
     end
     else
     begin
       jsMessage := TJSONObject.Create;
       jsMessage.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('formatted',cLogItem.Msg);
-      jsEvent.AddPair('message',jsMessage);
+      jsEvent.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('message',jsMessage);
     end;
 
     jsTags := TJSONObject.Create;
@@ -210,14 +223,14 @@ begin
     begin
       if fCustomTags.TryGetValue(tagName,tagValue) then jsTags.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(tagName,tagValue);
     end;
-    jsEvent.AddPair('tags',jsTags);
+    jsEvent.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('tags',jsTags);
 
     if iiUserName in IncludedInfo then
     begin
       jsUser := TJSONObject.Create;
       //jsUser.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('id',SystemInfo.UserName);
       jsUser.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('username',SystemInfo.UserName);
-      jsEvent.AddPair('user',jsUser);
+      jsEvent.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('user',jsUser);
     end;
 
     {$IFDEF DELPHIXE8_UP}
