@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.InfluxDB
   Description : Log Api InfluxDB Provider
   Author      : Kike Pérez
-  Version     : 1.0
+  Version     : 1.1
   Created     : 25/02/2019
-  Modified    : 28/02/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -168,6 +168,9 @@ begin
     if iiOSVersion in fIncludedTags then incinfo.Add(Format('os=%s',[SystemInfo.OsVersion]));
     if iiEnvironment in fIncludedTags then incinfo.Add(Format('environment=%s',[Environment]));
     if iiPlatform in fIncludedTags then incinfo.Add(Format('platform=%s',[PlatformInfo]));
+    if iiThreadId in fIncludedTags then incinfo.Add(Format('treadid=%s',[cLogItem.ThreadId]));
+    if iiProcessId in fIncludedTags then incinfo.Add(Format('processid=%s',[SystemInfo.ProcessId]));
+
     tags := CommaText(incinfo);
 
     incinfo.Clear;
@@ -178,10 +181,16 @@ begin
     if iiOSVersion in IncludedInfo then incinfo.Add(Format('os="%s"',[SystemInfo.OsVersion]));
     if iiEnvironment in IncludedInfo then incinfo.Add(Format('environment="%s"',[Environment]));
     if iiPlatform in IncludedInfo then incinfo.Add(Format('platform="%s"',[PlatformInfo]));
+    if iiThreadId in IncludedInfo then incinfo.Add(Format('treadid=%s',[cLogItem.ThreadId]));
+    if iiProcessId in IncludedInfo then incinfo.Add(Format('processid=%s',[SystemInfo.ProcessId]));
     incinfo.Add(Format('message="%s"',[cLogItem.Msg]));
     fields := CommaText(incinfo);
 
+    {$IFDEF DELPHIXE7_UP}
     Result := Format('logger,%s %s %d',[tags,fields,DateTimeToUnix(LocalTimeToUTC(cLogItem.EventDate),True)*1000]);
+    {$ELSE}
+    Result := Format('logger,%s %s %d',[tags,fields,DateTimeToUnix(LocalTimeToUTC(cLogItem.EventDate))*1000]);
+    {$ENDIF}
   finally
     incinfo.Free;
   end;

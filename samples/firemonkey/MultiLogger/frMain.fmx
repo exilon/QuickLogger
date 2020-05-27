@@ -8,6 +8,7 @@ object frmMain: TfrmMain
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
+  OnClose = FormClose
   DesignerMasterStyle = 0
   object meLog: TMemo
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
@@ -15,20 +16,30 @@ object frmMain: TfrmMain
     ReadOnly = True
     Align = Client
     Size.Width = 355.000000000000000000
-    Size.Height = 458.000000000000000000
+    Size.Height = 436.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     Viewport.Width = 351.000000000000000000
-    Viewport.Height = 454.000000000000000000
+    Viewport.Height = 432.000000000000000000
   end
   object btnGenerateLog: TButton
+    Align = MostBottom
+    Position.Y = 436.000000000000000000
+    Size.Width = 355.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Generate one Log entry'
+    OnClick = btnGenerateLogClick
+  end
+  object btnMultiThread: TButton
     Align = MostBottom
     Position.Y = 458.000000000000000000
     Size.Width = 355.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 1
-    Text = 'Generate Log'
-    OnClick = btnGenerateLogClick
+    Text = 'Generate Mutithread Log entries'
+    OnClick = btnMultiThreadClick
   end
 end

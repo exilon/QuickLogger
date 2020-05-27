@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Rest
   Description : Log Api Rest Provider
   Author      : Kike Pérez
   Version     : 1.23
   Created     : 15/10/2017
-  Modified    : 23/02/2019
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -98,7 +98,7 @@ procedure TLogRestProvider.WriteLog(cLogItem : TLogItem);
 var
   resp : IHttpRequestResponse;
 begin
-  if CustomMsgOutput then resp := fHTTPClient.Post(fURL,cLogItem.Msg)
+  if CustomMsgOutput then resp := fHTTPClient.Post(fURL,LogItemToFormat(cLogItem))
     else resp := fHTTPClient.Post(fURL,LogItemToJson(cLogItem));
 
   if not (resp.StatusCode in [200,201]) then

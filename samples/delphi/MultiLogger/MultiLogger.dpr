@@ -8,6 +8,7 @@ uses
   Classes,
   SysUtils,
   Quick.Console,
+  Quick.Threads,
   Quick.Logger,
   Quick.Logger.ExceptionHook,
   Quick.Logger.Provider.Console,
@@ -24,41 +25,11 @@ uses
   Quick.Logger.Provider.Logstash,
   Quick.Logger.Provider.ElasticSearch,
   Quick.Logger.Provider.InfluxDB,
-  Quick.Logger.Provider.GrayLog;
+  Quick.Logger.Provider.GrayLog,
+  Quick.Logger.Provider.Sentry,
+  Quick.Logger.Provider.Twilio;
 
-var
-  a : Integer;
-
-  procedure Test;
-  var
-    x : Integer;
-    threadnum : Integer;
-  begin
-    Inc(a);
-    threadnum := a;
-    Sleep(Random(50));
-    for x := 1 to 10000 do
-    begin
-      Log('Thread %d - Item %d (%s)',[threadnum,x,DateTimeToStr(Now)],etWarning);
-    end;
-    Log('Thread %d - (Finished) (%s)',[threadnum,DateTimeToStr(Now)],etWarning);
-  end;
-
-  procedure MultiThreadWriteTest;
-  var
-    i : Integer;
-  begin
-    a := 0;
-    for i := 1 to 30 do
-    begin
-      Log('Launch Thread %d',[i],etInfo);
-      TThread.CreateAnonymousThread(Test).Start;
-    end;
-    Sleep(1000);
-    Log('Process finished. Press <Enter> to Exit',etInfo);
-  end;
-
-  type
+type
 
   TMyEvent = class
     procedure Critical(logItem : TLogItem);
@@ -69,9 +40,41 @@ var
     Writeln(Format('OnCritical Event received: %s',[logitem.Msg]));
   end;
 
+var
+  backgroundtasks : TBackgroundTasks;
+
+  procedure MultiThreadWriteTest;
+  var
+    i : Integer;
+  begin
+    //add 100000 tasks to 10 thread workers
+    backgroundtasks := TBackgroundTasks.Create(10);
+    backgroundtasks.Start;
+    for i := 1 to 100000 do
+    begin
+      backgroundtasks.AddTask([i],False,
+                              procedure(task : ITask)
+                              begin
+                                Logger.Info('Task %d started (%s)',[task.Param[0].AsInteger,DateTimeToStr(Now)]);
+                              end
+                            ).OnException(
+                              procedure(task : ITask; aException : Exception)
+                              begin
+                                Logger.Error('Task %d failed: %s (%s)',[task.Param[0].AsInteger,aException.Message,DateTimeToStr(Now)]);
+                              end
+                            ).OnTerminated(
+                              procedure(task : ITask)
+                              begin
+                                Logger.Done('Task %d finished (%s)',[task.Param[0].AsInteger,DateTimeToStr(Now)]);
+                              end
+                            ).Run;
+    end;
+  end;
+
 begin
   //wait for 60 seconds to flush pending logs in queue on program finishes
   Logger.WaitForFlushBeforeExit := 60;
+  Logger.CustomTags.Add('MyTag','MyText');
 
   //configure Console Log provider
   Logger.Providers.Add(GlobalLogConsoleProvider);
@@ -81,6 +84,9 @@ begin
     ShowEventColors := True;
     ShowTimeStamp := True;
     TimePrecission := True;
+    {$IFDEF DELPHIXE7_UP}
+    IncludedTags := ['MYTAG'];
+    {$ENDIF}
     Enabled := True;
   end;
 
@@ -264,12 +270,45 @@ begin
       Enabled := False; //enable when you have a GrayLog server to connect
     end;
 
+  //configure Sentry log provider
+  Logger.Providers.Add(GlobalLogSentryProvider);
+  with GlobalLogSentryProvider do
+    begin
+      DSNKey := 'https://xxxxxxxxxxx@999999.ingest.sentry.io/999999';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Sentry server to connect
+    end;
+
+  //configure Twilio log provider
+  Logger.Providers.Add(GlobalLogTwilioProvider);
+  with GlobalLogTwilioProvider do
+    begin
+      AccountSID := 'ACxxxxxxxxx';
+      AuthToken := 'xxxx';
+      SendFrom := '+123123123';
+      SendTo := '+123123123';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Twilio account to connect
+    end;
+
+  Logger.RedirectOwnErrorsToProvider := GlobalLogConsoleProvider;
+
   Log('Quick.Logger Demo 1 [Event types]',etHeader);
-  Log('Hello world!',etInfo);
-  Log('An error msg!',etError);
-  Log('A warning msg!',etWarning);
-  Log('A critical error!',etCritical);
-  Log('Successfully process',etSuccess);
+  Logger.Info('Hello world!');
+  Logger.Error('An error msg!');
+  Logger.Warn('A warning msg!');
+  Logger.Critical('A critical error!');
+  Logger.Succ('Successfully process');
 
   Log('Quick.Logger Demo 2 [Exception Hook]',etHeader);
   //raise an exception
@@ -279,7 +318,7 @@ begin
     //Logger catches this exception
   end;
 
-  Log('Press <Enter> to begin Thread collision Test',etInfo);
+  Logger.Info('Press <Enter> to begin Thread collision Test');
   //ConsoleWaitForEnterKey;
 
   Log('Quick.Logger Demo 3 [Thread collision]',etHeader);
@@ -289,6 +328,6 @@ begin
   //check if you press the key before all items are flushed to console/disk
   if Logger.QueueCount > 0 then
   begin
-    Writeln(Format('There are %d log items in queue. Waiting %d seconds max to flush...',[Logger.QueueCount,Logger.WaitForFlushBeforeExit]));
+    cout(Format('There are %d log items in queue. Waiting %d seconds max to flush...',[Logger.QueueCount,Logger.WaitForFlushBeforeExit]),ccYellow);
   end;
 end.

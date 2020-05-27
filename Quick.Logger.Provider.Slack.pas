@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2018 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Slack
   Description : Log Slack Bot Channel Provider
   Author      : Kike Pérez
   Version     : 1.22
   Created     : 24/05/2018
-  Modified    : 24/05/2018
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -42,6 +42,9 @@ uses
     {$IFDEF FPC}
     fpjson,
     {$ELSE}
+      {$IFDEF DELPHIXE7_UP}
+      System.JSON,
+      {$ENDIF}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
@@ -122,7 +125,7 @@ var
   json : TJsonObject;
   resp : IHttpRequestResponse;
 begin
-  if CustomMsgOutput then resp := fHttpClient.Post(fWebHookURL,cLogItem.Msg)
+  if CustomMsgOutput then resp := fHttpClient.Post(fWebHookURL,LogItemToFormat(cLogItem))
   else
   begin
     json := TJSONObject.Create;
