@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
-  Version     : 1.28
+  Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 11/09/2019
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -35,6 +35,7 @@ interface
 uses
   Classes,
   SysUtils,
+  DateUtils,
   {$IFDEF FPC}
   Quick.Files,
   zipper,
@@ -64,11 +65,14 @@ type
     fUnderlineHeaderEventType: Boolean;
     fAutoFlush : Boolean;
     fAutoFileName : Boolean;
-    procedure WriteToStream(const cMsg : string);
-    procedure CompressLogFile(const cFileName : string);
     function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
     function CheckNeedRotate : Boolean;
     procedure SetFileName(const Value: string);
+    procedure SetRotatedFilesPath(const Value: string);
+  protected
+    procedure CompressLogFile(const cFileName : string); virtual;
+    procedure WriteHeaderInfo; virtual;
+    procedure WriteToStream(const cMsg : string); virtual;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -79,7 +83,7 @@ type
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
-    property RotatedFilesPath : string read fRotatedFilesPath write fRotatedFilesPath;
+    property RotatedFilesPath : string read fRotatedFilesPath write SetRotatedFilesPath;
     property CompressRotatedFiles : Boolean read fCompressRotatedFiles write fCompressRotatedFiles;
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
     property ShowHeaderInfo : Boolean read fShowHeaderInfo write fShowHeaderInfo;
@@ -88,7 +92,7 @@ type
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
-    procedure RotateLog;
+    procedure RotateLog; virtual;
   end;
 
   {$IFDEF MSWINDOWS}
@@ -194,33 +198,15 @@ begin
     //check if need to rotate
     if CheckNeedRotate then
     begin
-      RotateLog;
+      try
+        RotateLog;
+      except
+        on E : Exception do NotifyError(Format('Can''t rotate log file: %s',[e.message]));
+      end;
       Exit;
     end;
     //writes header info
-    if fShowHeaderInfo then
-    begin
-      WriteToStream(FillStr('-',70));
-      if iiAppName in IncludedInfo then
-      begin
-        WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
-      end;
-      WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
-      WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
-      if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
-      //{$IFDEF MSWINDOWS}
-      if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
-      if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[Trim(SystemInfo.UserName)]));
-      //{$ENDIF}
-      WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
-      {$IFDEF MSWINDOWS}
-      if IsService then WriteToStream('AppType     : Service')
-        else if System.IsConsole then WriteToStream('AppType     : Console');
-
-      if IsDebug then WriteToStream('Debug mode  : On');
-      {$ENDIF}
-      WriteToStream(FillStr('-',70));
-    end;
+    if fShowHeaderInfo then WriteHeaderInfo;
   except
     fs.Free;
     raise;
@@ -229,11 +215,43 @@ begin
   inherited;
 end;
 
+procedure TLogFileProvider.WriteHeaderInfo;
+begin
+  WriteToStream(FillStr('-',70));
+  if iiAppName in IncludedInfo then
+  begin
+    WriteToStream(Format('Application : %s %s',[SystemInfo.AppName,SystemInfo.AppVersion]));
+  end;
+  if iiProcessId in IncludedInfo then WriteToStream(Format('PID         : %d',[SystemInfo.ProcessId]));
+  WriteToStream(Format('Path        : %s',[SystemInfo.AppPath]));
+  WriteToStream(Format('CPU cores   : %d',[SystemInfo.CPUCores]));
+  if iiOSVersion in IncludedInfo then WriteToStream(Format('OS version  : %s',[SystemInfo.OSVersion]));
+  //{$IFDEF MSWINDOWS}
+  if iiHost in IncludedInfo then WriteToStream(Format('Host        : %s',[SystemInfo.HostName]));
+  if iiUserName in IncludedInfo then WriteToStream(Format('Username    : %s',[Trim(SystemInfo.UserName)]));
+  //{$ENDIF}
+  WriteToStream(Format('Started     : %s',[DateTimeToStr(Now(),FormatSettings)]));
+  {$IFDEF MSWINDOWS}
+  if IsService then WriteToStream('AppType     : Service')
+    else if System.IsConsole then WriteToStream('AppType     : Console');
+
+  if IsDebug then WriteToStream('Debug mode  : On');
+  {$ENDIF}
+  WriteToStream(FillStr('-',70));
+end;
+
 procedure TLogFileProvider.WriteToStream(const cMsg : string);
 begin
   try
     //check if need to rotate
-    if CheckNeedRotate then RotateLog;
+    if CheckNeedRotate then
+    begin
+      try
+        RotateLog;
+      except
+        on E : Exception do NotifyError(Format('Can''t rotate log file: %s',[e.message]));
+      end;
+    end;
     //writes to stream file
     fLogWriter.WriteLine(cMsg);
     //needs to flush if autoflush??
@@ -247,7 +265,7 @@ procedure TLogFileProvider.WriteLog(cLogItem : TLogItem);
 begin
   if CustomMsgOutput then
   begin
-    WriteToStream(cLogItem.Msg);
+    WriteToStream(LogItemToFormat(cLogItem));
     Exit;
   end;
 
@@ -258,8 +276,9 @@ begin
   end
   else
   begin
-    if fShowEventTypes then WriteToStream(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]))
-      else WriteToStream(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]));
+    //if fShowEventTypes then WriteToStream(Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],LogItemToLine(cLogItem.Msg)]))
+    //  else WriteToStream(Format('%s %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),cLogItem.Msg]));
+    WriteToStream(LogItemToLine(cLogItem,True,fShowEventTypes));
   end;
 end;
 
@@ -274,6 +293,7 @@ begin
   if fRotatedFilesPath = '' then
   begin
     LogName := TPath.GetFileNameWithoutExtension(fFileName);
+    LogName := TPath.GetDirectoryName(fFileName) + PathDelim + LogName;
   end
   else
   begin
@@ -351,6 +371,17 @@ begin
     fFileName := Value;
     if IsEnabled then Restart;
   end;
+end;
+
+procedure TLogFileProvider.SetRotatedFilesPath(const Value: string);
+var
+  exepath : string;
+begin
+  if IsLibrary then exepath := SystemInfo.AppPath
+    else exepath := ParamStr(0);
+
+  if Value.StartsWith('.' + PathDelim) then fRotatedFilesPath := StringReplace(Value,'.' + PathDelim,TPath.GetDirectoryName(exepath) + PathDelim,[])
+    else fRotatedFilesPath := Value;
 end;
 
 function TLogFileProvider.CheckNeedRotate: Boolean;

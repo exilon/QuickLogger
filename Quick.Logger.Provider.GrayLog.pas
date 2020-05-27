@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.GrayLog
   Description : Log GrayLog Provider
   Author      : Kike Pérez
-  Version     : 1.1
+  Version     : 1.2
   Created     : 15/03/2019
-  Modified    : 25/03/2019
+  Modified    : 25/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -40,8 +40,9 @@ uses
   fpjson,
   fpjsonrtti,
   {$ELSE}
-  System.JSON,
-    {$IFNDEF DELPHIXE8_UP}
+    {$IFDEF DELPHIXE8_UP}
+    System.JSON,
+    {$ELSE}
     Data.DBXJSON,
     {$ENDIF}
   {$ENDIF}
@@ -143,12 +144,15 @@ begin
     etDone: Result := Integer(TSyslogSeverity.slNotice);
     etCustom1: Result := Integer(TSyslogSeverity.slEmergency);
     etCustom2: Result := Integer(TSyslogSeverity.slInformational);
-    end;
+    else Result := Integer(TSyslogSeverity.slInformational);
+  end;
 end;
 
 function TLogGrayLogProvider.LogToGELF(cLogItem: TLogItem): string;
 var
   json : TJSONObject;
+  tagName : string;
+  tagValue : string;
 begin
   json := TJSONObject.Create;
   try
@@ -165,10 +169,14 @@ begin
       json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('short_message',cLogItem.Msg);
     end;
     {$IFDEF FPC}
-      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      json.Add('timestamp',TJSONInt64Number.Create(DateTimeToUnix(cLogItem.EventDate)));
       json.Add('level',TJSONInt64Number.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
     {$ELSE}
+      {$IFDEF DELPHIXE7_UP}
       json.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate,fJsonOutputOptions.UseUTCTime)));
+      {$ELSE}
+      json.AddPair('timestamp',TJSONNumber.Create(DateTimeToUnix(cLogItem.EventDate)));
+      {$ENDIF}
       json.AddPair('level',TJSONNumber.Create(EventTypeToSysLogLevel(cLogItem.EventType)));
     {$ENDIF}
 
@@ -177,6 +185,13 @@ begin
     if iiPlatform in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_platform',PlatformInfo);
     if iiOSVersion in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_OS',SystemInfo.OSVersion);
     if iiUserName in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_user',SystemInfo.UserName);
+    if iiThreadId in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_treadid',cLogItem.ThreadId.ToString);
+    if iiProcessId in IncludedInfo then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('_pid',SystemInfo.ProcessId.ToString);
+
+    for tagName in IncludedTags do
+    begin
+      if fCustomTags.TryGetValue(tagName,tagValue) then json.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(tagName,tagValue);
+    end;
 
     {$IFDEF DELPHIXE8_UP}
     Result := json.ToJSON
@@ -203,7 +218,7 @@ procedure TLogGrayLogProvider.WriteLog(cLogItem : TLogItem);
 var
   resp : IHttpRequestResponse;
 begin
-  if CustomMsgOutput then resp := fHTTPClient.Post(fFullURL,cLogItem.Msg)
+  if CustomMsgOutput then resp := fHTTPClient.Post(fFullURL,LogItemToFormat(cLogItem))
     else resp := fHTTPClient.Post(fFullURL,LogToGELF(cLogItem));
 
   if not (resp.StatusCode in [200,201,202]) then

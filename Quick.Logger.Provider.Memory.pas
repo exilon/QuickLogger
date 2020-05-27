@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.Memory
   Description : Log memory Provider
   Author      : Kike Pérez
-  Version     : 1.22
+  Version     : 1.23
   Created     : 02/10/2017
-  Modified    : 18/02/2019
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -146,7 +146,7 @@ begin
   if not Assigned(fMemLog) then Exit;
   EnterCriticalSection(CS);
   try
-    for lItem in fMemLog do Result.Add(Format('%s [%s] %s',[DateTimeToStr(lItem.EventDate,FormatSettings),EventTypeName[lItem.EventType],lItem.Msg]));
+    for lItem in fMemLog do Result.Add(LogItemToLine(lItem,True,True));
   finally
     LeaveCriticalSection(CS);
   end;

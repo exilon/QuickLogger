@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
-  Version     : 1.27
+  Version     : 1.28
   Created     : 15/10/2017
-  Modified    : 11/06/2019
+  Modified    : 24/04/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -181,7 +181,7 @@ procedure TLogRedisProvider.WriteLog(cLogItem : TLogItem);
 var
   log : string;
 begin
-  if CustomMsgOutput then log := cLogItem.Msg
+  if CustomMsgOutput then log := LogItemToFormat(cLogItem)
   else
   begin
     if fOutputAsJson then
@@ -190,7 +190,7 @@ begin
     end
     else
     begin
-      log := Format('%s [%s] %s',[DateTimeToStr(cLogItem.EventDate,FormatSettings),EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+      log := LogItemToLine(cLogItem,True,True);
     end;
   end;
 

@@ -25,7 +25,9 @@ uses
   Quick.Logger.Provider.Logstash,
   Quick.Logger.Provider.ElasticSearch,
   Quick.Logger.Provider.InfluxDB,
-  Quick.Logger.Provider.GrayLog;
+  Quick.Logger.Provider.GrayLog,
+  Quick.Logger.Provider.Sentry,
+  Quick.Logger.Provider.Twilio;
 
 type
 
@@ -72,6 +74,7 @@ var
 begin
   //wait for 60 seconds to flush pending logs in queue on program finishes
   Logger.WaitForFlushBeforeExit := 60;
+  Logger.CustomTags.Add('MyTag','MyText');
 
   //configure Console Log provider
   Logger.Providers.Add(GlobalLogConsoleProvider);
@@ -81,6 +84,9 @@ begin
     ShowEventColors := True;
     ShowTimeStamp := True;
     TimePrecission := True;
+    {$IFDEF DELPHIXE7_UP}
+    IncludedTags := ['MYTAG'];
+    {$ENDIF}
     Enabled := True;
   end;
 
@@ -262,6 +268,37 @@ begin
       PlatformInfo := 'Desktop';
       IncludedInfo := [iiAppName,iiEnvironment,iiPlatform];
       Enabled := False; //enable when you have a GrayLog server to connect
+    end;
+
+  //configure Sentry log provider
+  Logger.Providers.Add(GlobalLogSentryProvider);
+  with GlobalLogSentryProvider do
+    begin
+      DSNKey := 'https://xxxxxxxxxxx@999999.ingest.sentry.io/999999';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Sentry server to connect
+    end;
+
+  //configure Twilio log provider
+  Logger.Providers.Add(GlobalLogTwilioProvider);
+  with GlobalLogTwilioProvider do
+    begin
+      AccountSID := 'ACxxxxxxxxx';
+      AuthToken := 'xxxx';
+      SendFrom := '+123123123';
+      SendTo := '+123123123';
+      LogLevel := LOG_DEBUG;
+      MaxFailsToRestart := 5;
+      MaxFailsToStop := 0;
+      Environment := 'Production';
+      PlatformInfo := 'Desktop';
+      IncludedInfo := [iiAppName,iiEnvironment,iiPlatform,iiOSVersion,iiUserName];
+      Enabled := False; //enable when you have a Twilio account to connect
     end;
 
   Logger.RedirectOwnErrorsToProvider := GlobalLogConsoleProvider;
