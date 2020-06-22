@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.3.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 10.4 Sydney)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -24,6 +24,8 @@ Delphi(Delphi XE6 - Delphi 10.3.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 - Twilio
 
 ### Updates:
+
+**May 30,2020:** RAD Studio 10.4 supported
 
 **May 02,2020:** Twilio provider
 
@@ -88,7 +90,7 @@ Delphi(Delphi XE6 - Delphi 10.3.3 Rio)/Freepascal(trunk)/.NET (Windows/Linux/And
 * **From Github:**
 1. Clone this Github repository or download zip file and extract it.
 2. Add QuickLogger folder to your path libraries on Delphi IDE.
-3. Clone QuickLib Github repository https://github/exilon/QuickLib or download zip file and extract it.
+3. Clone QuickLib Github repository https://github.com/exilon/QuickLib or download zip file and extract it.
 4. Add QuickLib folder to your path libraries on Delphi IDE.
 
 **Documentation:**
