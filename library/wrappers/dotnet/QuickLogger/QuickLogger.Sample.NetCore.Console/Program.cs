@@ -7,8 +7,8 @@ namespace QuickLogger.Sample
 {
     class Program
     {
-        private const string CONFIGPATH = ".\\config.json";
-        private const string FILELOGPATH = ".\\logging.json";
+        private const string CONFIGPATH = "config.json";
+        private const string FILELOGPATH = "/logging.json";
 
         static void DeleteDemoFiles()
         {
@@ -52,9 +52,21 @@ namespace QuickLogger.Sample
             return new QuickLoggerProvider(providerProps);
         }
 
+        static ILoggerProvider CreateRedisProvider()
+        {
+            ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Dirty Redis Logger", "RedisProvider");
+
+            providerProps.SetProviderInfo(new System.Collections.Generic.Dictionary<string, object>()
+            {
+                { "LogLevel", LoggerEventTypes.LOG_ALL }, { "Host", "localhost" }, { "Port", 6379 }, { "Password", ""}, { "LogKey", "Log" },
+                { "MaxSize", 1000}, { "OutputAsJson", true }, { "MaxFailsToRestart", 2 }, { "MaxFailsToStop", 10 }
+            });
+            return new QuickLoggerProvider(providerProps);
+        }
+
         static void Main(string[] args)
         {
-            ILogger logger = new QuickLoggerNative(".\\");
+            ILogger logger = new QuickLoggerNative("");
             try
             {
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
@@ -63,6 +75,7 @@ namespace QuickLogger.Sample
 
                 ILoggerProvider myFileDemoProvider = CreateFileDemoProvider(FILELOGPATH);
                 ILoggerProvider myConsoleDemoProvider = CreateConsoleDemoProvider();
+                ILoggerProvider myRedisProvider = CreateRedisProvider();
 
                 /* Optional config handler
                 Create new config instance, ADD Providers and Write to disk.
@@ -82,6 +95,7 @@ namespace QuickLogger.Sample
 
                 quickLoggerSettings.Providers().Add(myConsoleDemoProvider);
                 quickLoggerSettings.Providers().Add(myFileDemoProvider);
+                quickLoggerSettings.Providers().Add(myRedisProvider);
 
                 quickLoggerSettings.Providers().ForEach(x =>
                 {
@@ -90,7 +104,7 @@ namespace QuickLogger.Sample
                 });
 
                 System.Console.WriteLine(logger.GetLoggerNameAndVersion());
-                logger.TestCallbacks();
+                //logger.TestCallbacks();
 
                 // Main!
                 logger.Info("QuickLogger demo program main loop started.");
@@ -114,11 +128,6 @@ namespace QuickLogger.Sample
             {
                 System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
                 System.Console.ReadKey();
-            }
-            finally
-            {
-                // Cast implementation as IDisposable to call dispose native resources
-                ((IDisposable)logger).Dispose();
             }
         }
 

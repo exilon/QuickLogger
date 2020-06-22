@@ -117,13 +117,17 @@ namespace QuickLogger.NetStandard
         private static IntPtr nativeHwnd;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
-        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
+        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "x64/libquicklogger.so", "x86/libquicklogger.so" };
         private static List<System.Delegate> delegates = new List<System.Delegate>();
         public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
-            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
+            for (int x = 0; x < libNames.Count(); x++) 
+            {
+                if (!File.Exists(libNames[x])) { libNames[x] = _rootPath + libNames[x]; }                
+            }
+
             _quickloggerlib = new NativeLibrary(libNames);
             nativeHwnd = _quickloggerlib.Handle;
             MapFunctionPointers();
