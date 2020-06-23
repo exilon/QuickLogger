@@ -8,7 +8,7 @@ namespace QuickLogger.Sample
     class Program
     {
         private const string CONFIGPATH = "config.json";
-        private const string FILELOGPATH = "/logging.json";
+        private const string FILELOGPATH = "logging.json";
 
         static void DeleteDemoFiles()
         {
@@ -112,6 +112,11 @@ namespace QuickLogger.Sample
                 for (int x = 1; x <= 100; x++)
                 {
                     logger.Info("QuickLogger demo program main loop iteration. Nº " + x.ToString());
+                    logger.Success("QuickLogger demo program main loop iteration. Nº " + x.ToString());
+                    logger.Trace("QuickLogger demo program main loop iteration. Nº " + x.ToString());
+                    logger.Warning("QuickLogger demo program main loop iteration. Nº " + x.ToString());
+                    logger.Error("QuickLogger demo program main loop iteration. Nº " + x.ToString());
+                    logger.Debug("QuickLogger demo program main loop iteration. Nº " + x.ToString());
                 }
 
                 logger.Info("QuickLogger demo program finished.");

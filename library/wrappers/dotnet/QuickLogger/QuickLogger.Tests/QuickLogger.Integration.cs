@@ -60,10 +60,10 @@ namespace QuickLogger.Tests.Integration
             "\"AppName\": \" API\"," +
             "\"IncludedInfo\": \"[iiUserName, iiAppName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]\"," +
             "\"LogLevel\": \"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]\"," +
-            "\"Host\": \"elksistemas.westeurope.cloudapp.azure.com\"," +
+            "\"Host\": \"\"," +
             "\"Platform\": \"MVC .NET\"," +
             "\"Port\": 6379,\"Password\": \"\"," +
-            "\"LogKey\": \"sistemas-logstash-key\",\"MaxSize\": 1000," +
+            "\"LogKey\": \"\",\"MaxSize\": 1000," +
             "\"MaxFailsToRestart\": 1,\"MaxFailsToStop\": 0," +
             "\"OutputAsJson\": true,\"Enable\": true" +
             "}}}]}";

@@ -12,7 +12,9 @@ namespace QuickLogger.Extensions.NetCore.Configuration
         }
         public string GetSettingsPath()
         {
-            return _configuration.GetSection("QuickLogger")["ConfigPath"];
+            var settings = _configuration.GetSection("QuickLogger")["ConfigPath"];
+            settings = string.IsNullOrEmpty(settings) ? "QuickLogger.config" : settings;
+            return settings;
         }
     }
 }

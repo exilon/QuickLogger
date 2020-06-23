@@ -46,6 +46,8 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate void DebugNative([MarshalAs(UnmanagedType.LPWStr)] string message);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, [MarshalAs(UnmanagedType.LPWStr)] string exceptionname, [MarshalAs(UnmanagedType.LPWStr)] string stacktrace);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
@@ -101,6 +103,7 @@ namespace QuickLogger.NetStandard
         private static unsafe TraceNative traceNative;
         private static unsafe CustomNative customNative;
         private static unsafe SuccessNative successNative;
+        private static unsafe DebugNative debugNative;
         private static unsafe ExceptionNative exceptionNative;
         private static unsafe EnableProviderNative enableProviderNative;
         private static unsafe DisableProviderNative disableProviderNative;
@@ -170,6 +173,7 @@ namespace QuickLogger.NetStandard
             traceNative = _quickloggerlib.LoadFunction<TraceNative>("TraceNative");
             customNative = _quickloggerlib.LoadFunction<CustomNative>("CustomNative");
             successNative = _quickloggerlib.LoadFunction<SuccessNative>("SuccessNative");
+            debugNative = _quickloggerlib.LoadFunction<DebugNative>("DebugNative");
             disableProviderNative = _quickloggerlib.LoadFunction<DisableProviderNative>("DisableProviderNative");
             enableProviderNative = _quickloggerlib.LoadFunction<EnableProviderNative>("EnableProviderNative");            
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
@@ -208,8 +212,13 @@ namespace QuickLogger.NetStandard
             warningNative?.Invoke(message);            
         }
         public void Critical(string message)
+
         {
             criticalNative?.Invoke(message);
+        }
+        public void Debug(string message)
+        {
+            debugNative?.Invoke(message);
         }
         private void AssignDelegatesToNative(ILoggerProvider provider)
         {
