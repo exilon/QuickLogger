@@ -26,6 +26,7 @@ namespace QuickLogger.NetStandard.Abstractions
         void Trace(string message);
         void Custom(string message);
         void Critical(string message);
+        void Debug(string message);
         void TestCallbacks();
         string GetLastError();
         int GetQueueCount();

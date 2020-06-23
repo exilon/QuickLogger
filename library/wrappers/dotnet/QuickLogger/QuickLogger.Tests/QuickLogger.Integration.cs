@@ -60,10 +60,10 @@ namespace QuickLogger.Tests.Integration
             "\"AppName\": \" API\"," +
             "\"IncludedInfo\": \"[iiUserName, iiAppName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]\"," +
             "\"LogLevel\": \"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]\"," +
-            "\"Host\": \"elkpisos.westeurope.cloudapp.azure.com\"," +
+            "\"Host\": \"\"," +
             "\"Platform\": \"MVC .NET\"," +
             "\"Port\": 6379,\"Password\": \"\"," +
-            "\"LogKey\": \"pisos-logstash-key\",\"MaxSize\": 1000," +
+            "\"LogKey\": \"\",\"MaxSize\": 1000," +
             "\"MaxFailsToRestart\": 1,\"MaxFailsToStop\": 0," +
             "\"OutputAsJson\": true,\"Enable\": true" +
             "}}}]}";
@@ -115,6 +115,7 @@ namespace QuickLogger.Tests.Integration
         [OneTimeSetUp]
         public void SetUp()
         {
+            System.Threading.Thread.Sleep(10000);
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
@@ -247,7 +248,19 @@ namespace QuickLogger.Tests.Integration
             _logger.Error("Error line");
             _logger.Success("Succes line");
             _logger.Exception(new Exception("Test exception"));
+            try
+            {
+                throw new Exception("Test exception");
+            }
+            catch (Exception e)
+            {
+                _logger.Exception(e.Message, e.GetType().ToString(), e.StackTrace);
+            }
+
             while (!_logger.IsQueueEmpty()) { System.Threading.Thread.Sleep(1); };
+            config.GetSettings().Providers().ForEach(x => _logger.DisableProvider(x));
+            config.GetSettings().Providers().ForEach(x => _logger.RemoveProvider(x));
+            System.Threading.Thread.Sleep(500);
         }
 
         [Test]
@@ -265,6 +278,7 @@ namespace QuickLogger.Tests.Integration
             System.Threading.Thread.Sleep(3000);
             //Assert that callbacks are ignited
             Assert.That(string.IsNullOrEmpty(_lastfailtolog), Is.False);
+            while (!_logger.IsQueueEmpty()) { System.Threading.Thread.Sleep(1); };
             _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }

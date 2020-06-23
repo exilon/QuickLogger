@@ -1,15 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <Version>1.4.9</Version>
-    <Description>native, Testable and Injectable multi-provider logging library for .NET</Description>
+    <Version>1.5.2</Version>
+    <Description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</Description>
     <Copyright>Exilon &amp; Turric4n</Copyright>
-    <PackageProjectUrl>https://github.com/exilon/QuickLogger</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.4.9.0</AssemblyVersion>
-    <FileVersion>1.4.9.0</FileVersion>
+    <AssemblyVersion>1.5.2.0</AssemblyVersion>
+    <FileVersion>1.5.2.0</FileVersion>
+    <RepositoryUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</RepositoryUrl>
+    <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
+    <RepositoryType>GIT</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,21 +25,29 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="libquickloggernative.redist" Version="1.4.8">
+    <PackageReference Include="libquickloggernative.redist" Version="1.5.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NativeLibraryLoader" Version="1.0.12" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>

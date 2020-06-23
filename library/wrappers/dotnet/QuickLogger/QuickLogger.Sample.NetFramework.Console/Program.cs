@@ -54,7 +54,7 @@ namespace QuickLogger.Sample
 
         static void Main(string[] args)
         {
-            ILogger logger = new QuickLoggerNative(".\\");                
+            ILogger logger = new QuickLoggerNative("");                
             try
             {
                 System.Console.WriteLine(LoggerEventTypes.LOG_ALL.ToString());
@@ -114,11 +114,6 @@ namespace QuickLogger.Sample
             {
                 System.Console.WriteLine(ex.Message + " " + logger.GetLastError());
                 System.Console.ReadKey();
-            }
-            finally
-            {
-                // Cast implementation as IDisposable to call dispose native resources
-                ((IDisposable)logger).Dispose();
             }
         }
 
