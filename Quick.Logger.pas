@@ -1779,7 +1779,6 @@ initialization
 
 
 finalization
-
   Logger.Free;
 
 end.
