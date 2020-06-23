@@ -138,6 +138,11 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
             string custommessage = BuildJSONSerializedMessage(className, msg);
             _quicklogger?.Trace(custommessage);
         }
+        public void Debug(string className, string msg)
+        {
+            string custommessage = BuildJSONSerializedMessage(className, msg);
+            _quicklogger?.Debug(custommessage);
+        }
         public bool IsQueueEmpty()
         {
             return _quicklogger.IsQueueEmpty();

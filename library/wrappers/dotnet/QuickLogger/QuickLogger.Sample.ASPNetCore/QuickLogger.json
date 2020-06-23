@@ -1,0 +1,20 @@
+{
+  "environment": "pro",
+  "providers": [
+    {
+      "providerProps": {
+        "providerName": "Test Console Provider",
+        "providerType": "ConsoleProvider",
+        "providerInfo": {
+          "AppName": "Quicklogger ASP.NET Testing",
+          "IncludedInfo": "[iiAppName, iiUserName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]",
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Environment": "Test",
+          "ShowEventColors": true,
+          "ShowTimeStamp" : true,
+          "Enable": true
+        }
+      }
+    }
+  ]
+}
