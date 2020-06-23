@@ -7,9 +7,9 @@
   Library     : QuickLogger
   Description : Dynamic library headers for external language wrappers
   Author      : Kike Fuentes (Turric4n)
-  Version     : 1.36
+  Version     : 1.37
   Created     : 15/10/2017
-  Modified    : 26/03/2019
+  Modified    : 11/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -31,12 +31,14 @@
 
 uses
   Rtti,
-  {$IFNDEF UNIX}
+  {$IFDEF MSWINDOWS}}
   Windows,
   ActiveX,
   {$ELSE}
-  Unix,
-  Memory,
+    {$IFDEF FPC}}
+    Unix,
+    Memory,
+    {$ENDIF}
   {$ENDIF}
   Quick.Logger,
   {$IFDEF MSWINDOWS}
@@ -162,24 +164,29 @@ end;
 
 procedure msgdbg(const msg : string);
 begin
-  {$IFNDEF  UNIX}
+  {$IFDEF MSWINDOWS}
   MessageBox(0, PChar(msg), 'Test from native library', MB_OK +
     MB_ICONINFORMATION);
   {$ELSE}
+  Writeln('Test from native library');
   {$ENDIF}
 end;
 
 function GetPChar(const str : string) : PChar;
 begin
-  {$IFNDEF  UNIX}
+  {$IFDEF MSWINDOWS}}
     Result := CoTaskMemAlloc(SizeOf(Char)*(Length(str)+1));
   {$ELSE}
+    {$IFDEF FPC}
     Result := Memory.MemAlloc(SizeOf(Char)*(Length(str)+1));
+    {$ELSE}
+    GetMem(Result,SizeOf(Char)*(Length(str)+1));
+    {$ENDIF}
   {$ENDIF}
   {$IFNDEF FPC}
-    strcopy(Result, PWideChar(str));
+    StrCopy(Result, PWideChar(str));
   {$ELSE}
-    strcopy(Result, PChar(str));
+    StrCopy(Result, PChar(str));
   {$ENDIF}
 end;
 
@@ -648,9 +655,9 @@ begin
   end;
 end;
 
-procedure ExceptionNative(const Line, Excp : PChar); stdcall; export;
+procedure ExceptionNative(const Line, Excp, Stack : PChar); stdcall; export;
 begin
-  Logger.Add(Line, Excp, etException);
+  Logger.Add(Line, Excp, stack, etException);
 end;
 
 function GetLastError(out str: PChar): Integer; stdcall; export;
@@ -883,7 +890,11 @@ exports
   GetLastError,
   GetLibVersionNative;
 
+
+
 begin
+  //Maybe (if default value) makes ASP.net to crash
+  Logger.WaitForFlushBeforeExit := 1;
   providerHandlers := TDictionary<string,TProviderEventHandler>.Create;
   eventTypeConversion := TDictionary<string,TLogLevel>.Create;
   eventTypeConversion.Add('LOG_ONLYERRORS', LOG_ONLYERRORS);
@@ -894,3 +905,5 @@ begin
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
 end.
+
+

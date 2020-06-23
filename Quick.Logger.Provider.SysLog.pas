@@ -5,9 +5,9 @@
   Unit        : Quick.Logger.Provider.SysLog
   Description : Log to SysLog server
   Author      : Kike Pérez
-  Version     : 1.21
+  Version     : 1.22
   Created     : 15/06/2018
-  Modified    : 15/06/2018
+  Modified    : 14/09/2019
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -126,7 +126,7 @@ begin
       etCustom2: msg.Severity := TIdSyslogSeverity.slInformational;
     end;
     if CustomMsgOutput then msg.Msg.Text := cLogItem.Msg
-      else msg.Msg.Text := Format('[%s] %s',[EventTypeName[cLogItem.EventType],cLogItem.Msg]);
+      else msg.Msg.Text := LogItemToLine(cLogItem,False,True);
     fSysLog.SendLogMessage(msg,False);
   finally
     msg.Free;

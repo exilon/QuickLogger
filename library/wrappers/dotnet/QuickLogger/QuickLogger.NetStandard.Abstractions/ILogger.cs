@@ -22,6 +22,7 @@ namespace QuickLogger.NetStandard.Abstractions
         void Warning(string message);
         void Error(string message);
         void Exception(Exception exception);
+        void Exception(string message, string exceptionType, string stackTrace);
         void Trace(string message);
         void Custom(string message);
         void Critical(string message);

@@ -52,6 +52,22 @@ namespace QuickLogger.Tests.Integration
                                     "\"CC\": \"myemail@domain.com\"," +
                                     "\"BCC\": \"\"" +
                                     "}";
+        static string _redisconfig = "{\"environment\": \"Testing\",\"providers\": " +
+            "[{\"providerProps\": {\"providerName\": \"A dirty ELK logger for testing purposes\"," +
+            "\"providerType\": \"RedisProvider\"," +
+            "\"providerInfo\": {" +
+            "\"environment\": \"Test\"," +
+            "\"AppName\": \" API\"," +
+            "\"IncludedInfo\": \"[iiUserName, iiAppName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]\"," +
+            "\"LogLevel\": \"[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]\"," +
+            "\"Host\": \"elksistemas.westeurope.cloudapp.azure.com\"," +
+            "\"Platform\": \"MVC .NET\"," +
+            "\"Port\": 6379,\"Password\": \"\"," +
+            "\"LogKey\": \"sistemas-logstash-key\",\"MaxSize\": 1000," +
+            "\"MaxFailsToRestart\": 1,\"MaxFailsToStop\": 0," +
+            "\"OutputAsJson\": true,\"Enable\": true" +
+            "}}}]}";
+
 
         // Change to adapt with each environment
         static Dictionary<string, object> _consoleProviderInfo = new Dictionary<string, object>()
@@ -99,6 +115,7 @@ namespace QuickLogger.Tests.Integration
         [OneTimeSetUp]
         public void SetUp()
         {
+            System.Threading.Thread.Sleep(10000);
             _configPath = Directory.GetParent(Assembly.GetAssembly(typeof(QuickLogger_Integration_Should)).Location).Parent.Parent.FullName;
             _fileloggerPath = Path.Combine(_configPath, _fileloggerName);
             _configPath = Path.Combine(_configPath, _configName);            
@@ -224,15 +241,26 @@ namespace QuickLogger.Tests.Integration
         {
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Redis (ELK) Provide First test", "RedisProvider");
             providerProps.SetProviderInfo(_redisProviderInfo);
-            ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
-            _logger.AddProvider(loggerProvider);
+            var config = new QuickLoggerStringConfigManager(_redisconfig);
+            config.Load().Providers().ForEach(x => _logger.AddProvider(x));
             _logger.Info("Info line");
             _logger.Custom("Custom line");
             _logger.Error("Error line");
             _logger.Success("Succes line");
-            //Assert that words are received by name 
-            _logger.DisableProvider(loggerProvider);
-            _logger.RemoveProvider(loggerProvider);
+            _logger.Exception(new Exception("Test exception"));
+            try
+            {
+                throw new Exception("Test exception");
+            }
+            catch (Exception e)
+            {
+                _logger.Exception(e.Message, e.GetType().ToString(), e.StackTrace);
+            }
+
+            while (!_logger.IsQueueEmpty()) { System.Threading.Thread.Sleep(1); };
+            config.GetSettings().Providers().ForEach(x => _logger.DisableProvider(x));
+            config.GetSettings().Providers().ForEach(x => _logger.RemoveProvider(x));
+            System.Threading.Thread.Sleep(500);
         }
 
         [Test]
@@ -250,6 +278,7 @@ namespace QuickLogger.Tests.Integration
             System.Threading.Thread.Sleep(3000);
             //Assert that callbacks are ignited
             Assert.That(string.IsNullOrEmpty(_lastfailtolog), Is.False);
+            while (!_logger.IsQueueEmpty()) { System.Threading.Thread.Sleep(1); };
             _logger.DisableProvider(loggerProvider);
             _logger.RemoveProvider(loggerProvider);
         }

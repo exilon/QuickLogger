@@ -46,7 +46,7 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, string exceptionname);
+        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, [MarshalAs(UnmanagedType.LPWStr)] string exceptionname, [MarshalAs(UnmanagedType.LPWStr)] string stacktrace);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -117,13 +117,17 @@ namespace QuickLogger.NetStandard
         private static IntPtr nativeHwnd;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
-        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
+        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "x64/libquicklogger.so", "x86/libquicklogger.so" };
         private static List<System.Delegate> delegates = new List<System.Delegate>();
         public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
-            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
+            for (int x = 0; x < libNames.Count(); x++) 
+            {
+                if (!File.Exists(libNames[x])) { libNames[x] = _rootPath + libNames[x]; }                
+            }
+
             _quickloggerlib = new NativeLibrary(libNames);
             nativeHwnd = _quickloggerlib.Handle;
             MapFunctionPointers();
@@ -326,7 +330,12 @@ namespace QuickLogger.NetStandard
 
         public void Exception(Exception exception)
         {
-            exceptionNative?.Invoke(exception.Message, exception.GetType().Name);
+            exceptionNative?.Invoke(exception.Message + " " + exception.InnerException, exception.GetType().Name, exception.StackTrace);
+        }
+
+        public void Exception(string message, string exceptionType, string stackTrace)
+        {
+            exceptionNative?.Invoke(message, exceptionType, stackTrace);
         }
 
         public void WaitSecondsForFlushBeforeExit(int seconds)
