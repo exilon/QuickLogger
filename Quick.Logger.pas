@@ -667,8 +667,8 @@ var
   tagValue : string;
 begin
   Result := TJSONObject.Create;
-  if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('eventdate',DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
-    else Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('eventdate',DateTimeToJsonDate(cLogItem.EventDate));
+  if fJsonOutputOptions.UseUTCTime then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(fJsonOutputOptions.TimeStampName,DateTimeToJsonDate(LocalTimeToUTC(cLogItem.EventDate)))
+    else Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}(fJsonOutputOptions.TimeStampName,DateTimeToJsonDate(cLogItem.EventDate));
   Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('type',EventTypeName[cLogItem.EventType]);
   if iiHost in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('host',SystemInfo.HostName);
   if iiAppName in fIncludedInfo then Result.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('application',fAppName);
@@ -1779,7 +1779,6 @@ initialization
 
 
 finalization
-  //Makes ASP.NET to crash
-  //Logger.Free;
+  Logger.Free;
 
 end.

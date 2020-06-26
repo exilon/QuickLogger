@@ -2,14 +2,14 @@
 
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2020 Kike Pérez
 
   Library     : QuickLogger
   Description : Dynamic library headers for external language wrappers
   Author      : Kike Fuentes (Turric4n)
-  Version     : 1.37
+  Version     : 1.50
   Created     : 15/10/2017
-  Modified    : 11/09/2019
+  Modified    : 22/06/2020
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -31,7 +31,7 @@
 
 uses
   Rtti,
-  {$IFDEF MSWINDOWS}}
+  {$IFDEF MSWINDOWS}
   Windows,
   ActiveX,
   {$ELSE}
@@ -148,6 +148,7 @@ const
   PROVIDERSTATUSDRAINING = 'Draining';
 
 var
+  providerList : TLogProviderList;
   providerHandlers : TDictionary<string, TProviderEventHandler>;
   eventTypeConversion : TDictionary<string, TLogLevel>;
   lsterror : string;
@@ -174,7 +175,7 @@ end;
 
 function GetPChar(const str : string) : PChar;
 begin
-  {$IFDEF MSWINDOWS}}
+  {$IFDEF MSWINDOWS}
     Result := CoTaskMemAlloc(SizeOf(Char)*(Length(str)+1));
   {$ELSE}
     {$IFDEF FPC}
@@ -353,6 +354,27 @@ begin
   end;
 end;
 
+function LoadProviderListJSONNative(ProvidersJSON : PChar) : Integer; stdcall; export;
+begin
+  Result := 0;
+  try
+    if providerList <> nil then providerList.Free;
+    providerList := TLogProviderList.Create;
+    providerList.FromJson(ProvidersJSON);
+    for var provider in providerList  do
+    begin
+      Logger.Providers.Add(TLogProviderBase(provider));
+      providerHandlers.Add(provider.GetName, TProviderEventHandler.Create(provider.GetName, TLogProviderBase(provider)));
+    end;
+  except
+    on e : Exception do
+    begin
+      ComposeLastError('LoadEntireJSONFile', e.Message);
+      Result := Ord(False);
+    end;
+  end;
+end;
+
 {$ELSE}
 
 function InternalAddProviderFromJSON(const providerType, providerName, ProviderInfo : string) : Integer;
@@ -500,6 +522,11 @@ end;
 procedure ResetProviderNative(ProviderName : PChar); stdcall; export;
 begin
   //Writeln('ResetProvider is not implemented yet.');
+end;
+
+procedure DebugNative(Line : PChar); stdcall; export;
+begin
+  Logger.Add(Line, Quick.Logger.TEventType.etDebug);
 end;
 
 procedure InfoNative(Line : PChar); stdcall; export;
@@ -858,6 +885,7 @@ end;
 
 exports
   AddProviderJSONNative,
+  LoadProviderListJSONNative,
   RemoveProviderNative,
   InfoNative,
   WarningNative,
@@ -867,6 +895,7 @@ exports
   TraceNative,
   CustomNative,
   SuccessNative,
+  DebugNative,
   AddStandardConsoleProviderNative,
   AddStandardFileProviderNative,
   AddWrapperErrorDelegateNative,
@@ -890,11 +919,7 @@ exports
   GetLastError,
   GetLibVersionNative;
 
-
-
 begin
-  //Maybe (if default value) makes ASP.net to crash
-  Logger.WaitForFlushBeforeExit := 1;
   providerHandlers := TDictionary<string,TProviderEventHandler>.Create;
   eventTypeConversion := TDictionary<string,TLogLevel>.Create;
   eventTypeConversion.Add('LOG_ONLYERRORS', LOG_ONLYERRORS);
@@ -905,5 +930,6 @@ begin
   eventTypeConversion.Add('LOG_DEBUG', LOG_DEBUG);
   eventTypeConversion.Add('LOG_VERBOSE', LOG_VERBOSE);
 end.
+
 
 
