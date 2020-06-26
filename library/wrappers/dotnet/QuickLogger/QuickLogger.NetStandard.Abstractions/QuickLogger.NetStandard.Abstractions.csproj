@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.5.2</Version>
+    <Version>1.5.4</Version>
     <Authors>Exilon &amp; Turrican</Authors>
     <Company>Exilon</Company>
     <Description>Abstractions and user interfaces for QuickLogger</Description>
@@ -12,8 +12,8 @@
     <RepositoryUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <AssemblyVersion>1.5.3.0</AssemblyVersion>
+    <FileVersion>1.5.3.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

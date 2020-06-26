@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <Version>1.5.2</Version>
+    <Version>1.5.5</Version>
     <Description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</Description>
     <Copyright>Exilon &amp; Turric4n</Copyright>
     <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.5.2.0</AssemblyVersion>
-    <FileVersion>1.5.2.0</FileVersion>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <AssemblyVersion>1.5.5.0</AssemblyVersion>
+    <FileVersion>1.5.5.0</FileVersion>
     <RepositoryUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</RepositoryUrl>
     <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
     <RepositoryType>GIT</RepositoryType>
@@ -41,10 +41,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="libquickloggernative.redist" Version="1.5.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
+    <None Remove="runtimes\linux-x64\native\libquicklogger.so" />
+    <None Remove="runtimes\win-x64\native\QuickLogger-x64.dll" />
+    <None Remove="runtimes\win-x86\native\QuickLogger-x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="runtimes\linux-x64\native\libquicklogger.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\win-x64\native\QuickLogger-x64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\win-x86\native\QuickLogger-x86.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NativeLibraryLoader" Version="1.0.12" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
@@ -53,5 +67,7 @@
   <ItemGroup>
     <ProjectReference Include="..\QuickLogger.NetStandard.Abstractions\QuickLogger.NetStandard.Abstractions.csproj" />
   </ItemGroup>
+
+
 
 </Project>
