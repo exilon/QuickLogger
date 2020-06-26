@@ -26,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickLogger.Extensions.Wrap
 		{8760612A-A649-4752-9CC3-B7AF44F14B5A} = {8760612A-A649-4752-9CC3-B7AF44F14B5A}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickLogger.Sample.ASPNetCore", "QuickLogger.Sample.ASPNetCore\QuickLogger.Sample.ASPNetCore.csproj", "{0DDFEB61-A15B-4089-8047-855A7ECDBF75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickLogger.Sample.ASPNetCore", "QuickLogger.Sample.ASPNetCore\QuickLogger.Sample.ASPNetCore.csproj", "{0DDFEB61-A15B-4089-8047-855A7ECDBF75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
