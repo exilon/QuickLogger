@@ -16,7 +16,12 @@ namespace QuickLogger.Sample.ASPNetCore.Controllers
 
         public IActionResult Index()
         {
-            _logger.LogInformation("Index Called", this.GetType().FullName);
+            _logger.LogDebug("Index Called, debug");
+            _logger.LogError("Index Called, error");
+            _logger.LogTrace("Index Called, trace");
+            _logger.LogCritical("Index Called, critical");
+            _logger.LogWarning("Index Called, warning");
+            _logger.LogInformation("Index Called, information");
             return Ok();
         }
     }

@@ -3,16 +3,25 @@
   "providers": [
     {
       "providerProps": {
-        "providerName": "Test Console Provider",
+        "providerName": "Standard Console Provider",
         "providerType": "ConsoleProvider",
         "providerInfo": {
-          "AppName": "Quicklogger ASP.NET Testing",
-          "IncludedInfo": "[iiAppName, iiUserName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]",
-          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
-          "Environment": "Test",
+          "ShowEventType": true,
           "ShowEventColors": true,
-          "ShowTimeStamp" : true,
-          "Enable": true
+          "ShowTimeStamp": true,
+          "UnderlineHeaderEventType": true,
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDone,etCustom1,etCustom2]",
+          "TimePrecission": false,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10,
+          "CustomMsgOutput": false ,
+          "UsesQueue": true,
+          "Enable": true,
+          "SendLimits": {
+            "TimeRange": "slNoLimit",
+            "LimitEventTypes": "[]",
+            "MaxSent": 0
+          }
         }
       }
     }
