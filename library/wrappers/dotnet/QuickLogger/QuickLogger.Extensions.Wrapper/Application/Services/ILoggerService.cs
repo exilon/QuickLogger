@@ -10,6 +10,7 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
         void Success(string className, string msg);
         void Warning(string className, string msg);
         void Error(string className, string msg);
+        void Debug(string className, string msg);
         void Trace(string className, string msg);
         void Critical(string className, string msg);
         void Exception(Exception exception);
