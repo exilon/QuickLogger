@@ -120,7 +120,7 @@ namespace QuickLogger.NetStandard
         private static IntPtr nativeHwnd;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
-        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "x64/libquicklogger.so", "x86/libquicklogger.so" };
+        private string[] libNames = { "/runtimes/win-x86/native/QuickLogger-x86.dll", "/runtimes/win-x64/native/QuickLogger-x64.dll", "/runtimes/linux-x64/native/libquicklogger.so", };
         private static List<System.Delegate> delegates = new List<System.Delegate>();
         public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            

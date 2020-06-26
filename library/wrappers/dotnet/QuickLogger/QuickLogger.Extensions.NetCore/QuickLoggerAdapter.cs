@@ -44,7 +44,7 @@ namespace QuickLogger.Extensions.NetCore
                     _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
                     break;
                 case LogLevel.Debug:
-                    _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
                     break;
                 case LogLevel.Trace:
                     _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");

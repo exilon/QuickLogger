@@ -11,6 +11,7 @@ namespace QuickLogger.Extensions.NetCore
     {
         internal static ILoggingBuilder AddLogger(ILoggingBuilder builder, ILoggerService loggerService)
         {
+            builder.ClearProviders();
             builder.AddProvider(new QuickLoggerProvider(loggerService));
             return builder;
         }
@@ -18,7 +19,7 @@ namespace QuickLogger.Extensions.NetCore
         public static IServiceCollection AddQuickLogger(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<ILoggerSettingsPathFinder, CoreConfigPathFinder>();
-            serviceCollection.AddSingleton<ILoggerService, QuickLoggerService>();
+            serviceCollection.AddSingleton<ILoggerService, QuickLoggerService>();            
             serviceCollection.AddLogging(x => AddLogger(x, serviceCollection.BuildServiceProvider().GetService<ILoggerService>()));            
             return serviceCollection;
         }

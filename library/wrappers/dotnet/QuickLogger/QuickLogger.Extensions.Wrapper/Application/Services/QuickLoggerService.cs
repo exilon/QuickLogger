@@ -24,7 +24,7 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
         protected JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.Indented,            
 
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         };
