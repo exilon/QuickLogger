@@ -13,7 +13,7 @@ namespace QuickLogger.Extensions.NetCore.Configuration
         public string GetSettingsPath()
         {
             var settings = _configuration.GetSection("QuickLogger")["ConfigPath"];
-            settings = string.IsNullOrEmpty(settings) ? "QuickLogger.config" : settings;
+            settings = string.IsNullOrEmpty(settings) ? "QuickLogger.json" : settings;
             return settings;
         }
     }

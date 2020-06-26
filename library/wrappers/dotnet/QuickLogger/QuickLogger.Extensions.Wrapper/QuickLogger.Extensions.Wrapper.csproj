@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.2</Version>
+    <Version>1.5.6</Version>
     <Description>QuickLogger Wrapper for .NET and DotNetCore</Description>
     <Copyright>Exilon &amp; Turric4n</Copyright>
     <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>
@@ -10,7 +10,19 @@
     <RepositoryType>GIT</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
+    <AssemblyVersion>1.5.6.0</AssemblyVersion>
+    <FileVersion>1.5.6.0</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="QuickLogger.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="QuickLogger.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />

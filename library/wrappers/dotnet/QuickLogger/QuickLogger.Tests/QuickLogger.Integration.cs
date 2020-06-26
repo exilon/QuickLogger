@@ -132,8 +132,7 @@ namespace QuickLogger.Tests.Integration
 
         [Test]
         public void Add_Logger_Default_Console_Provider_To_New_Logger()
-        {
-            
+        {            
             ILoggerProviderProps providerProps = new QuickLoggerProviderProps("Test Console Provider First test", "ConsoleProvider");
             providerProps.SetProviderInfo(_consoleProviderInfo);
             ILoggerProvider loggerProvider = new QuickLoggerProvider(providerProps);
@@ -283,5 +282,4 @@ namespace QuickLogger.Tests.Integration
             _logger.RemoveProvider(loggerProvider);
         }
     }
-
 }
