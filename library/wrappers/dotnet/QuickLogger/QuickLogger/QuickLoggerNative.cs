@@ -46,7 +46,9 @@ namespace QuickLogger.NetStandard
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void SuccessNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, string exceptionname, string stacktrace);
+        private unsafe delegate void DebugNative([MarshalAs(UnmanagedType.LPWStr)] string message);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        private unsafe delegate void ExceptionNative([MarshalAs(UnmanagedType.LPWStr)] string message, [MarshalAs(UnmanagedType.LPWStr)] string exceptionname, [MarshalAs(UnmanagedType.LPWStr)] string stacktrace);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private unsafe delegate void WarningNative([MarshalAs(UnmanagedType.LPWStr)] string message);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -101,6 +103,7 @@ namespace QuickLogger.NetStandard
         private static unsafe TraceNative traceNative;
         private static unsafe CustomNative customNative;
         private static unsafe SuccessNative successNative;
+        private static unsafe DebugNative debugNative;
         private static unsafe ExceptionNative exceptionNative;
         private static unsafe EnableProviderNative enableProviderNative;
         private static unsafe DisableProviderNative disableProviderNative;
@@ -117,13 +120,17 @@ namespace QuickLogger.NetStandard
         private static IntPtr nativeHwnd;
         private static UnhandledExceptionEventHandler unhandledEventHandler;
         private string _rootPath;
-        private string[] libNames = { "\\x64\\QuickLogger.dll", "\\x86\\QuickLogger.dll", "\\x64\\libquicklogger.so", "\\x86\\libquicklogger.so" };
+        private string[] libNames = { "/runtimes/win-x86/native/QuickLogger-x86.dll", "/runtimes/win-x64/native/QuickLogger-x64.dll", "/runtimes/linux-x64/native/libquicklogger.so", };
         private static List<System.Delegate> delegates = new List<System.Delegate>();
         public QuickLoggerNative(string rootPath, bool handleExceptions = true)
         {            
             if (string.IsNullOrEmpty(rootPath)) { _rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
             else { _rootPath = rootPath; }
-            for (int x = 0; x < libNames.Count(); x++) { libNames[x] = _rootPath + libNames[x]; }
+            for (int x = 0; x < libNames.Count(); x++) 
+            {
+                if (!File.Exists(libNames[x])) { libNames[x] = _rootPath + libNames[x]; }                
+            }
+
             _quickloggerlib = new NativeLibrary(libNames);
             nativeHwnd = _quickloggerlib.Handle;
             MapFunctionPointers();
@@ -166,6 +173,7 @@ namespace QuickLogger.NetStandard
             traceNative = _quickloggerlib.LoadFunction<TraceNative>("TraceNative");
             customNative = _quickloggerlib.LoadFunction<CustomNative>("CustomNative");
             successNative = _quickloggerlib.LoadFunction<SuccessNative>("SuccessNative");
+            debugNative = _quickloggerlib.LoadFunction<DebugNative>("DebugNative");
             disableProviderNative = _quickloggerlib.LoadFunction<DisableProviderNative>("DisableProviderNative");
             enableProviderNative = _quickloggerlib.LoadFunction<EnableProviderNative>("EnableProviderNative");            
             getLibVersion = _quickloggerlib.LoadFunction<GetLibVersionNative>("GetLibVersionNative");
@@ -204,8 +212,13 @@ namespace QuickLogger.NetStandard
             warningNative?.Invoke(message);            
         }
         public void Critical(string message)
+
         {
             criticalNative?.Invoke(message);
+        }
+        public void Debug(string message)
+        {
+            debugNative?.Invoke(message);
         }
         private void AssignDelegatesToNative(ILoggerProvider provider)
         {

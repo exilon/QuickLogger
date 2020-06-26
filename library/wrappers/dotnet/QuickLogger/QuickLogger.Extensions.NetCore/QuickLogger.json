@@ -1,0 +1,30 @@
+﻿{
+  "environment": "pro",
+  "providers": [
+    {
+      "providerProps": {
+        "providerName": "Standard Console Provider",
+        "providerType": "ConsoleProvider",
+        "providerInfo": {
+          "ShowEventType": true,
+          "ShowEventColors": true,
+          "ShowTimeStamp": true,
+          "UnderlineHeaderEventType": true,
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDone,etCustom1,etCustom2]",
+          "TimePrecission": false,
+          "MaxFailsToRestart": 2,
+          "MaxFailsToStop": 10,
+          "CustomMsgOutput": false,
+          "UsesQueue": true,
+          "Enable": true,
+          "SendLimits": {
+            "TimeRange": "slNoLimit",
+            "LimitEventTypes": "[]",
+            "MaxSent": 0
+          }
+        }
+      }
+    }
+  ]
+}
+
