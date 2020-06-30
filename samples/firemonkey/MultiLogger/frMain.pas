@@ -11,7 +11,7 @@ uses
   Quick.Logger.Provider.Files,
   Quick.Logger.Provider.IDEDebug,
   Quick.Logger.Provider.Events,
-  Quick.Threads;
+  Quick.Threads, FMX.Memo.Types;
 
 type
   TfrmMain = class(TForm)
