@@ -29,28 +29,46 @@ namespace QuickLogger.Extensions.NetCore
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            var msg = formatter(state, exception);
             switch (logLevel)
             {
                 case LogLevel.Information :
-                    _quickloggerInstance.Info(_categoryName,  $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Info(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Info(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
                 case LogLevel.Error:
-                    _quickloggerInstance.Error(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Error(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Error(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
                 case LogLevel.Warning:
-                    _quickloggerInstance.Warning(_categoryName, $"{_categoryName}[{eventId.Id}] -  {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Warning(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Warning(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
                 case LogLevel.Critical:
-                    _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Critical(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
                 case LogLevel.Debug:
-                    _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Debug(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
                 case LogLevel.Trace:
-                    _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
+                    if (exception == null)
+                        _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {state}");
+                    else
+                        _quickloggerInstance.Trace(_categoryName, exception, $"{_categoryName}[{eventId.Id}] - {state}");
                     break;
             }
-
         }
     }
 }

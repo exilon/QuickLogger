@@ -105,11 +105,11 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
             return JsonConvert.SerializeObject(custommessage, JsonSerializerSettings);
         }
 
-        private string BuildJSONSerializedException(Exception exception, string msg)
+        private string BuildJSONSerializedException(string className, Exception exception, string msg)
         {
             object additionalinfo = _additionalLoggerInfoProvider?.GetAdditionalInfo();
             CustomExceptionWithHTTPRequestInfo customException =
-                new CustomExceptionWithHTTPRequestInfo(exception, msg, additionalinfo);
+                new CustomExceptionWithHTTPRequestInfo(className, exception, msg, additionalinfo);
             return JsonConvert.SerializeObject(customException, JsonSerializerSettings);
         }
 
@@ -158,9 +158,53 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
         }
         public void Exception(Exception exception, string msg)
         {
-            string custommessage = BuildJSONSerializedException(exception, msg);
+            string custommessage = BuildJSONSerializedException("", exception, msg);
             _quicklogger?.Exception(custommessage, exception.GetType().ToString(),
                 exception.StackTrace);
+        }
+
+        public void MultiException(AggregateException aggregateException)
+        {
+            foreach (Exception exception in aggregateException.InnerExceptions)
+            {
+                _quicklogger?.Exception(exception);
+            }
+        }
+
+        public void Info(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Info(custommessage);
+        }
+
+        public void Warning(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Warning(custommessage);
+        }
+
+        public void Error(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Error(custommessage);
+        }
+
+        public void Trace(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Trace(custommessage);
+        }
+
+        public void Critical(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Critical(custommessage);
+        }
+
+        public void Debug(string className, Exception exception, string msg)
+        {
+            string custommessage = BuildJSONSerializedException(className, exception, msg);
+            _quicklogger?.Debug(custommessage);
         }
     }
 }

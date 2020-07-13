@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace QuickLogger.Sample.ASPNetCore.Controllers
 {
@@ -16,6 +17,8 @@ namespace QuickLogger.Sample.ASPNetCore.Controllers
 
         public IActionResult Index()
         {
+            var exception = new Exception("Test exception");
+            _logger.LogError(3, exception, "error");
             _logger.LogDebug("Index Called, debug");
             _logger.LogError("Index Called, error");
             _logger.LogTrace("Index Called, trace");
