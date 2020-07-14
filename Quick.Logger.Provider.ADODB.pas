@@ -145,8 +145,6 @@ begin
 end;
 
 function TLogADODBProvider.CreateConnectionString: string;
-var
-  server : string;
 begin
   Result := Format('Provider=%s;Persist Security Info=False;User ID=%s;Password=%s;Database=%s;Data Source=%s',[
                               ProviderName[Integer(fDBConfig.Provider)],
@@ -172,7 +170,6 @@ end;
 
 function TLogADODBProvider.CreateTable: Boolean;
 begin
-  Result := False;
   fDBQuery.SQL.Clear;
   fDBQuery.SQL.Add('IF NOT EXISTS (SELECT name FROM sys.tables WHERE name = :LOGTABLE)');
   fDBQuery.SQL.Add(Format('CREATE TABLE %s (',[fDBConfig.Table]));
@@ -180,8 +177,7 @@ begin
   fDBQuery.SQL.Add(Format('%s varchar(20),',[fFieldsMapping.EventType]));
   fDBQuery.SQL.Add(Format('%s varchar(max));',[fFieldsMapping.Msg]));
   fDBQuery.Parameters.ParamByName('LOGTABLE').Value := fDBConfig.Table;
-  if fDBQuery.ExecSQL = 0 then raise Exception.Create('Error creating table!')
-    else Result := True;
+  if fDBQuery.ExecSQL = 0 then raise Exception.Create('Error creating table!');
 
   if iiEnvironment in IncludedInfo then AddColumnToTable(fFieldsMapping.Environment,'varchar(50)');
   if iiPlatform in IncludedInfo then AddColumnToTable(fFieldsMapping.PlatformInfo,'varchar(50)');

@@ -40,11 +40,6 @@ uses
   Quick.Logger;
 
 procedure UnhandledException(ExceptObject : TObject; ExceptAddr : Pointer);
-var
-  ApplicationName: string;
-  Handle: THandle;
-  Msg: string;
-  Strings: array[0..0] of PChar;
 begin
   if Assigned(GlobalLoggerUnhandledException) then GlobalLoggerUnhandledException(ExceptObject,ExceptAddr);
 end;

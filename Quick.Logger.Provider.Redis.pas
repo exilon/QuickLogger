@@ -207,6 +207,7 @@ function TLogRedisProvider.RedisRPUSH(const aKey, Msg : string) : Boolean;
 var
   res : string;
 begin
+  Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then

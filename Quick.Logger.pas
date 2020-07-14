@@ -791,7 +791,6 @@ var
   st : Integer;
   et : Integer;
   token : string;
-  tokrep : string;
 begin
   if CustomFormatOutput.IsEmpty then Exit(cLogItem.Msg);
   //resolve log format
