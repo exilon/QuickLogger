@@ -128,6 +128,6 @@ initialization
   GlobalLogEventLogProvider := TLogEventLogProvider.Create;
 
 finalization
-  if Assigned(GlobalLogEventLogProvider) then GlobalLogEventLogProvider.Free;
+  if Assigned(GlobalLogEventLogProvider) and (GlobalLogEventLogProvider.RefCount = 0) then GlobalLogEventLogProvider.Free;
 
 end.
