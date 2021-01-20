@@ -585,3 +585,6 @@ QuickLogger can capture your application exceptions. There are 3 exception hooks
 - **Quick.Logger.ExceptionHook:** Receive every raise exception. QuickLogger receives even try..except exceptions.
 - **Quick.Logger.RuntimeErrorHook:** Receive runtime errors.
 - **Quick.Logger.UnhandledExceptionHook:** Receive only unhandled exceptions (not in try..except block).
+
+
+Do you want learn delphi? [learndelphi.org](https://learndelphi.org)
