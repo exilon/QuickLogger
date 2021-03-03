@@ -1299,7 +1299,7 @@ begin
     end;
   except
     {$IFDEF LOGGER_DEBUG}
-    Writeln(Format('fail waiting for flush: %s',[provider.GetName]));
+    on E : Exception do Writeln(Format('fail waiting for flush: %s',[e.Message]));
     {$ENDIF}
   end;
   //finalize queue thread
@@ -1411,7 +1411,7 @@ begin
     Writeln(Format('insertion timeout: %s',[Self.ClassName]));
     {$ENDIF}
   {$IFDEF LOGGER_DEBUG2}
-  end else Writeln(Format('pushitem logger (queue: %d): %s',[fLogQueue.QueueSize,cMsg]));
+  end else Writeln(Format('pushitem logger (queue: %d): %s',[fLogQueue.QueueSize,cLogItem.Msg]));
   {$ELSE}
   end;
   {$ENDIF}
