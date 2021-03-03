@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
   Version     : 1.28
   Created     : 15/10/2017
-  Modified    : 24/04/2020
+  Modified    : 03/03/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -174,6 +174,8 @@ function TLogRedisProvider.EscapeString(const json: string): string;
 begin
   Result := StringReplace(json,'\','\\',[rfReplaceAll]);
   Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
+  Result := StringReplace(Result,#13,'\r',[rfReplaceAll]);
+  Result := StringReplace(Result,#10,'\n',[rfReplaceAll]);
   //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
 end;
 
