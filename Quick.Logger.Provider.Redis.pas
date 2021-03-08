@@ -135,10 +135,14 @@ begin
   if Assigned(fTCPClient) then
   begin
     try
-      if fTCPClient.Connected then RedisQUIT;
-      fTCPClient.IOHandler.InputBuffer.Clear;
-      fTCPClient.IOHandler.WriteBufferFlush;
-      if fTCPClient.Connected then fTCPClient.Disconnect(False);
+      try
+        fTCPClient.IOHandler.InputBuffer.Clear;
+        fTCPClient.IOHandler.WriteBufferFlush;
+        if fTCPClient.Connected then RedisQUIT;
+        if fTCPClient.Connected then fTCPClient.Disconnect(False);
+      except
+        //avoid closing errors
+      end;
       fTCPClient.Free;
     except
       //avoid closing errors
