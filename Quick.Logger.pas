@@ -540,6 +540,7 @@ destructor TLogProviderBase.Destroy;
 begin
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('destroy object: %s',[Self.ClassName]));
+  Writeln(Format('%s.Queue = %d',[Self.ClassName,fLogQueue.QueueSize]));
   {$ENDIF}
   if Assigned(fLogQueue) then fLogQueue.Free;
   if Assigned(fSendLimits) then fSendLimits.Free;
@@ -1147,6 +1148,9 @@ destructor TThreadProviderLog.Destroy;
 var
   IProvider : ILogProvider;
 begin
+  {$IFDEF LOGGER_DEBUG}
+  Writeln(Format('Logger.Queue = %d',[fLogQueue.QueueSize]));
+  {$ENDIF}
   //finalizes main queue
   if Assigned(fLogQueue) then fLogQueue.Free;
   //release providers
