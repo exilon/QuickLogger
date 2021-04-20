@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 25/04/2020
+  Modified    : 20/04/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -754,6 +754,7 @@ begin
     else if cToken = 'OSVERSION' then Result := Self.SystemInfo.OsVersion
     else if cToken = 'CPUCORES' then Result := Self.SystemInfo.CPUCores.ToString
     else if cToken = 'THREADID' then Result := cLogItem.ThreadId.ToString
+    else if cToken = 'PROCESSID' then Result := SystemInfo.ProcessId.ToString
     else Result := '%error%';
   end;
 end;
