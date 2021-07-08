@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace QuickLogger.Sample.ASPNetCore.Controllers
 {
@@ -16,6 +19,15 @@ namespace QuickLogger.Sample.ASPNetCore.Controllers
 
         public IActionResult Index()
         {
+            using var scope = _logger.BeginScope(
+                new Dictionary<string, object>()
+                {
+                    {LoggerFields.CorrelationId, Guid.NewGuid().ToString()},
+                    {LoggerFields.AgencyId, 2345},
+                    {LoggerFields.AgentId, "334234"},
+                }); 
+            var exception = new Exception("Test exception");
+            _logger.LogError(3, exception, "error");
             _logger.LogDebug("Index Called, debug");
             _logger.LogError("Index Called, error");
             _logger.LogTrace("Index Called, trace");

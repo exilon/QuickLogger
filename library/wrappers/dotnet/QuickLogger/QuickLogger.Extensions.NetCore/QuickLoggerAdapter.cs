@@ -19,7 +19,17 @@ namespace QuickLogger.Extensions.NetCore
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            return null;
+            if (!(state is IDictionary<string, object>))
+                return new Scope<TState>(state);
+
+            try
+            {
+                return Scope<TState>.CreateScope(state);
+            }
+            catch (Exception e)
+            {
+                return new Scope<TState>(state);
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -29,28 +39,37 @@ namespace QuickLogger.Extensions.NetCore
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            switch (logLevel)
+            if (!IsEnabled(logLevel))
             {
-                case LogLevel.Information :
-                    _quickloggerInstance.Info(_categoryName,  $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
-                    break;
-                case LogLevel.Error:
-                    _quickloggerInstance.Error(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
-                    break;
-                case LogLevel.Warning:
-                    _quickloggerInstance.Warning(_categoryName, $"{_categoryName}[{eventId.Id}] -  {formatter(state, exception)}");
-                    break;
-                case LogLevel.Critical:
-                    _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
-                    break;
-                case LogLevel.Debug:
-                    _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
-                    break;
-                case LogLevel.Trace:
-                    _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {formatter(state, exception)}");
-                    break;
+                return;
             }
 
+            string message = formatter != null ? formatter(state, exception) : state.ToString();
+
+            if (string.IsNullOrWhiteSpace(message) && exception != null)
+                message = exception.Message;
+
+            switch (logLevel)
+            {
+                case LogLevel.Error:
+                    _quickloggerInstance.Error(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+                case LogLevel.Warning:
+                    _quickloggerInstance.Warning(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+                case LogLevel.Critical:
+                    _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+                case LogLevel.Debug:
+                    _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+                case LogLevel.Trace:
+                    _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+                default:
+                    _quickloggerInstance.Info(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    break;
+            }
         }
     }
 }
