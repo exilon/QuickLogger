@@ -16,10 +16,10 @@ namespace QuickLogger.NetStandard
 
         protected QuickConfigManager()
         {
-            JsonSerializerSettings.Converters.Add(new ILoggerProviderTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerProviderPropsTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerLoggerTypeConverter());
-            JsonSerializerSettings.Converters.Add(new ILoggerHashSetTypeConverter());
+            JsonSerializerSettings.Converters.Add(new LoggerProviderTypeConverter());
+            JsonSerializerSettings.Converters.Add(new LoggerProviderPropsTypeConverter());
+            JsonSerializerSettings.Converters.Add(new LoggerLoggerTypeConverter());
+            JsonSerializerSettings.Converters.Add(new LoggerHashSetTypeConverter());
         }
 
         public ILoggerSettings GetSettings()

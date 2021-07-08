@@ -6,7 +6,7 @@ using static QuickLogger.NetStandard.Abstractions.LoggerEventTypes;
 
 namespace QuickLogger.NetStandard
 {
-    public class ILoggerProviderTypeConverter : JsonConverter
+    public class LoggerProviderTypeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
@@ -24,7 +24,7 @@ namespace QuickLogger.NetStandard
         }
     }
 
-    public class ILoggerProviderPropsTypeConverter : JsonConverter
+    public class LoggerProviderPropsTypeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
@@ -42,7 +42,7 @@ namespace QuickLogger.NetStandard
         }
     }
 
-    public class ILoggerLoggerTypeConverter : JsonConverter
+    public class LoggerLoggerTypeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
@@ -60,7 +60,7 @@ namespace QuickLogger.NetStandard
         }
     }
 
-    public class ILoggerHashSetTypeConverter : JsonConverter
+    public class LoggerHashSetTypeConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {

@@ -27,7 +27,7 @@ namespace QuickLogger.NetStandard
         {
             SetProviderName(providerName);
             SetProviderType(providerType);            
-            JsonSerializerSettings.Converters.Add(new ILoggerHashSetTypeConverter());
+            JsonSerializerSettings.Converters.Add(new LoggerHashSetTypeConverter());
             _providerInfo = new Dictionary<string, object>();
         }
         public Dictionary<string, object> GetProviderInfo()
