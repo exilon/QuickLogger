@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger
   Description : Threadsafe Multi Log File, Console, Email, etc...
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 25/04/2020
+  Modified    : 20/04/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -540,6 +540,7 @@ destructor TLogProviderBase.Destroy;
 begin
   {$IFDEF LOGGER_DEBUG}
   Writeln(Format('destroy object: %s',[Self.ClassName]));
+  Writeln(Format('%s.Queue = %d',[Self.ClassName,fLogQueue.QueueSize]));
   {$ENDIF}
   if Assigned(fLogQueue) then fLogQueue.Free;
   if Assigned(fSendLimits) then fSendLimits.Free;
@@ -753,6 +754,7 @@ begin
     else if cToken = 'OSVERSION' then Result := Self.SystemInfo.OsVersion
     else if cToken = 'CPUCORES' then Result := Self.SystemInfo.CPUCores.ToString
     else if cToken = 'THREADID' then Result := cLogItem.ThreadId.ToString
+    else if cToken = 'PROCESSID' then Result := SystemInfo.ProcessId.ToString
     else Result := '%error%';
   end;
 end;
@@ -791,7 +793,6 @@ var
   st : Integer;
   et : Integer;
   token : string;
-  tokrep : string;
 begin
   if CustomFormatOutput.IsEmpty then Exit(cLogItem.Msg);
   //resolve log format
@@ -1148,6 +1149,9 @@ destructor TThreadProviderLog.Destroy;
 var
   IProvider : ILogProvider;
 begin
+  {$IFDEF LOGGER_DEBUG}
+  Writeln(Format('Logger.Queue = %d',[fLogQueue.QueueSize]));
+  {$ENDIF}
   //finalizes main queue
   if Assigned(fLogQueue) then fLogQueue.Free;
   //release providers
@@ -1300,7 +1304,7 @@ begin
     end;
   except
     {$IFDEF LOGGER_DEBUG}
-    Writeln(Format('fail waiting for flush: %s',[provider.GetName]));
+    on E : Exception do Writeln(Format('fail waiting for flush: %s',[e.Message]));
     {$ENDIF}
   end;
   //finalize queue thread
@@ -1412,7 +1416,7 @@ begin
     Writeln(Format('insertion timeout: %s',[Self.ClassName]));
     {$ENDIF}
   {$IFDEF LOGGER_DEBUG2}
-  end else Writeln(Format('pushitem logger (queue: %d): %s',[fLogQueue.QueueSize,cMsg]));
+  end else Writeln(Format('pushitem logger (queue: %d): %s',[fLogQueue.QueueSize,cLogItem.Msg]));
   {$ELSE}
   end;
   {$ENDIF}

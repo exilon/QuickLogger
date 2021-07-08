@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Redis
   Description : Log Api Redis Provider
   Author      : Kike Pérez
   Version     : 1.28
   Created     : 15/10/2017
-  Modified    : 24/04/2020
+  Modified    : 03/03/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -135,10 +135,14 @@ begin
   if Assigned(fTCPClient) then
   begin
     try
-      if fTCPClient.Connected then RedisQUIT;
-      fTCPClient.IOHandler.InputBuffer.Clear;
-      fTCPClient.IOHandler.WriteBufferFlush;
-      if fTCPClient.Connected then fTCPClient.Disconnect(False);
+      try
+        fTCPClient.IOHandler.InputBuffer.Clear;
+        fTCPClient.IOHandler.WriteBufferFlush;
+        if fTCPClient.Connected then RedisQUIT;
+        if fTCPClient.Connected then fTCPClient.Disconnect(False);
+      except
+        //avoid closing errors
+      end;
       fTCPClient.Free;
     except
       //avoid closing errors
@@ -174,6 +178,8 @@ function TLogRedisProvider.EscapeString(const json: string): string;
 begin
   Result := StringReplace(json,'\','\\',[rfReplaceAll]);
   Result := StringReplace(Result,'"','\"',[rfReplaceAll]);
+  Result := StringReplace(Result,#13,'\r',[rfReplaceAll]);
+  Result := StringReplace(Result,#10,'\n',[rfReplaceAll]);
   //Result := StringReplace(Result,'/','\/"',[rfReplaceAll]);
 end;
 
@@ -207,6 +213,7 @@ function TLogRedisProvider.RedisRPUSH(const aKey, Msg : string) : Boolean;
 var
   res : string;
 begin
+  Result := False;
   if not fTCPClient.Connected then Connect;
   fTCPClient.IOHandler.Write(Format('RPUSH %s "%s"%s',[aKey,msg,CRLF]));
   if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
