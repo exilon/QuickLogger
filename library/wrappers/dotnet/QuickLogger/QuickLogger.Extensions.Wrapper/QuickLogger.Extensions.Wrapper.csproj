@@ -30,6 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\QuickLogger.NetStandard.Abstractions\QuickLogger.NetStandard.Abstractions.csproj" />
     <ProjectReference Include="..\QuickLogger\QuickLogger.NetStandard.csproj" />
   </ItemGroup>
