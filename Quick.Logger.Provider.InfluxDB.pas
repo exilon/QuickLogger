@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger.Provider.InfluxDB
   Description : Log Api InfluxDB Provider
   Author      : Kike Pérez
   Version     : 1.1
   Created     : 25/02/2019
-  Modified    : 14/09/2019
+  Modified    : 20/04/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -147,7 +147,8 @@ procedure TLogInfluxDBProvider.CreateDataBase;
 var
   resp : IHttpRequestResponse;
 begin
-  resp := fHTTPClient.Post(Format('%s/query?q=CREATE DATABASE %s',[fURL,fDatabase]),'');
+  if fUserName+fPassword <> '' then resp := fHTTPClient.Post(Format('%s/query?q=CREATE DATABASE %s&u=%s&p=%s',[fURL,fDatabase,fUserName,fPassword]),'')
+    else resp := fHTTPClient.Post(Format('%s/query?q=CREATE DATABASE %s',[fURL,fDatabase]),'');
 
   if not (resp.StatusCode in [200,204]) then
     raise ELogger.Create(Format('[TLogInfluxDBProvider] : Response %d : %s trying to create database',[resp.StatusCode,resp.StatusText]));
