@@ -186,7 +186,7 @@ type
     function GetVersion : string;
     function GetName : string;
     function GetQueuedLogItems : Integer;
-    {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
+    {$IF DEFINED(DELPHIXE7_UP)}// AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -374,7 +374,7 @@ type
     function GetVersion : string;
     function IsEnabled : Boolean;
     function GetName : string;
-    {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
+    {$IF DEFINED(DELPHIXE7_UP)}// AND NOT DEFINED(NEXTGEN)}
     function ToJson(aIndent : Boolean = True) : string;
     procedure FromJson(const aJson : string);
     procedure SaveToFile(const aJsonFile : string);
@@ -382,7 +382,7 @@ type
     {$ENDIF}
   end;
 
-  {$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
+  {$IF DEFINED(DELPHIXE7_UP)}// AND NOT DEFINED(NEXTGEN)}
   TLogProviderList = class(TList<ILogProvider>)
   public
     function ToJson(aIndent : Boolean = True) : string;
@@ -799,6 +799,7 @@ begin
   Result := '';
   idx := 1;
   st := 0;
+  et := 0;
   while st < fCustomFormatOutput.Length - 1 do
   begin
     if (fCustomFormatOutput[st] = '%') and (fCustomFormatOutput[st+1] = '{') then
@@ -913,7 +914,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
+{$IF DEFINED(DELPHIXE7_UP)}// AND NOT DEFINED(NEXTGEN)}
   function TLogProviderBase.ToJson(aIndent : Boolean = True) : string;
   var
     serializer : TJsonSerializer;
@@ -1675,7 +1676,7 @@ end;
 
 { TLogProviderList }
 
-{$IF DEFINED(DELPHIXE7_UP) AND NOT DEFINED(NEXTGEN)}
+{$IF DEFINED(DELPHIXE7_UP)}// AND NOT DEFINED(NEXTGEN)}
 function TLogProviderList.ToJson(aIndent : Boolean = True) : string;
 var
   iprovider : ILogProvider;
