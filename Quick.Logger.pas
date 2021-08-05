@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 20/04/2021
+  Modified    : 05/08/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -76,7 +76,7 @@ uses
   Quick.SysInfo;
 
 const
-  QLVERSION = '1.42';
+  QLVERSION = '1.45';
 
 type
 
