@@ -41,19 +41,20 @@ uses
   Quick.Logger;
 
 type
+  TSyslogFacility = TIdSyslogFacility;
 
   TLogSysLogProvider = class (TLogProviderBase)
   private
     fHost : string;
     fPort : Integer;
     fSysLog : TIdSysLog;
-    fFacility : TIdSyslogFacility;
+    fFacility : TSyslogFacility;
   public
     constructor Create; override;
     destructor Destroy; override;
     property Host : string read fHost write fHost;
     property Port : Integer read fPort write fPort;
-    property Facility : TIdSyslogFacility read fFacility write fFacility;
+    property Facility : TSyslogFacility read fFacility write fFacility;
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
@@ -70,7 +71,7 @@ begin
   LogLevel := LOG_ALL;
   fHost := '127.0.0.1';
   fPort := 514;
-  fFacility := TIdSyslogFacility.sfUserLevel;
+  fFacility := TSyslogFacility.sfUserLevel;
 end;
 
 destructor TLogSysLogProvider.Destroy;
@@ -85,7 +86,11 @@ begin
   fSysLog := TIdSysLog.Create(nil);
   fSysLog.Host := fHost;
   fSysLog.Port := fPort;
-  fSysLog.Connect;
+  try
+    fSysLog.Connect;
+  except
+    on E : Exception do raise Exception.CreateFmt('SysLogProvider: %s',[e.message]);
+  end;
 end;
 
 procedure TLogSysLogProvider.Restart;
