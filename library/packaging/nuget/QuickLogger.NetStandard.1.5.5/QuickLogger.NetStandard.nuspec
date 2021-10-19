@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>QuickLogger.NetStandard</id>
+    <version>1.5.5</version>
+    <authors>QuickLogger.NetStandard</authors>
+    <owners>QuickLogger.NetStandard</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</projectUrl>
+    <description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</description>
+    <copyright>Exilon &amp; Turric4n</copyright>
+    <tags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</tags>
+    <repository type="GIT" url="https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="QuickLogger.NetStandard.Abstractions" version="1.5.4" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.CSharp" version="4.7.0" exclude="Build,Analyzers" />
+        <dependency id="NativeLibraryLoader" version="1.0.12" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

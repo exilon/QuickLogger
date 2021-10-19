@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Automatically generated-->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>QuickLogger.NetStandard</id>
+    <title>QuickLogger.NetStandard</title>
+    <version>1.5.9</version>
+    <authors>Exilon - Turric4n</authors>
+    <copyright>Exilon - Turric4n</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <repository type="git" url="https://github.com/ericsink/SQLitePCL.raw" />
+    <summary>Hi</summary>
+    <tags>logger</tags>
+    <releaseNotes>Hi</releaseNotes>
+    <description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</description>
+  </metadata>
+	<files>
+	<file src="runtimes\linux-x64\native\libquicklogger.so" target="runtimes\linux-x64\native\libquicklogger.so" />
+	<file src="runtimes\win-x64\native\QuickLogger-x64.dll" target="runtimes\win-x64\native\QuickLogger-x64.dll" />
+	<file src="runtimes\win-x86\native\QuickLogger-x86.dll" target="runtimes\win-x86\native\QuickLogger-x86.dll" />
+  </files>
+</package>

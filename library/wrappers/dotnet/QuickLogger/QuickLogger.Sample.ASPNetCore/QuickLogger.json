@@ -14,7 +14,7 @@
           "TimePrecission": false,
           "MaxFailsToRestart": 2,
           "MaxFailsToStop": 10,
-          "CustomMsgOutput": false ,
+          "CustomMsgOutput": false,
           "UsesQueue": true,
           "Enable": true,
           "SendLimits": {
@@ -22,6 +22,31 @@
             "LimitEventTypes": "[]",
             "MaxSent": 0
           }
+        }
+      }
+    },
+    {
+      "providerProps": {
+        "providerName": "Redis ELK Provider for Pisos.com",
+        "providerType": "RedisProvider",
+        "providerInfo": {
+          "AppName": "Test Quicklogger",
+          "IncludedInfo": "[iiAppName, iiUserName, iiEnvironment, iiHost, iiPlatform, iiOSVersion, iiExceptionInfo, iiExceptionStackTrace]",
+          "LogLevel": "[etHeader,etInfo,etSuccess,etWarning,etError,etCritical,etException,etDebug,etTrace,etDone,etCustom1,etCustom2]",
+          "Environment": "Dev",
+          "Host": "192.168.0.69",
+          "Port": 6379,
+          "Password": "",
+          "Platform": "DotNetCore",
+          "LogKey": "pisos-logstash-key",
+          "MaxSize": 1000,
+          "MaxFailsToRestart": 1,
+          "MaxFailsToStop": 0,
+          "OutputAsJson": true,
+          "JsonOutputOptions": {
+            "UseUTCTime": true
+          },
+          "Enable": true
         }
       }
     }
