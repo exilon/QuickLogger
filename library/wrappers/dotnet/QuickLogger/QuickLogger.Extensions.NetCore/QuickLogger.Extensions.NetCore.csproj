@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>QuickLogger Dependency Injection Extensions and Standard Logging adapters for ASPNetCore.</Description>
-    <Version>1.6.1</Version>
+    <Version>1.6.2</Version>
     <Copyright>Exilon &amp; Turrican</Copyright>
     <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>
     <RepositoryUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</RepositoryUrl>

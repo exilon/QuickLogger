@@ -4,8 +4,8 @@ using System.Text;
 
 namespace QuickLogger.Extensions.Wrapper.Application.Services
 {
-    public interface IAdditionalLoggerInfoProviderService
+    public interface IScopeInfoProviderService
     {
-        object GetAdditionalInfo();
+        object GetScopeInfo();
     }
 }

@@ -16,7 +16,7 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
 
         private ILoggerConfigManager _configManager;
         private ILoggerSettings _settings;
-        private readonly IAdditionalLoggerInfoProviderService _additionalLoggerInfoProvider;
+        private readonly IScopeInfoProviderService _additionalLoggerInfoProvider;
 
         private readonly ILoggerSettingsPathFinder _loggerSettingsPathFinder;
         private readonly ILogger _quicklogger;
@@ -64,11 +64,11 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
                 }
             }
         }
-        public QuickLoggerService(ILoggerSettingsPathFinder loggerSettingsPathFinder, IAdditionalLoggerInfoProviderService additionalInfoProvider = null) : this()
+        public QuickLoggerService(ILoggerSettingsPathFinder loggerSettingsPathFinder, IScopeInfoProviderService scopeInfoProvider = null) : this()
         {
 
             _loggerSettingsPathFinder = loggerSettingsPathFinder;
-            _additionalLoggerInfoProvider = additionalInfoProvider;
+            _additionalLoggerInfoProvider = scopeInfoProvider;
             _settings = LoadConfigFromDisk();
             foreach (var provider in _settings.Providers())
             {
@@ -99,17 +99,17 @@ namespace QuickLogger.Extensions.Wrapper.Application.Services
 
         private string BuildJSONSerializedMessage(string className, string msg)
         {
-            object additionalinfo = _additionalLoggerInfoProvider?.GetAdditionalInfo();
+            object scopeinfo = _additionalLoggerInfoProvider?.GetScopeInfo();
             CustomLogMessage custommessage =
-                new CustomLogMessage(className, msg, additionalinfo);
+                new CustomLogMessage(className, msg, scopeinfo);
             return JsonConvert.SerializeObject(custommessage, JsonSerializerSettings);
         }
 
         private string BuildJSONSerializedException(string className, Exception exception, string msg)
         {
-            object additionalinfo = _additionalLoggerInfoProvider?.GetAdditionalInfo();
+            object scopeinfo = _additionalLoggerInfoProvider?.GetScopeInfo();
             CustomExceptionWithHTTPRequestInfo customException =
-                new CustomExceptionWithHTTPRequestInfo(className, exception, msg, additionalinfo);
+                new CustomExceptionWithHTTPRequestInfo(className, exception, msg, scopeinfo);
             return JsonConvert.SerializeObject(customException, JsonSerializerSettings);
         }
 

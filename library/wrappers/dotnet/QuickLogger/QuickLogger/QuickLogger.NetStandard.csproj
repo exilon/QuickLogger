@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <Version>1.6</Version>
+    <Version>1.6.1</Version>
     <Description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</Description>
     <Copyright>Exilon &amp; Turric4n</Copyright>
     <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.6</AssemblyVersion>
-    <FileVersion>1.6</FileVersion>
+    <AssemblyVersion>1.6.1</AssemblyVersion>
+    <FileVersion>1.6.1</FileVersion>
     <RepositoryUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</RepositoryUrl>
     <PackageTags>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</PackageTags>
     <RepositoryType>GIT</RepositoryType>

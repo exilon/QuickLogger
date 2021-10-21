@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.8</Version>
+    <Version>1.5.9</Version>
     <Description>QuickLogger Wrapper for .NET and DotNetCore</Description>
     <Copyright>Exilon &amp; Turric4n</Copyright>
     <PackageProjectUrl>https://github.com/exilon/QuickLogger/tree/master/library/wrappers/dotnet/QuickLogger</PackageProjectUrl>

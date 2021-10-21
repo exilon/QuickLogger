@@ -24,10 +24,10 @@ namespace QuickLogger.Extensions.NetCore
     }
 
 
-    public class ScopeAdditionalInfoProvider : IAdditionalLoggerInfoProviderService
+    public class ScopeInfoProvider : IScopeInfoProviderService
     {
 
-        public object GetAdditionalInfo()
+        public object GetScopeInfo()
         {
             var scopes = CallContext<Scope<IDictionary<string, object>>>.GetAll();
 
