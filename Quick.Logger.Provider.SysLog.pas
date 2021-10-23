@@ -76,7 +76,15 @@ end;
 
 destructor TLogSysLogProvider.Destroy;
 begin
-  if Assigned(fSysLog) then fSysLog.Free;
+  if Assigned(fSysLog) then
+  begin
+    try
+      if fSysLog.Connected then fSysLog.Disconnect;
+    except
+      //hide disconnection excepts
+    end;
+    fSysLog.Free;
+  end;
   inherited;
 end;
 
