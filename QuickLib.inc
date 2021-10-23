@@ -128,10 +128,14 @@
       {$define DELPHIRX103_UP}
 	    {$define DELPHIRIO_UP}
     {$ifend}
-    {$if CompilerVersion >= 33.0} //Delphi RX10.4 Sydney
+    {$if CompilerVersion >= 34.0} //Delphi RX10.4 Sydney
       {$define DELPHIRX104_UP}
 	    {$define DELPHISYDNEY_UP}
-      {$if defined(ANDROID) OR defined(LINUX) OR defined(IOS)}
+    {$ifend}
+    {$if CompilerVersion >= 35.0} //Delphi RX11 Alexandria
+      {$define DELPHIRX11_UP}
+	    {$define DELPHIALEXANDRIA_UP}
+      {$if defined(ANDROID) OR defined(IOS)}
         {$define NEXTGEN} //compatibility with older delphis
       {$endif}
     {$ifend}
