@@ -21,7 +21,7 @@ namespace QuickLogger.Extensions.NetCore
             serviceCollection.AddSingleton<ILoggerSettingsPathFinder, CoreConfigPathFinder>();
             serviceCollection.AddSingleton<ILoggerService, QuickLoggerService>();
 
-            serviceCollection.AddSingleton<IAdditionalLoggerInfoProviderService, ScopeAdditionalInfoProvider>();
+            serviceCollection.AddSingleton<IScopeInfoProviderService, ScopeInfoProvider>();
             serviceCollection.AddLogging(x => AddLogger(x, serviceCollection.BuildServiceProvider().GetService<ILoggerService>()));            
             return serviceCollection;
         }

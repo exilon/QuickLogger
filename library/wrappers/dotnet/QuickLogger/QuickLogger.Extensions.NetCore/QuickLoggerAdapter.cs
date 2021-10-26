@@ -2,6 +2,7 @@
 using QuickLogger.Extensions.Wrapper.Application.Services;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace QuickLogger.Extensions.NetCore
@@ -44,30 +45,45 @@ namespace QuickLogger.Extensions.NetCore
                 return;
             }
 
-            string message = formatter != null ? formatter(state, exception) : state.ToString();
+            var formatterType = formatter?.GetType().ToString();
 
-            if (string.IsNullOrWhiteSpace(message) && exception != null)
-                message = exception.Message;
+            var isStandardFormatter = formatterType == "System.Func`3[Microsoft.Extensions.Logging.FormattedLogValues,System.Exception,System.String]";
+
+            Func<TState, Exception, string> ourFormatter = (s, e) =>
+            {
+                var msg = s.ToString();
+
+                var exceptionMsg = e != null
+                    ? $" - [{e.GetType()}] : {e.Message} - StackTrace : {e.StackTrace}" : "";
+
+                msg = $"{_categoryName}[{eventId.Id}] - {msg}{exceptionMsg}";
+                return msg;
+            };
+
+            var overrideFormatter = isStandardFormatter ? ourFormatter : formatter ?? ourFormatter;
+
+            //We don't care of standard formatter...
+            var message = overrideFormatter(state, exception);
 
             switch (logLevel)
             {
                 case LogLevel.Error:
-                    _quickloggerInstance.Error(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Error(_categoryName, message);
                     break;
                 case LogLevel.Warning:
-                    _quickloggerInstance.Warning(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Warning(_categoryName, message);
                     break;
                 case LogLevel.Critical:
-                    _quickloggerInstance.Critical(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Critical(_categoryName, message);
                     break;
                 case LogLevel.Debug:
-                    _quickloggerInstance.Debug(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Debug(_categoryName, message);
                     break;
                 case LogLevel.Trace:
-                    _quickloggerInstance.Trace(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Trace(_categoryName, message);
                     break;
                 default:
-                    _quickloggerInstance.Info(_categoryName, $"{_categoryName}[{eventId.Id}] - {message}");
+                    _quickloggerInstance.Info(_categoryName, message);
                     break;
             }
         }

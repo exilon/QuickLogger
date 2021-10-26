@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>QuickLogger.NetStandard</dc:creator>
+  <dc:description>QuickLogger is a cross-platform-native, Testable and Injectable multi-provider logging library for .NET ,NetCore, Object Paascal C, PHP, Python, Golang and more!</dc:description>
+  <dc:identifier>QuickLogger.NetStandard</dc:identifier>
+  <version>1.5.5</version>
+  <keywords>Logger, Native, NetStandard, C++, C#, Delphi, CrossPlatform, Injectable</keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=5.7.0.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35;</lastModifiedBy>
+</coreProperties>
