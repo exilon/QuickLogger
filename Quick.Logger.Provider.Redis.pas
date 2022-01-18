@@ -57,10 +57,8 @@ type
     function IsIntegerResult(const aValue : string) : Boolean;
     function RedisSELECT(dbIndex : Integer) : Boolean;
     function RedisRPUSH(const aKey, Msg : string) : Boolean;
-    function RedisLPUSH(const aKey, Msg : string) : Boolean;
     function RedisLTRIM(const aKey : string; aFirstElement, aMaxSize : Int64) : Boolean;
     function RedisAUTH(const aPassword : string) : Boolean;
-    function RedisPING : Boolean;
     function RedisQUIT : Boolean;
     procedure Connect;
     procedure SetConnectionTimeout(const Value: Integer);
@@ -239,21 +237,6 @@ begin
   end;
 end;
 
-function TLogRedisProvider.RedisLPUSH(const aKey, Msg : string) : Boolean;
-var
-  res : string;
-begin
-  Result := False;
-  if not fTCPClient.Connected then Connect;
-  fTCPClient.IOHandler.Write(Format('LPUSH %s "%s"%s',[aKey,msg,CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
-  begin
-    res := fTCPClient.IOHandler.ReadLn;
-    if IsIntegerResult(res) then Result := True
-      else raise ELogger.CreateFmt('LPUSH error: %s',[res]);
-  end;
-end;
-
 procedure TLogRedisProvider.Restart;
 begin
   //Stop; no stop to avoid clear current queue
@@ -306,17 +289,6 @@ begin
   if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
   begin
     Result := fTCPClient.IOHandler.ReadLn = '+OK';
-  end;
-end;
-
-function TLogRedisProvider.RedisPING : Boolean;
-begin
-  Result := False;
-  if not fTCPClient.Connected then Connect;
-  fTCPClient.IOHandler.Write(Format('PING%s',[CRLF]));
-  if fTCPClient.IOHandler.CheckForDataOnSource(fReadTimeout) then
-  begin
-    Result := fTCPClient.IOHandler.ReadLn = 'PONG';
   end;
 end;
 

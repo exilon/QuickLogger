@@ -161,4 +161,15 @@
   {.$WARN UNIT_PLATFORM OFF}
 {$endif}
 
+{.$DEFINE QUICK_HINTSOFF}
+{.$DEFINE QUICK_WARNOFF}
+
+{$ifdef QUICK_HINTSOFF}
+	{$HINTS OFF}
+{$endif}
+
+{$ifdef QUICK_WARNOFF}
+	{$WARNINGS OFF}
+{$endif}
+
 

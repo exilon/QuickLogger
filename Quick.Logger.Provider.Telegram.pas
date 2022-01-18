@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2021 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Telegram
   Description : Log Telegram Bot Channel Provider
   Author      : Kike Pérez
   Version     : 1.22
   Created     : 21/05/2018
-  Modified    : 24/04/2020
+  Modified    : 28/12/2021
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -36,6 +36,9 @@ uses
   Classes,
   SysUtils,
   idURI,
+  {$IFDEF DELPHIXE8_UP}
+  System.JSON,
+  {$ENDIF}
   Quick.Commons,
   Quick.HttpClient,
   Quick.Logger;

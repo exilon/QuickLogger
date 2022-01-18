@@ -144,9 +144,15 @@ end;
 function TLogTwilioProvider.LogToTwilio(cLogItem: TLogItem): string;
 begin
   {$IFDEF DELPHIXE8_UP}
-  Result := 'Body=' + TURI.URLEncode(LogItemToText(cLogItem))
+    {$IFDEF DELPHIRX10_UP}
+    Result := 'Body=' + TNetEncoding.URL.Encode(LogItemToText(cLogItem))
+    + '&From=' + TNetEncoding.URL.Encode(fSendFrom)
+    + '&To=' + TNetEncoding.URL.Encode(fSendTo);
+    {$ELSE}
+    Result := 'Body=' + TURI.URLEncode(LogItemToText(cLogItem))
     + '&From=' + TURI.URLEncode(fSendFrom)
     + '&To=' + TURI.URLEncode(fSendTo);
+    {$ENDIF}
   {$ELSE}
   Result := 'Body=' + TIdURI.URLEncode(LogItemToText(cLogItem))
     + '&From=' + TIdURI.URLEncode(fSendFrom)

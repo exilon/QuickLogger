@@ -74,7 +74,7 @@ const
   ProviderName : array[0..5] of string = ('Microsoft.Jet.OLEDB.4.0','Microsoft.ACE.OLEDB.12.0','SQLOLEDB.1','SQLNCLI10','SQLNCLI11','IBMDA400');
   {$ENDIF}
 type
-
+  {$M+}
   TDBConfig = class
   private
     fDBProvider : TDBProvider;
@@ -91,6 +91,7 @@ type
     property UserName : string read fUserName write fUserName;
     property Password : string read fPassword write fPassword;
   end;
+  {$M-}
 
   TLogADODBProvider = class (TLogProviderBase)
   private
@@ -103,7 +104,7 @@ type
     function CreateTable : Boolean;
     procedure AddColumnToTable(const aColumnName, aDataType : string);
     procedure AddToQuery(var aFields, aValues : string; const aNewField, aNewValue : string); overload;
-    procedure AddToQuery(var aFields, aValues : string; const aNewField : string; aNewValue : Integer); overload;
+    //procedure AddToQuery(var aFields, aValues : string; const aNewField : string; aNewValue : Integer); overload;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -226,11 +227,11 @@ begin
   aValues := Format('%s,''%s''',[aValues,aNewValue]);
 end;
 
-procedure TLogADODBProvider.AddToQuery(var aFields, aValues : string; const aNewField : string; aNewValue : Integer);
-begin
-  aFields := Format('%s,%s',[aFields,aNewField]);
-  aValues := Format('%s,%d',[aValues,aNewValue]);
-end;
+//procedure TLogADODBProvider.AddToQuery(var aFields, aValues : string; const aNewField : string; aNewValue : Integer);
+//begin
+//  aFields := Format('%s,%s',[aFields,aNewField]);
+//  aValues := Format('%s,%d',[aValues,aNewValue]);
+//end;
 
 procedure TLogADODBProvider.WriteLog(cLogItem : TLogItem);
 var
