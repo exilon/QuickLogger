@@ -1,7 +1,7 @@
 ## QuickLogger
 ----------
 
-Delphi(Delphi XE6 - Delphi 10.4 Sydney)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
+Delphi(Delphi XE6 - Delphi 11 Alexandria)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
 - Console
 - Memory
@@ -24,6 +24,8 @@ Delphi(Delphi XE6 - Delphi 10.4 Sydney)/Freepascal(trunk)/.NET (Windows/Linux/An
 - Twilio
 
 ### Updates:
+
+**Nov 22,2021** RAD Studio 11 supported
 
 **May 30,2020:** RAD Studio 10.4 supported
 
