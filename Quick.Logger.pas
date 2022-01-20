@@ -129,18 +129,22 @@ type
 
   TProviderErrorEvent = procedure(const aProviderName, aError : string) of object;
 
+  {$IFNDEF DELPHIRX10_UP}
+  TThreadID = DWORD;
+  {$ENDIF}
+
   TLogItem = class
   private
     fEventType : TEventType;
     fMsg : string;
     fEventDate : TDateTime;
-    fThreadId : DWORD;
+    fThreadId : TThreadID;
   public
     constructor Create;
     property EventType : TEventType read fEventType write fEventType;
     property Msg : string read fMsg write fMsg;
     property EventDate : TDateTime read fEventDate write fEventDate;
-    property ThreadId : DWORD read fThreadId write fThreadId;
+    property ThreadId : TThreadID read fThreadId write fThreadId;
     function EventTypeName : string;
     function Clone : TLogItem; virtual;
   end;
