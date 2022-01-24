@@ -7,7 +7,7 @@
   Author      : Kike Pérez
   Version     : 1.42
   Created     : 12/10/2017
-  Modified    : 18/01/2022
+  Modified    : 24/01/2022
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -802,9 +802,9 @@ begin
   //resolve log format
   Result := '';
   idx := 1;
-  st := 0;
-  et := 0;
-  while st < fCustomFormatOutput.Length - 1 do
+  st := Low(string);
+  et := Low(string);
+  while st < fCustomFormatOutput.Length do
   begin
     if (fCustomFormatOutput[st] = '%') and (fCustomFormatOutput[st+1] = '{') then
     begin
