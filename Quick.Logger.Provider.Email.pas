@@ -42,6 +42,7 @@ uses
 
 type
 
+  {$M+}
   TSMTPConfig = class
   private
     fHost : string;
@@ -50,7 +51,7 @@ type
     fPassword : string;
     fServerAuth : Boolean;
     fUseSSL : Boolean;
-  public
+  published
     property Host : string read fHost write fHost;
     property Port : Integer read fPort write fPort;
     property UserName : string read fUserName write fUserName;
@@ -58,7 +59,9 @@ type
     property ServerAuth : Boolean read fServerAuth write fServerAuth;
     property UseSSL : Boolean read fUseSSL write fUseSSL;
   end;
+  {$M-}
 
+  {$M+}
   TMailConfig = class
   private
     fSenderName : string;
@@ -68,7 +71,7 @@ type
     fBody : string;
     fCC : string;
     fBCC : string;
-  public
+  published
     property SenderName : string read fSenderName write fSenderName;
     property From : string read fFrom write fFrom;
     property Recipient : string read fRecipient write fRecipient;
@@ -77,6 +80,7 @@ type
     property CC : string read fCC write fCC;
     property BCC : string read fBCC write fBCC;
   end;
+  {$M-}
 
   TLogEmailProvider = class (TLogProviderBase)
   private
