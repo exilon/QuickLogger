@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2022 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Memory
   Description : Log memory Provider
   Author      : Kike Pérez
   Version     : 1.23
   Created     : 02/10/2017
-  Modified    : 14/09/2019
+  Modified    : 10/02/2022
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -130,7 +130,7 @@ begin
   try
     if fMaxSize > 0 then
     begin
-      repeat fMemLog.Delete(0) until fMemLog.Count < fMaxSize;
+      while fMemLog.Count >= fMaxSize do fMemLog.Delete(0);
     end;
     fMemLog.Add(cLogItem.Clone);
   finally
