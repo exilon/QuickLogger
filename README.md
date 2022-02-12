@@ -1,5 +1,4 @@
-## QuickLogger
-----------
+![alt text](docs/QuickLogger.png "QuickLogger") 
 
 Delphi(Delphi XE6 - Delphi 11 Alexandria)/Freepascal(trunk)/.NET (Windows/Linux/Android/MACOSX/IOS) library for logging on multi providers:
 - Files
@@ -22,6 +21,15 @@ Delphi(Delphi XE6 - Delphi 11 Alexandria)/Freepascal(trunk)/.NET (Windows/Linux/
 - Controlled and unhandled exceptions hook
 - Sentry
 - Twilio
+
+## Give it a star
+Please "star" this project in GitHub! It costs nothing but helps to reference the code.
+![alt text](docs/githubstartme.jpg "Give it a star")
+
+## Support
+If you find this project useful, please consider making a donation.
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=BKLKPNEYKSBKL)
 
 ### Updates:
 
