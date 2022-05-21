@@ -1709,7 +1709,8 @@ begin
       for iprovider in Self do
       begin
         jvalue := jobject.GetValue(iprovider.GetName);
-        iprovider.FromJson(jvalue.ToJSON);
+        if Assigned(jvalue) then
+          iprovider.FromJson(jvalue.ToJSON);
       end;
     finally
       jobject.Free;
