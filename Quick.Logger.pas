@@ -1176,10 +1176,10 @@ var
   qSize : Integer;
 begin
   //send log items to all providers
-  while (not Terminated) or (fLogQueue.QueueSize > 0) do
+  while (not Terminated) or (Assigned(fLogQueue) and (fLogQueue.QueueSize > 0)) do
   begin
     try
-      if fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled then
+      if Assigned(fLogQueue) and (fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled) then
       begin
         if logitem <> nil then
         begin
