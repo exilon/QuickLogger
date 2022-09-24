@@ -258,12 +258,12 @@ procedure TLogSentryProvider.SetDSNEntry(const Value: string);
 var
   segments : TArray<string>;
 begin
-  segments := value.Split(['/',':','@']);
+  segments := value.Split(['/','@']);
   try
-    fProtocol := segments[0];
-    fPublicKey := segments[3];
-    fSentryHost := segments[4];
-    fProjectId := segments[5];
+    fProtocol := segments[0].Replace(':','');
+    fPublicKey := segments[2];
+    fSentryHost := segments[3];
+    fProjectId := segments[4];
   except
     raise Exception.Create('Sentry DSN not valid!');
   end;
