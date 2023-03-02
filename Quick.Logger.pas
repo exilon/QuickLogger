@@ -1267,6 +1267,7 @@ begin
   Result.EventDate := Self.EventDate;
   Result.Msg := Self.Msg;
   TLogExceptionItem(Result).Exception := Self.Exception;
+  TLogExceptionItem(Result).StackTrace := Self.StackTrace;
 end;
 
 
