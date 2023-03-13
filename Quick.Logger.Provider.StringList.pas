@@ -53,9 +53,9 @@ type
   TLogStringListProvider = class(TLogProviderBase)
   private
     fintLogList: TStrings;
-    FLogList: TStrings;
+    fLogList: TStrings;
     fMaxSize: Int64;
-    FShowEventTypes: Boolean;
+    fShowEventTypes: Boolean;
     fShowTimeStamp: Boolean;
     function GetLogList: TStrings;
   public
@@ -63,9 +63,9 @@ type
     destructor Destroy; override;
 {$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]
 {$ENDIF}
-    property LogList: TStrings read GetLogList write FLogList;
+    property LogList: TStrings read GetLogList write fLogList;
     property MaxSize: Int64 read fMaxSize write fMaxSize;
-    property ShowEventTypes: Boolean read FShowEventTypes write FShowEventTypes;
+    property ShowEventTypes: Boolean read fShowEventTypes write fShowEventTypes;
     property ShowTimeStamp: Boolean read fShowTimeStamp write fShowTimeStamp;
     procedure Init; override;
     procedure Restart; override;
@@ -91,9 +91,9 @@ begin
 {$ELSE}
   InitCriticalSection (CS);
 {$ENDIF}
-  FShowEventTypes := False;
+  fShowEventTypes := False;
   fShowTimeStamp := False;
-  fIntLogList := TStringList.Create;
+  fintLogList := TStringList.Create;
 end;
 
 destructor TLogStringListProvider.Destroy;
@@ -147,11 +147,10 @@ begin
       LogList.AddObject (LogItemToFormat(cLogItem), cLogItem.Clone)
     else
     begin
-      LogList.AddObject (LogItemToLine(cLogItem,fShowTimeStamp,FShowEventTypes), cLogItem.Clone);
+      LogList.AddObject (LogItemToLine(cLogItem, fShowTimeStamp, fShowEventTypes), cLogItem.Clone);
       if cLogItem.EventType = etHeader then
         LogList.Add (FillStr('-', cLogItem.Msg.Length));
     end;
-
   finally
     LogList.EndUpdate;
     LeaveCriticalSection (CS);
@@ -170,8 +169,8 @@ end;
 
 function TLogStringListProvider.GetLogList: TStrings;
 begin
-  if Assigned (FLogList) then
-    Result := FLogList
+  if Assigned (fLogList) then
+    Result := fLogList
   else
     Result := fintLogList;
 end;
