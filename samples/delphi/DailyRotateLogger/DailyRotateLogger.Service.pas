@@ -24,7 +24,8 @@ constructor TMyService.Create;
 begin
   fScheduler := TScheduledTasks.Create;
   GlobalLogFileProvider.DailyRotate := True;
-  GlobalLogFileProvider.MaxRotateFiles := 7;
+  GlobalLogFileProvider.DailyRotateFileDateFormat := 'yyyymmdd';
+  GlobalLogFileProvider.MaxRotateFiles := 10;
   GlobalLogFileProvider.MaxFileSizeInMB := 10;
   GlobalLogFileProvider.RotatedFilesPath := '.\logs';
   Logger.Providers.Add(GlobalLogFileProvider);

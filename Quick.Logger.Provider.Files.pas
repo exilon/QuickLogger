@@ -65,8 +65,12 @@ type
     fUnderlineHeaderEventType: Boolean;
     fAutoFlush : Boolean;
     fAutoFileName : Boolean;
-    function GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
+    FDailyRotateFileDateFormat: string;
+    function CalcRotateLogFileName(cNumBackup: Integer; cFileDate: string; cZipped: Boolean; cFormatNumBackup: Boolean =
+        true): string;
     function CheckNeedRotate : Boolean;
+    function GetFileDate(cFileName: string): string;
+    function GetLogFileBackup(cNumBackup: Integer; zipped: Boolean): string;
     procedure SetFileName(const Value: string);
     procedure SetRotatedFilesPath(const Value: string);
   protected
@@ -83,6 +87,7 @@ type
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
+    property DailyRotateFileDateFormat: string read FDailyRotateFileDateFormat write FDailyRotateFileDateFormat;
     property RotatedFilesPath : string read fRotatedFilesPath write SetRotatedFilesPath;
     property CompressRotatedFiles : Boolean read fCompressRotatedFiles write fCompressRotatedFiles;
     property ShowEventType : Boolean read fShowEventTypes write fShowEventTypes;
@@ -91,8 +96,8 @@ type
     property AutoFlush : Boolean read fAutoFlush write fAutoFlush;
     procedure Init; override;
     procedure Restart; override;
-    procedure WriteLog(cLogItem : TLogItem); override;
     procedure RotateLog; virtual;
+    procedure WriteLog(cLogItem : TLogItem); override;
   end;
 
   {$IFDEF MSWINDOWS}
@@ -142,6 +147,37 @@ begin
     fs.Free;
   end;
   TFile.SetCreationTime(aFilename,Now());
+end;
+
+function TLogFileProvider.CalcRotateLogFileName(cNumBackup: Integer; cFileDate: string; cZipped: Boolean;
+    cFormatNumBackup: Boolean = true): string;
+var
+  zipExt: string;
+  LogName: string;
+  LogExt: string;
+  Num: string;
+begin
+  if cZipped then
+    zipExt := '.zip'
+  else
+    zipExt := '';
+  LogName := TPath.GetFileNameWithoutExtension (fFileName);
+  LogExt := TPath.GetExtension (fFileName);
+  if cNumBackup > 0 then
+    if cFormatNumBackup then
+      Num := '.' + cNumBackup.ToString.PadLeft (MaxRotateFiles.ToString.Length, '0')
+    else
+      Num := '.' + cNumBackup.ToString
+  else
+    Num := '';
+  if cFileDate = '' then
+    Result := Format ('%s%s%s%s', [LogName, Num, LogExt, zipExt])
+  else
+    Result := Format ('%s%s.%s%s%s', [LogName, Num, cFileDate, LogExt, zipExt]);
+  if fRotatedFilesPath = '' then
+    Result := TPath.GetDirectoryName (fFileName) + PathDelim + Result
+  else
+    Result := IncludeTrailingPathDelimiter (fRotatedFilesPath) + Result;
 end;
 
 procedure TLogFileProvider.Init;
@@ -282,26 +318,38 @@ begin
   end;
 end;
 
-function TLogFileProvider.GetLogFileBackup(cNumBackup : Integer; zipped : Boolean) : string;
+function TLogFileProvider.GetFileDate(cFileName: string): string;
 var
-  LogExt : string;
-  LogName : string;
-  zipExt : string;
+  fileDate: TDateTime;
 begin
-  if zipped then zipExt := '.zip'
-    else zipExt := '';
-  if fRotatedFilesPath = '' then
-  begin
-    LogName := TPath.GetFileNameWithoutExtension(fFileName);
-    LogName := TPath.GetDirectoryName(fFileName) + PathDelim + LogName;
-  end
-  else
-  begin
-    ForceDirectories(fRotatedFilesPath);
-    LogName := IncludeTrailingPathDelimiter(fRotatedFilesPath) + TPath.GetFileNameWithoutExtension(fFilename);
+  Result := '';
+  if FDailyRotateFileDateFormat = '' then
+    Exit;
+  try
+    fileDate := TFile.GetCreationTime (cFileName);
+    Result := FormatDateTime (FDailyRotateFileDateFormat, fileDate);
+  except
+    Result := '';
   end;
-  LogExt := TPath.GetExtension(fFileName);
-  Result := Format('%s.%d%s%s',[LogName,cNumBackup,LogExt,zipExt]);
+end;
+
+function TLogFileProvider.GetLogFileBackup(cNumBackup: Integer; zipped: Boolean): string;
+var
+  SearchRec: TSearchRec;
+  i: Integer;
+begin
+  // Doing this twice to be backward compatible independent if the numbackup is formatted or not
+  for i := 0 to 1 do
+  begin
+    Result := CalcRotateLogFileName (cNumBackup, '*', zipped, i = 0);
+    if findfirst (Result, faAnyFile, SearchRec) = 0 then
+      Result := TPath.GetDirectoryName (Result) + PathDelim + SearchRec.Name
+    else
+      Result := '';
+    FindClose (SearchRec);
+    if Result <> '' then
+      Exit;
+  end;
 end;
 
 procedure TLogFileProvider.Restart;
@@ -313,54 +361,62 @@ end;
 
 procedure TLogFileProvider.RotateLog;
 var
-  RotateFile : string;
-  i : Integer;
+  RotateFile: string;
+  i: Integer;
+
 begin
-  if fIsRotating then Exit;
-  fIsRotating := True;
+  if fIsRotating then
+    Exit;
+  fIsRotating := true;
   try
-    //frees stream file
-    if Assigned(fLogWriter) then
+    // frees stream file
+    if Assigned (fLogWriter) then
     begin
       fLogWriter.Free;
       fLogWriter := nil;
     end;
     try
-      //delete older log backup and zip
-      RotateFile := GetLogFileBackup(fMaxRotateFiles,True);
-      if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
-      RotateFile := GetLogFileBackup(fMaxRotateFiles,False);
-      if TFile.Exists(RotateFile) then TFile.Delete(RotateFile);
-      //rotates older log backups or zips
+      if fRotatedFilesPath <> '' then
+        ForceDirectories (fRotatedFilesPath);
+      // delete older log backup and zip
+      RotateFile := GetLogFileBackup (fMaxRotateFiles, true);
+      if RotateFile <> '' then
+        TFile.Delete (RotateFile);
+      RotateFile := GetLogFileBackup (fMaxRotateFiles, False);
+      if RotateFile <> '' then
+        TFile.Delete (RotateFile);
+      // rotates older log backups or zips
       for i := fMaxRotateFiles - 1 downto 1 do
       begin
-        RotateFile := GetLogFileBackup(i,True);
-        if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,True));
-        RotateFile := GetLogFileBackup(i,False);
-        if TFile.Exists(RotateFile) then TFile.Move(RotateFile,GetLogFileBackup(i + 1,False));
+        RotateFile := GetLogFileBackup (i, true);
+        if RotateFile <> '' then
+          TFile.Move (RotateFile, CalcRotateLogFileName(i + 1, GetFileDate(RotateFile), true));
+        RotateFile := GetLogFileBackup (i, False);
+        if RotateFile <> '' then
+          TFile.Move (RotateFile, CalcRotateLogFileName(i + 1, GetFileDate(RotateFile), False));
       end;
-      //rename current log
-      RotateFile := GetLogFileBackup(1,False);
-      TFile.Move(fFileName,RotateFile);
+      // rename current log
+      RotateFile := CalcRotateLogFileName (1, GetFileDate(fFileName), False);
+      TFile.Move (fFileName, RotateFile);
     finally
-      //initialize stream file again
+      // initialize stream file again
       Init;
     end;
   finally
     fIsRotating := False;
   end;
-  //compress log file
+  // compress log file
   if fCompressRotatedFiles then
   begin
-    {$IFDEF FPC}
-      CompressLogFile(RotateFile);
-    {$ELSE}
-    TThread.CreateAnonymousThread(procedure
-                                  begin
-                                    CompressLogFile(RotateFile);
-                                  end
-                                  ).Start;
-    {$ENDIF}
+{$IFDEF FPC}
+    CompressLogFile (RotateFile);
+{$ELSE}
+    TThread.CreateAnonymousThread (
+      procedure
+      begin
+        CompressLogFile(RotateFile);
+      end).Start;
+{$ENDIF}
   end;
 end;
 
@@ -429,6 +485,7 @@ begin
     raise ELogger.Create('Error trying to backup log file!');
   end;
 end;
+
 {$ENDIF}
 
 initialization
