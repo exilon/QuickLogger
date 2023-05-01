@@ -135,6 +135,18 @@
     {$if CompilerVersion >= 35.0} //Delphi RX11 Alexandria
       {$define DELPHIRX11_UP}
 	    {$define DELPHIALEXANDRIA_UP}
+      {$UNDEF DELPHILINUX}
+      {$if defined(POSIX)}
+        {$DEFINE LINUX}
+        {$DEFINE DELPHILINUX}
+        {$if defined(CPUARM)}
+          {$if defined(MACOS)}
+
+          {$ELSE}
+            {$DEFINE ANDROID}
+          {$ENDIF}
+        {$ENDIF}
+      {$ENDIF}
       {$if defined(ANDROID) OR defined(IOS)}
         {$define NEXTGEN} //compatibility with older delphis
       {$endif}
