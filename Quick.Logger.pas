@@ -177,6 +177,7 @@ type
     //procedure Flush;
     procedure Stop;
     procedure Drain;
+    function AcceptItem(cLogItem : TLogItem): boolean;
     procedure EnQueueItem(cLogItem : TLogItem);
     procedure WriteLog(cLogItem : TLogItem);
     function IsQueueable : Boolean;
@@ -242,6 +243,7 @@ type
   TCriticalErrorEvent = procedure(const aProviderName, ErrorMessage : string) of object;
   TSendLimitsEvent = procedure(const aProviderName : string) of object;
   TStatusChangedEvent = procedure(aProviderName : string; status : TLogProviderStatus) of object;
+  TProviderFilterEvent = function (aLogItem : TLogItem) : boolean;
   {$ELSE}
   TQueueErrorEvent = reference to procedure(const msg : string);
   TFailToLogEvent = reference to procedure(const aProviderName : string);
@@ -250,6 +252,7 @@ type
   TCriticalErrorEvent = reference to procedure(const aProviderName, ErrorMessage : string);
   TSendLimitsEvent = reference to procedure(const aProviderName : string);
   TStatusChangedEvent = reference to procedure(aProviderName : string; status : TLogProviderStatus);
+  TProviderFilterEvent = reference to function (aLogItem : TLogItem) : boolean;
   {$ENDIF}
 
   TJsonOutputOptions = class
@@ -307,6 +310,7 @@ type
     fSystemInfo : TSystemInfo;
     fCustomMsgOutput : Boolean;
     fOnNotifyError : TProviderErrorEvent;
+    fOnFilterItem : TProviderFilterEvent;
     procedure SetTimePrecission(Value : Boolean);
     procedure SetEnabled(aValue : Boolean);
     function GetQueuedLogItems : Integer;
@@ -344,6 +348,7 @@ type
     procedure Drain;
     procedure WriteLog(cLogItem : TLogItem); virtual; abstract;
     function IsQueueable : Boolean;
+    function AcceptItem(cLogItem : TLogItem): boolean;
     property Name : string read fName write fName;
     property LogLevel : TLogLevel read fLogLevel write fLogLevel;
     {$IFDEF DELPHIXE7_UP}[TNotSerializableProperty]{$ENDIF}
@@ -356,6 +361,7 @@ type
     property CustomMsgOutput : Boolean read fCustomMsgOutput write fCustomMsgOutput;
     property CustomFormatOutput : string read fCustomFormatOutput write fCustomFormatOutput;
     property OnFailToLog : TFailToLogEvent read fOnFailToLog write fOnFailToLog;
+    property OnFilterItem : TProviderFilterEvent read fOnFilterItem write fOnFilterItem;
     property OnRestart : TRestartEvent read fOnRestart write fOnRestart;
     property OnQueueError : TQueueErrorEvent read fOnQueueError write fOnQueueError;
     property OnCriticalError : TCriticalErrorEvent read fOnCriticalError write fOnCriticalError;
@@ -550,6 +556,13 @@ begin
   if Assigned(fSendLimits) then fSendLimits.Free;
   if Assigned(fJsonOutputOptions) then fJsonOutputOptions.Free;
   inherited;
+end;
+
+function TLogProviderBase.AcceptItem(cLogItem : TLogItem): boolean;
+begin
+  Result := cLogItem.EventType in GetLogLevel;
+  if Result and Assigned (fOnFilterItem) then
+    Result := OnFilterItem(cLogItem);
 end;
 
 procedure TLogProviderBase.Drain;
@@ -1190,8 +1203,8 @@ begin
           try
             for provider in fProviders do
             begin
-              //send LogItem to provider if Provider Enabled and accepts LogLevel
-              if (provider.IsEnabled) and (logitem.EventType in provider.GetLogLevel) then
+              //send LogItem to provider if Provider Enabled and accepts LogLevel and optional filter (based on event OnFilter event)
+              if (provider.IsEnabled) and provider.AcceptItem(logitem) then
               begin
                 if provider.IsQueueable then provider.EnQueueItem(logitem.Clone)
                 else
