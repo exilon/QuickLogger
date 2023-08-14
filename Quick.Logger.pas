@@ -1066,8 +1066,13 @@ end;
 procedure TLogProviderBase.SetTimePrecission(Value: Boolean);
 begin
   fTimePrecission := Value;
-  if fTimePrecission then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS','HH:NN:SS.ZZZ',[rfIgnoreCase])
-    else if fFormatSettings.ShortDateFormat.Contains('ZZZ') then fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS.ZZZ','HH:NN:SS',[rfIgnoreCase]);
+  if fTimePrecission then
+  begin
+    if not fFormatSettings.ShortDateFormat.Contains('ZZZ')  then
+      fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS','HH:NN:SS.ZZZ',[rfIgnoreCase]);
+  end
+  else if fFormatSettings.ShortDateFormat.Contains('ZZZ') then
+    fFormatSettings.ShortDateFormat := StringReplace(fFormatSettings.ShortDateFormat,'HH:NN:SS.ZZZ','HH:NN:SS',[rfIgnoreCase]);
 end;
 
 function TLogProviderBase.GetLogLevel : TLogLevel;
