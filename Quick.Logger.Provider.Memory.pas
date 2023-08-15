@@ -83,11 +83,6 @@ begin
   inherited;
   LogLevel := LOG_ALL;
   fMaxSize := 0;
-  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  InitializeCriticalSection(CS);
-  {$ELSE}
-  InitCriticalSection(CS);
-  {$ENDIF}
 end;
 
 destructor TLogMemoryProvider.Destroy;
@@ -98,11 +93,6 @@ begin
   finally
     LeaveCriticalSection(CS);
   end;
-  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  DeleteCriticalSection(CS);
-  {$ELSE}
-  DoneCriticalsection(CS);
-  {$ENDIF}
   inherited;
 end;
 
@@ -175,9 +165,19 @@ begin
 end;
 
 initialization
+  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+  InitializeCriticalSection(CS);
+  {$ELSE}
+  InitCriticalSection(CS);
+  {$ENDIF}
   GlobalLogMemoryProvider := TLogMemoryProvider.Create;
 
 finalization
   if Assigned(GlobalLogMemoryProvider) and (GlobalLogMemoryProvider.RefCount = 0) then GlobalLogMemoryProvider.Free;
+  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+  DeleteCriticalSection(CS);
+  {$ELSE}
+  DoneCriticalsection(CS);
+  {$ENDIF}
 
 end.

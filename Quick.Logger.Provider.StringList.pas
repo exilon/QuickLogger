@@ -86,11 +86,6 @@ begin
   inherited;
   LogLevel := LOG_ALL;
   fMaxSize := 0;
-{$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  InitializeCriticalSection (CS);
-{$ELSE}
-  InitCriticalSection (CS);
-{$ENDIF}
   fShowEventTypes := False;
   fShowTimeStamp := False;
   fintLogList := TStringList.Create;
@@ -105,11 +100,6 @@ begin
   finally
     LeaveCriticalSection (CS);
   end;
-{$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  DeleteCriticalSection (CS);
-{$ELSE}
-  DoneCriticalsection (CS);
-{$ENDIF}
   inherited;
 end;
 
@@ -177,11 +167,23 @@ end;
 
 initialization
 
-GlobalLogStringListProvider := TLogStringListProvider.Create;
+{$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+  InitializeCriticalSection (CS);
+{$ELSE}
+  InitCriticalSection (CS);
+{$ENDIF}
+
+  GlobalLogStringListProvider := TLogStringListProvider.Create;
 
 finalization
 
-if Assigned (GlobalLogStringListProvider) and (GlobalLogStringListProvider.RefCount = 0) then
-  GlobalLogStringListProvider.Free;
+  if Assigned (GlobalLogStringListProvider) and (GlobalLogStringListProvider.RefCount = 0) then
+    GlobalLogStringListProvider.Free;
+
+{$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+  DeleteCriticalSection (CS);
+{$ELSE}
+  DoneCriticalsection (CS);
+{$ENDIF}
 
 end.
