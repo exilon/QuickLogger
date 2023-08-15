@@ -52,18 +52,22 @@ type
 
   TLogStringListProvider = class(TLogProviderBase)
   private
-    fintLogList: TStrings;
-    fLogList: TStrings;
+    fIncludeLogItems: Boolean;
+    fintLogList: TStringList;
+    fLogList: TStringList;
     fMaxSize: Int64;
     fShowEventTypes: Boolean;
     fShowTimeStamp: Boolean;
-    function GetLogList: TStrings;
+    function GetLogList: TStringList;
   public
     constructor Create; override;
     destructor Destroy; override;
-{$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]
-{$ENDIF}
-    property LogList: TStrings read GetLogList write fLogList;
+    // This property defines if the log items should be cloned to the object property of the item list.
+    property IncludeLogItems: Boolean read fIncludeLogItems write fIncludeLogItems default false;
+{$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]{$ENDIF}
+    // Attention: When assigning an external stringlist to the property and IncludeLogItems = true you have to ensure
+    // that the external list.ownsobjects is true
+    property LogList: TStringList read GetLogList write fLogList;
     property MaxSize: Int64 read fMaxSize write fMaxSize;
     property ShowEventTypes: Boolean read fShowEventTypes write fShowEventTypes;
     property ShowTimeStamp: Boolean read fShowTimeStamp write fShowTimeStamp;
@@ -88,7 +92,9 @@ begin
   fMaxSize := 0;
   fShowEventTypes := False;
   fShowTimeStamp := False;
+  fIncludeLogItems := false;
   fintLogList := TStringList.Create;
+  fintLogList.OwnsObjects := true;
 end;
 
 destructor TLogStringListProvider.Destroy;
@@ -105,7 +111,6 @@ end;
 
 procedure TLogStringListProvider.Init;
 begin
-  fintLogList := TStringList.Create;
   inherited;
 end;
 
@@ -134,10 +139,16 @@ begin
         LogList.Delete (0);
     end;
     if CustomMsgOutput then
-      LogList.AddObject (LogItemToFormat(cLogItem), cLogItem.Clone)
+      if IncludeLogItems then
+        LogList.AddObject (LogItemToFormat(cLogItem), cLogItem.Clone)
+      else
+        LogList.Add (LogItemToFormat(cLogItem))
     else
     begin
-      LogList.AddObject (LogItemToLine(cLogItem, fShowTimeStamp, fShowEventTypes), cLogItem.Clone);
+      if IncludeLogItems then
+        LogList.AddObject (LogItemToLine(cLogItem, fShowTimeStamp, fShowEventTypes), cLogItem.Clone)
+      else
+        LogList.Add (LogItemToLine(cLogItem, fShowTimeStamp, fShowEventTypes));
       if cLogItem.EventType = etHeader then
         LogList.Add (FillStr('-', cLogItem.Msg.Length));
     end;
@@ -157,7 +168,7 @@ begin
   end;
 end;
 
-function TLogStringListProvider.GetLogList: TStrings;
+function TLogStringListProvider.GetLogList: TStringList;
 begin
   if Assigned (fLogList) then
     Result := fLogList
