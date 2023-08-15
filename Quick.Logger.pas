@@ -1096,9 +1096,9 @@ var
 begin
   //call interface provider to writelog
   fProvider.SetStatus(psRunning);
-  while (not Terminated) or (fLogQueue.QueueSize > 0) do
+  while (not Terminated) or (Assigned(fLogQueue) and (fLogQueue.QueueSize > 0)) do
   begin
-    if fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled then
+    if Assigned(fLogQueue) and (fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled) then
     begin
       {$IFDEF LOGGER_DEBUG2}
       Writeln(Format('popitem logger: %s',[logitem.Msg]));
@@ -1176,10 +1176,10 @@ var
   qSize : Integer;
 begin
   //send log items to all providers
-  while (not Terminated) or (fLogQueue.QueueSize > 0) do
+  while (not Terminated) or (Assigned(fLogQueue) and (fLogQueue.QueueSize > 0)) do
   begin
     try
-      if fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled then
+      if Assigned(fLogQueue) and (fLogQueue.PopItem(qSize,logitem) = TWaitResult.wrSignaled) then
       begin
         if logitem <> nil then
         begin
