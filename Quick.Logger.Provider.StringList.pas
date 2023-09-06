@@ -54,11 +54,11 @@ type
   private
     fIncludeLogItems: Boolean;
     fintLogList: TStringList;
-    fLogList: TStringList;
+    FLogList: TStrings;
     fMaxSize: Int64;
     fShowEventTypes: Boolean;
     fShowTimeStamp: Boolean;
-    function GetLogList: TStringList;
+    function GetLogList: TStrings;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -67,7 +67,7 @@ type
 {$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]{$ENDIF}
     // Attention: When assigning an external stringlist to the property and IncludeLogItems = true you have to ensure
     // that the external list.ownsobjects is true
-    property LogList: TStringList read GetLogList write fLogList;
+    property LogList: TStrings read GetLogList write FLogList;
     property MaxSize: Int64 read fMaxSize write fMaxSize;
     property ShowEventTypes: Boolean read fShowEventTypes write fShowEventTypes;
     property ShowTimeStamp: Boolean read fShowTimeStamp write fShowTimeStamp;
@@ -168,7 +168,7 @@ begin
   end;
 end;
 
-function TLogStringListProvider.GetLogList: TStringList;
+function TLogStringListProvider.GetLogList: TStrings;
 begin
   if Assigned (fLogList) then
     Result := fLogList
