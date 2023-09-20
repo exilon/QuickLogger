@@ -36,9 +36,6 @@ uses
   System.Classes,
 {$IFDEF MSWINDOWS}
   WinApi.Windows,
-{$IFDEF DELPHIXE8_UP}
-  Quick.Json.Serializer,
-{$ENDIF}
 {$ENDIF}
 {$IFDEF DELPHILINUX}
   Quick.SyncObjs.Linux.Compatibility,
@@ -64,7 +61,8 @@ type
     destructor Destroy; override;
     // This property defines if the log items should be cloned to the object property of the item list.
     property IncludeLogItems: Boolean read fIncludeLogItems write fIncludeLogItems default false;
-{$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]{$ENDIF}
+{$IFDEF DELPHIXE8_UP}[TNotSerializableProperty]
+{$ENDIF}
     // Attention: When assigning an external stringlist to the property and IncludeLogItems = true you have to ensure
     // that the external list.ownsobjects is true
     property LogList: TStrings read GetLogList write FLogList;
@@ -84,14 +82,27 @@ implementation
 
 var
   CS: TRTLCriticalSection;
+  CSActive: Boolean;
+
+procedure EnterCS;
+begin
+  if CSActive then
+    EnterCriticalSection (CS);
+end;
+
+procedure LeaveCS;
+begin
+  if CSActive then
+    LeaveCriticalSection (CS);
+end;
 
 constructor TLogStringListProvider.Create;
 begin
   inherited;
   LogLevel := LOG_ALL;
   fMaxSize := 0;
-  fShowEventTypes := False;
-  fShowTimeStamp := False;
+  fShowEventTypes := false;
+  fShowTimeStamp := false;
   fIncludeLogItems := false;
   fintLogList := TStringList.Create;
   fintLogList.OwnsObjects := true;
@@ -99,12 +110,11 @@ end;
 
 destructor TLogStringListProvider.Destroy;
 begin
-  EnterCriticalSection (CS);
+  EnterCS;
   try
-    if Assigned (fintLogList) then
-      fintLogList.Free;
+    fintLogList.Free;
   finally
-    LeaveCriticalSection (CS);
+    LeaveCS;
   end;
   inherited;
 end;
@@ -118,19 +128,12 @@ procedure TLogStringListProvider.Restart;
 begin
   Stop;
   Clear;
-  EnterCriticalSection (CS);
-  try
-    if Assigned (fintLogList) then
-      fintLogList.Free;
-  finally
-    LeaveCriticalSection (CS);
-  end;
   Init;
 end;
 
 procedure TLogStringListProvider.WriteLog (cLogItem: TLogItem);
 begin
-  EnterCriticalSection (CS);
+  EnterCS;
   LogList.BeginUpdate;
   try
     if fMaxSize > 0 then
@@ -160,18 +163,20 @@ end;
 
 procedure TLogStringListProvider.Clear;
 begin
-  EnterCriticalSection (CS);
+  EnterCS;
   try
+    LogList.BeginUpdate;
     LogList.Clear;
   finally
+    LogList.EndUpdate;
     LeaveCriticalSection (CS);
   end;
 end;
 
 function TLogStringListProvider.GetLogList: TStrings;
 begin
-  if Assigned (fLogList) then
-    Result := fLogList
+  if Assigned (FLogList) then
+    Result := FLogList
   else
     Result := fintLogList;
 end;
@@ -183,18 +188,19 @@ initialization
 {$ELSE}
   InitCriticalSection (CS);
 {$ENDIF}
-
-  GlobalLogStringListProvider := TLogStringListProvider.Create;
+CSActive := true;
+GlobalLogStringListProvider := TLogStringListProvider.Create;
 
 finalization
 
-  if Assigned (GlobalLogStringListProvider) and (GlobalLogStringListProvider.RefCount = 0) then
-    GlobalLogStringListProvider.Free;
+if Assigned (GlobalLogStringListProvider) and (GlobalLogStringListProvider.RefCount = 0) then
+  GlobalLogStringListProvider.Free;
 
+CSActive := false;
 {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  DeleteCriticalSection (CS);
+DeleteCriticalSection (CS);
 {$ELSE}
-  DoneCriticalsection (CS);
+DoneCriticalsection (CS);
 {$ENDIF}
 
 end.
