@@ -26,6 +26,8 @@ Delphi(Delphi XE6 - Delphi 11 Alexandria)/Freepascal(trunk)/.NET (Windows/Linux/
 Please "star" this project in GitHub! It costs nothing but helps to reference the code.
 ![alt text](docs/githubstartme.jpg "Give it a star")
 
+[![Star History Chart](https://api.star-history.com/svg?repos=exilon/quicklogger&type=Date)](https://star-history.com/#exilon/quicklogger&Date)
+
 ## Support
 If you find this project useful, please consider making a donation.
 
