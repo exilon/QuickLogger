@@ -66,6 +66,7 @@ type
     fAutoFlush : Boolean;
     fAutoFileName : Boolean;
     FDailyRotateFileDateFormat: string;
+    fEncoding: TEncoding;
     function CalcRotateLogFileName(cNumBackup: Integer; cFileDate: string; cZipped: Boolean; cFormatNumBackup: Boolean =
         true): string;
     function CheckNeedRotate : Boolean;
@@ -84,6 +85,7 @@ type
     {$IFDEF MSWINDOWS}
     property AutoFileNameByProcess : Boolean read fAutoFileName write fAutoFileName;
     {$ENDIF}
+    property Encoding: TEncoding read fEncoding write fEncoding;
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
@@ -124,6 +126,7 @@ begin
   fRotatedFilesPath := '';
   fAutoFlush := False;
   fAutoFileName := False;
+  fEncoding := TEncoding.Default;
   LogLevel := LOG_ALL;
   IncludedInfo := [iiAppName,iiHost,iiUserName,iiOSVersion];
 end;
@@ -228,7 +231,7 @@ begin
   fs := TFileStream.Create(fFileName, FileMode);
   try
     fs.Seek(0,TSeekOrigin.soEnd);
-    fLogWriter := TStreamWriter.Create(fs,TEncoding.Default,32);
+    fLogWriter := TStreamWriter.Create(fs,Encoding,32);
     fLogWriter.AutoFlush := fAutoFlush;
     fLogWriter.OwnStream;
     //check if need to rotate
