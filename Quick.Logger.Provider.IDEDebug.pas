@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2019 Kike Pérez
+  Copyright (c) 2016-2024 Kike Pérez
 
   Unit        : Quick.Logger.Provider.IDEDebug
   Description : Log Output IDE Debug log Provider
   Author      : Kike Pérez
   Version     : 1.25
   Created     : 02/10/2017
-  Modified    : 14/09/2019
+  Modified    : 30/09/2024
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -37,7 +37,7 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
   {$ELSE}
-    {$IFNDEF DELPHILINUX}
+    {$IFDEF ANDROID}
     FMX.Types,
     {$ENDIF}
   {$ENDIF}
@@ -92,7 +92,7 @@ end;
 {$ELSE}
 procedure TLogIDEDebugProvider.WriteLog(cLogItem : TLogItem);
 begin
-  {$IFNDEF DELPHILINUX}
+  {$IFDEF ANDROID}
   if CustomMsgOutput then FMX.Types.Log.d(cLogItem.Msg)
     else FMX.Types.Log.d(LogItemToLine(cLogItem,False,True));
   {$ENDIF}
