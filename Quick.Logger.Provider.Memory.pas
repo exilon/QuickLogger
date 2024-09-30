@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2022 Kike Pérez
+  Copyright (c) 2016-2023 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Memory
   Description : Log memory Provider
   Author      : Kike Pérez
   Version     : 1.23
   Created     : 02/10/2017
-  Modified    : 10/02/2022
+  Modified    : 10/10/2023
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -173,11 +173,14 @@ initialization
   GlobalLogMemoryProvider := TLogMemoryProvider.Create;
 
 finalization
-  if Assigned(GlobalLogMemoryProvider) and (GlobalLogMemoryProvider.RefCount = 0) then GlobalLogMemoryProvider.Free;
-  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  DeleteCriticalSection(CS);
-  {$ELSE}
-  DoneCriticalsection(CS);
-  {$ENDIF}
+  if Assigned(GlobalLogMemoryProvider) and (GlobalLogMemoryProvider.RefCount = 0) then
+  begin
+    GlobalLogMemoryProvider.Free;
+    {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+    DeleteCriticalSection(CS);
+    {$ELSE}
+    DoneCriticalsection(CS);
+    {$ENDIF}
+  end;
 
 end.
