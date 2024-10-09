@@ -1,13 +1,13 @@
 { ***************************************************************************
 
-  Copyright (c) 2016-2023 Kike Pérez / Jens Fudickar
+  Copyright (c) 2016-2024 Kike Pérez / Jens Fudickar
 
   Unit        : Quick.Logger.Provider.StringList
   Description : Log StringList Provider
   Author      : Jens Fudickar
   Version     : 1.23
   Created     : 12/28/2023
-  Modified    : 10/10/2023
+  Modified    : 09/10/2024
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -58,6 +58,7 @@ type
     fMaxSize: Int64;
     fShowEventTypes: Boolean;
     fShowTimeStamp: Boolean;
+    CS: TRTLCriticalSection;
     function GetLogList: TStringList;
   public
     constructor Create; override;
@@ -82,12 +83,17 @@ var
 
 implementation
 
-var
-  CS: TRTLCriticalSection;
 
 constructor TLogStringListProvider.Create;
 begin
   inherited;
+
+  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+  InitializeCriticalSection (CS);
+  {$ELSE}
+    InitCriticalSection (CS);
+  {$ENDIF}
+
   LogLevel := LOG_ALL;
   fMaxSize := 0;
   fShowEventTypes := False;
@@ -106,6 +112,11 @@ begin
   finally
     LeaveCriticalSection (CS);
   end;
+  {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
+    DeleteCriticalSection (CS);
+  {$ELSE}
+    DoneCriticalsection (CS);
+  {$ENDIF}
   inherited;
 end;
 
@@ -178,12 +189,6 @@ end;
 
 initialization
 
-{$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-  InitializeCriticalSection (CS);
-{$ELSE}
-  InitCriticalSection (CS);
-{$ENDIF}
-
   GlobalLogStringListProvider := TLogStringListProvider.Create;
 
 finalization
@@ -191,11 +196,6 @@ finalization
   if Assigned (GlobalLogStringListProvider) and (GlobalLogStringListProvider.RefCount = 0) then
   begin
     GlobalLogStringListProvider.Free;
-    {$IF Defined(MSWINDOWS) OR Defined(DELPHILINUX)}
-      DeleteCriticalSection (CS);
-    {$ELSE}
-      DoneCriticalsection (CS);
-    {$ENDIF}
   end;
 
 end.
