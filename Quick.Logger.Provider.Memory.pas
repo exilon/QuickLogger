@@ -66,6 +66,8 @@ type
     procedure Init; override;
     procedure Restart; override;
     procedure WriteLog(cLogItem : TLogItem); override;
+    // Be aware that the function is creating a new TStrings instance. After using the result
+    // you are responsible to free the variable.
     function AsStrings : TStrings;
     function AsString : string;
     procedure Clear;
