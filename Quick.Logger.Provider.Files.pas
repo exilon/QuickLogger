@@ -1,13 +1,13 @@
 ﻿{ ***************************************************************************
 
-  Copyright (c) 2016-2020 Kike Pérez
+  Copyright (c) 2016-2024 Kike Pérez
 
   Unit        : Quick.Logger.Provider.Files
   Description : Log Console Provider
   Author      : Kike Pérez
   Version     : 1.30
   Created     : 12/10/2017
-  Modified    : 24/04/2020
+  Modified    : 10/10/2024
 
   This file is part of QuickLogger: https://github.com/exilon/QuickLogger
 
@@ -66,7 +66,6 @@ type
     fAutoFlush : Boolean;
     fAutoFileName : Boolean;
     FDailyRotateFileDateFormat: string;
-    fEncoding: TEncoding;
     function CalcRotateLogFileName(cNumBackup: Integer; cFileDate: string; cZipped: Boolean; cFormatNumBackup: Boolean =
         true): string;
     function CheckNeedRotate : Boolean;
@@ -85,7 +84,6 @@ type
     {$IFDEF MSWINDOWS}
     property AutoFileNameByProcess : Boolean read fAutoFileName write fAutoFileName;
     {$ENDIF}
-    property Encoding: TEncoding read fEncoding write fEncoding;
     property MaxRotateFiles : Integer read fMaxRotateFiles write fMaxRotateFiles;
     property MaxFileSizeInMB : Integer read fMaxFileSizeInMB write fMaxFileSizeInMB;
     property DailyRotate : Boolean read fDailyRotate write fDailyRotate;
@@ -126,7 +124,6 @@ begin
   fRotatedFilesPath := '';
   fAutoFlush := False;
   fAutoFileName := False;
-  fEncoding := TEncoding.Default;
   LogLevel := LOG_ALL;
   IncludedInfo := [iiAppName,iiHost,iiUserName,iiOSVersion];
 end;
@@ -231,7 +228,7 @@ begin
   fs := TFileStream.Create(fFileName, FileMode);
   try
     fs.Seek(0,TSeekOrigin.soEnd);
-    fLogWriter := TStreamWriter.Create(fs,Encoding,32);
+    fLogWriter := TStreamWriter.Create(fs,TEncoding.Default,32);
     fLogWriter.AutoFlush := fAutoFlush;
     fLogWriter.OwnStream;
     //check if need to rotate
@@ -344,7 +341,11 @@ begin
   // Doing this twice to be backward compatible independent if the numbackup is formatted or not
   for i := 0 to 1 do
   begin
-    Result := CalcRotateLogFileName (cNumBackup, '*', zipped, i = 0);
+    if DailyRotate then
+      Result := CalcRotateLogFileName (cNumBackup, '*', zipped, i = 0)
+    else
+      Result := CalcRotateLogFileName (cNumBackup, '', zipped, i = 0);
+
     if findfirst (Result, faAnyFile, SearchRec) = 0 then
       Result := TPath.GetDirectoryName (Result) + PathDelim + SearchRec.Name
     else
@@ -455,11 +456,13 @@ procedure TLogFileProvider.CompressLogFile(const cFileName : string);
 {$IFDEF FPC}
 var
   zip : TZipper;
+  zipfilename : string;
 begin
+  zipfilename := cFileName + '.zip';
   try
     zip := TZipper.Create;
     try
-      zip.FileName := GetLogFileBackup(1,True);
+      zip.FileName := zipfilename;
       zip.Entries.AddFileEntry(cFilename,ExtractFileName(cFilename));
       zip.ZipAllFiles;
     finally
@@ -473,11 +476,17 @@ end;
 {$ELSE}
 var
   zip : TZipFile;
+  zipfilename : string;
 begin
+  // Derive the zip filename directly from the rotated file to be compressed.
+  // Previously used GetLogFileBackup(1,True) which searches for an existing
+  // zip file — always returning '' on the first rotation, silently skipping
+  // compression. The correct target is simply cFileName + '.zip'.
+  zipfilename := cFileName + '.zip';
   try
     zip := TZipFile.Create;
     try
-      zip.Open(GetLogFileBackup(1,True),zmWrite);
+      zip.Open(zipfilename,zmWrite);
       zip.Add(cFileName,'',TZipCompression.zcDeflate);
       zip.Close;
     finally
