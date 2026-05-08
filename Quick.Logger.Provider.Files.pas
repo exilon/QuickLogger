@@ -344,11 +344,7 @@ begin
   // Doing this twice to be backward compatible independent if the numbackup is formatted or not
   for i := 0 to 1 do
   begin
-    if DailyRotate then
-      Result := CalcRotateLogFileName (cNumBackup, '*', zipped, i = 0)
-    else
-      Result := CalcRotateLogFileName (cNumBackup, '', zipped, i = 0);
-
+    Result := CalcRotateLogFileName (cNumBackup, '*', zipped, i = 0);
     if findfirst (Result, faAnyFile, SearchRec) = 0 then
       Result := TPath.GetDirectoryName (Result) + PathDelim + SearchRec.Name
     else
