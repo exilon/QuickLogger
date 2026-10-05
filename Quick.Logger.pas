@@ -1431,6 +1431,11 @@ begin
   {$ELSE}
   cLogItem.ThreadId := TThread.CurrentThread.ThreadID;
   {$ENDIF}
+  if not Assigned(Self) then
+  begin
+    FreeAndNil(cLogItem);
+    Exit;
+  end;
   if fLogQueue.PushItem(cLogItem) <> TWaitResult.wrSignaled then
   begin
     FreeAndNil(cLogItem);
